@@ -1,10 +1,10 @@
 import SwiftUI
 
-protocol AnyBindable: AnyObject, Observable {
+protocol BindableState: AnyObject, Observable {
     var binding: Bindable<T> { get }
 }
 
-extension AnyBindable {
+extension BindableState {
     typealias T = Self
     var binding: Bindable<Self> { Bindable(self) }
 }

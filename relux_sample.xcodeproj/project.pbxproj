@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		701F04CB2D93062700BC99C2 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CA2D93062700BC99C2 /* Relux */; };
+		701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604062D8EF55300BE2349 /* Logger in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604052D8EF55300BE2349 /* Logger */; };
 		70A604BB2D8F401600BE2349 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
 		70A604CC2D9169E300BE2349 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CB2D9169E300BE2349 /* SwiftUIRelux */; };
 		70A604CF2D916C1F00BE2349 /* SwiftUIPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CE2D916C1F00BE2349 /* SwiftUIPlus */; };
-		70A605422D917F7E00BE2349 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A605412D917F7E00BE2349 /* SwiftUIRelux */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,10 +66,11 @@
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A604062D8EF55300BE2349 /* Logger in Frameworks */,
 				70A604CC2D9169E300BE2349 /* SwiftUIRelux in Frameworks */,
-				70A605422D917F7E00BE2349 /* SwiftUIRelux in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
+				701F04CB2D93062700BC99C2 /* Relux in Frameworks */,
 				70A604CF2D916C1F00BE2349 /* SwiftUIPlus in Frameworks */,
 				70A604BB2D8F401600BE2349 /* Relux in Frameworks */,
+				701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,7 +137,8 @@
 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
 				70A604CE2D916C1F00BE2349 /* SwiftUIPlus */,
-				70A605412D917F7E00BE2349 /* SwiftUIRelux */,
+				701F04CA2D93062700BC99C2 /* Relux */,
+				701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -223,7 +226,7 @@
 				70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */,
 				70A604042D8EF55300BE2349 /* XCRemoteSwiftPackageReference "darwin-logger" */,
 				70A604CD2D916C1F00BE2349 /* XCRemoteSwiftPackageReference "swiftui-plus" */,
-				70A605402D917F7E00BE2349 /* XCRemoteSwiftPackageReference "swiftui-relux" */,
+				701F04CC2D9352FB00BC99C2 /* XCRemoteSwiftPackageReference "swiftui-relux" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70A603AC2D8ECD6900BE2349 /* Products */;
@@ -625,6 +628,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		701F04CC2D9352FB00BC99C2 /* XCRemoteSwiftPackageReference "swiftui-relux" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ivalx1s/swiftui-relux.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ivalx1s/swift-ioc.git";
@@ -649,17 +660,18 @@
 				minimumVersion = 7.0.2;
 			};
 		};
-		70A605402D917F7E00BE2349 /* XCRemoteSwiftPackageReference "swiftui-relux" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ivalx1s/swiftui-relux.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		701F04CA2D93062700BC99C2 /* Relux */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Relux;
+		};
+		701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 701F04CC2D9352FB00BC99C2 /* XCRemoteSwiftPackageReference "swiftui-relux" */;
+			productName = SwiftUIRelux;
+		};
 		70A603E62D8ED02000BE2349 /* SwiftIoC */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */;
@@ -686,11 +698,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 70A604CD2D916C1F00BE2349 /* XCRemoteSwiftPackageReference "swiftui-plus" */;
 			productName = SwiftUIPlus;
-		};
-		70A605412D917F7E00BE2349 /* SwiftUIRelux */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70A605402D917F7E00BE2349 /* XCRemoteSwiftPackageReference "swiftui-relux" */;
-			productName = SwiftUIRelux;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
