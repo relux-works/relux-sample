@@ -10,7 +10,17 @@ extension SampleApp.UI.Root {
 
         @ViewBuilder
         private var content: some View {
-            NavigationStack(path: $appRouter.path, root: rootView)
+            VStack {
+                switch appRouter.path.isEmpty {
+                    case true:
+                        Splash()
+                            .transition(.opacity)
+                    case false:
+                        NavigationStack(path: $appRouter.path, root: rootView)
+                            .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 1), value: appRouter.path.isEmpty)
         }
 
         private func rootView() -> some View {

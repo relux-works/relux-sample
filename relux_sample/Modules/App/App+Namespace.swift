@@ -6,6 +6,6 @@ extension SampleApp {
         enum Main {
             enum Model {}
         }
-        enum Settings {}
+        enum Account {}
     }
 }

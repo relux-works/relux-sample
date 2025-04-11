@@ -27,9 +27,11 @@ extension SampleApp.Registry {
             rootSaga: .init()
         )
         .register { @MainActor in
+            ErrorHandling.Module()
             Navigation.Module()
             SampleApp.Module()
             Auth.Module()
+            await Notes.Module()
         }
     }
 

@@ -1,10 +1,10 @@
 import SwiftUI
 
-extension SampleApp.UI.Settings {
+extension Account.UI {
     struct Container: Relux.UI.Container {
         var body: some View {
             content
-                .navigationTitle("Settings")
+                .navigationTitle("Account")
                 .navigationBarTitleDisplayMode(.inline)
         }
 
@@ -12,14 +12,14 @@ extension SampleApp.UI.Settings {
             Page(
                 props: .init(),
                 actions: .init(
-                    onLogout: logout
+                    onLogout: { await logout() }
                 )
             )
         }
     }
 }
 
-extension SampleApp.UI.Settings.Container {
+extension Account.UI.Container {
     private func logout() async {
         await action {
             Auth.Business.Effect.logout

@@ -1,4 +1,4 @@
-extension SampleApp.UI.Settings.Container.Page {
+extension Account.UI.Container.Page {
     struct Props: ViewProps {
 
     }

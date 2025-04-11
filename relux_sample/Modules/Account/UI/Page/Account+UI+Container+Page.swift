@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension SampleApp.UI.Settings.Container {
+extension Account.UI.Container {
     struct Page: View {
         let props: Props
         let actions: Actions

@@ -5,7 +5,7 @@ extension SampleApp.UI.Main {
     static func handleRoute(for page: SampleApp.UI.Main.Model.Page) -> some View {
         switch page {
             case .main: Container()
-            case .settings: SampleApp.UI.Settings.Container()
+            case .account: Account.UI.Container()
         }
     }
 }
