@@ -11,6 +11,7 @@ extension Notes {
 
         ) async {
             self.states = [
+                await Self.ioc.get(by: Notes.Business.State.self)!,
                 await Self.ioc.get(by: Notes.UI.State.self)!
             ]
             self.sagas = [
@@ -22,7 +23,7 @@ extension Notes {
 
 extension Notes.Module {
     static func buildIoC() -> IoC {
-        var ioc: IoC = .init(logger: IoC.Logger(enabled: false))
+        let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
         ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: buildUIState)

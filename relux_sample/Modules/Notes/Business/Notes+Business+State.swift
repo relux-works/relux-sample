@@ -1,10 +1,12 @@
+import Combine
+
 extension Notes.Business {
     actor State {
         @Published var notes: MaybeData<[Model.Note], Err> = .initial()
     }
 }
 
-extension Notes.Business.State: Relux.BusinessState {
+extension Notes.Business.State: Relux.BusinessState  {
     func reduce(with action: any Relux.Action) async {
         switch action as? Notes.Business.Action {
             case .none: break

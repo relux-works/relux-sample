@@ -21,7 +21,7 @@ extension ErrorHandling {
 
 extension ErrorHandling.Module {
     private static func buildIoC() -> IoC {
-        var ioc: IoC = .init(logger: IoC.Logger(enabled: false))
+        let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(ErrorHandling.Business.IService.self, resolver: buildSvc)
         ioc.register(ErrorHandling.Business.ISaga.self, resolver: buildSaga)
