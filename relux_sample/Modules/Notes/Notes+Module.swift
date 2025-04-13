@@ -11,11 +11,11 @@ extension Notes {
 
         ) async {
             self.states = [
-                await Self.ioc.get(by: Notes.Business.State.self)!,
-                await Self.ioc.get(by: Notes.UI.State.self)!
+                Self.ioc.get(by: Notes.Business.State.self)!,
+                await Self.ioc.getAsync(by: Notes.UI.State.self)!
             ]
             self.sagas = [
-                await Self.ioc.get(by: Notes.Business.ISaga.self)!
+                Self.ioc.get(by: Notes.Business.ISaga.self)!
             ]
         }
     }

@@ -30,8 +30,6 @@ extension SampleApp.Module {
         return ioc
     }
 
-
-
     private static func buildSaga() -> SampleApp.Business.ISaga {
         SampleApp.Business.Saga()
     }

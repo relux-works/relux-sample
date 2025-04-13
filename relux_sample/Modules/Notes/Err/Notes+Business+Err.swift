@@ -6,3 +6,14 @@ extension Notes.Business {
         case deleteFailed(noteId: Model.Note.Id, cause: Error)
     }
 }
+
+extension Notes.Business.Err: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(localizedDescription)
+    }
+}
+extension Notes.Business.Err: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.localizedDescription == rhs.localizedDescription
+    }
+}

@@ -51,7 +51,7 @@ extension SampleApp.Registry {
 // resolvers
 extension SampleApp.Registry {
     static func optionalResolveAsync<T: Sendable>(_ type: T.Type) async -> T? where T.Type: Sendable {
-        await ioc.get(by: type)
+        await ioc.getAsync(by: type)
     }
 
     static func optionalResolve<T>(_ type: T.Type) -> T? {
@@ -59,7 +59,7 @@ extension SampleApp.Registry {
     }
 
     static func resolveAsync<T: Sendable>(_ type: T.Type) async -> T {
-        await ioc.get(by: type)!
+        await ioc.getAsync(by: type)!
     }
 
     static func resolve<T>(_ type: T.Type) -> T {

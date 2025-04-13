@@ -13,10 +13,6 @@ extension Auth {
         let sagas: [any Relux.Saga]
 
         init() {
-            let state = Auth.Business.State()
-            let svc: Auth.Business.IService = Auth.Business.Service()
-            let saga: Auth.Business.ISaga = Auth.Business.Saga(svc: svc)
-
             self.states = [
                 Self.ioc.get(by: Auth.Business.IState.self)!
             ]

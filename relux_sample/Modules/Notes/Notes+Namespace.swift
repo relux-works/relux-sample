@@ -3,5 +3,10 @@ enum Notes {
     enum Business {
         enum Model {}
     }
-    enum UI {}
+    enum UI {
+        enum Widget {}
+        enum List {}
+        enum Details {}
+        enum Create {}
+    }
 }

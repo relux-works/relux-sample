@@ -645,7 +645,7 @@
 			repositoryURL = "https://github.com/ivalx1s/swiftui-relux.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
+				minimumVersion = 6.0.1;
 			};
 		};
 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
@@ -653,7 +653,7 @@
 			repositoryURL = "https://github.com/ivalx1s/swift-ioc.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.1;
+				minimumVersion = 1.0.0;
 			};
 		};
 		70A604042D8EF55300BE2349 /* XCRemoteSwiftPackageReference "darwin-logger" */ = {
