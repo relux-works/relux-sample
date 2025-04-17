@@ -1,14 +1,23 @@
 extension Notes.Business {
     protocol IService: Sendable {
-        func getNotes() async -> Result<[Model.Note], Err>
-        func upsert(note: Model.Note) async -> Result<Void, Err>
-        func delete(noteId: Model.Note.Id) async -> Result<Void, Err>
+        typealias Note = Notes.Business.Model.Note
+        typealias Err = Notes.Business.Err
+
+        func getNotes() async -> Result<[Note], Err>
+        func upsert(note: Note) async -> Result<Void, Err>
+        func delete(noteId: Note.Id) async -> Result<Void, Err>
     }
 }
 
 extension Notes.Business {
     actor Service {
-        private var notes: Dictionary<Model.Note.Id, Model.Note> = [:]
+        private var notes: Dictionary<Note.Id, Note> = [
+            Note(id: .init(), createdAt: .now, title: "title 1", content: "content 1"),
+            Note(id: .init(), createdAt: .now.add(minutes: -1), title: "title 2", content: "content 2"),
+            Note(id: .init(), createdAt: .now.add(days: -1), title: "title 3", content: "content 3"),
+            Note(id: .init(), createdAt: .now.add(days: -2), title: "title 4", content: "content 4"),
+            Note(id: .init(), createdAt: .now.add(days: -2).add(hours: -2).add(minutes: -2), title: "title 5", content: "content 5"),
+        ].keyed(by: \.id)
     }
 }
 

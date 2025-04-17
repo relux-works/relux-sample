@@ -10,10 +10,62 @@ extension Notes.UI.Widget.Container {
 
         var body: some View {
             content
+                .animation(.easeInOut, value: props.notes.asAnimatableValue)
         }
+    }
+}
 
-        private var content: some View {
-            Text("Stub")
+extension Notes.UI.Widget.Container.Page {
+    private var content: some View {
+        VStack {
+            Text("Notes widget")
+            Spacer()
+            switch props.notes {
+                case .initial: progressView
+                case .failure: failureView
+                case let .success(notes): notesView(count: notes.flatCount)
+            }
         }
+        .padding()
+        .frame(height: 100)
+        .background(.gray.opacity(0.3))
+        .cornerRadius(28, corners: .allCorners)
+    }
+}
+
+// progress content
+extension Notes.UI.Widget.Container.Page {
+    private var progressView: some View {
+        ProgressView("Loading ...")
+            .extendingContent()
+    }
+}
+
+// fail content
+extension Notes.UI.Widget.Container.Page {
+    private var failureView: some View {
+        Text("Failed to load")
+            .extendingContent()
+    }
+}
+
+// notes content
+extension Notes.UI.Widget.Container.Page {
+    private func notesView(count: Int) -> some View {
+        VStack {
+            Relux.NavigationLink(page: .app(page: .notes(.list))) {
+                notesContent(count: count)
+            }
+        }
+        .extendingContent()
+    }
+
+    @ViewBuilder
+    private func notesContent(count: Int) -> some View {
+        HStack {
+            Text("Total notes")
+            Spacer()
+            Text(count.description)
+        }.padding()
     }
 }

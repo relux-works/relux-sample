@@ -24,7 +24,7 @@ extension Notes.UI.Widget {
 extension Notes.UI.Widget.Container {
     private func loadData() {
         if notesState.notesGroupedByDay.value.isNil {
-            performAsync {
+            performAsync(delay: 0.5) {
                 Notes.Business.Effect.obtainNotes
             }
         }

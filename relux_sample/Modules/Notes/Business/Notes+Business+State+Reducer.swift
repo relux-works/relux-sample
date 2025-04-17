@@ -10,14 +10,15 @@ extension Notes.Business.State {
                 var notes = (self.notes.value ?? [])
                 notes.upsertByIdentity(note)
                 self.notes = .success(notes)
-            case let .upsertNoteFail(err):
+            case .upsertNoteFail:
                 break
 
             case let .deleteNoteSuccess(note):
                 var notes = (self.notes.value ?? [])
-                notes.remove(note)
+                notes.removeById(note)
+                self.notes = .success(notes)
 
-            case .deleteNoteFail(err: let err):
+            case .deleteNoteFail:
                 break
         }
     }

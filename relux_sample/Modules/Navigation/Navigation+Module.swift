@@ -33,7 +33,7 @@ extension Navigation {
 
 extension Navigation.Module {
     private static func buildIoC() -> IoC {
-        var ioc: IoC = .init(logger: IoC.Logger(enabled: false))
+        let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Navigation.Business.IRouter.self, lifecycle: .container, resolver: buildRouter)
 

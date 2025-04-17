@@ -6,6 +6,7 @@ extension SampleApp.UI.Main {
         switch page {
             case .main: Container()
             case .account: Account.UI.Container()
+            case let .notes(page): Notes.UI.handleRoute(for: page)
         }
     }
 }

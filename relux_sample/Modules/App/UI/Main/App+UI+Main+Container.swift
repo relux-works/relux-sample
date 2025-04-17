@@ -9,13 +9,7 @@ extension SampleApp.UI.Main {
         }
 
         private var content: some View {
-            ScrollView {
-                VStack {
-                    Spacer()
-                    Text("Main")
-                    Spacer()
-                }
-            }
+            Page()
         }
 
         private var accountBtn: some View {
