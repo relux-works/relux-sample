@@ -15,7 +15,12 @@ extension SampleApp.Registry {
         ioc.register(Relux.Store.self, lifecycle: .container, resolver: Self.buildReluxStore)
         ioc.register(Relux.RootSaga.self, lifecycle: .container, resolver: Self.buildReluxRootSaga)
         ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
+
         ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
+        ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
+        ioc.register(Navigation.Module.self, lifecycle: .container, resolver: Self.buildNavigationModule)
+        ioc.register(Auth.Module.self, lifecycle: .container, resolver: Self.buildAuthModule)
+        ioc.register(Notes.Module.self, lifecycle: .container, resolver: Self.buildNotesModule)
     }
 }
 
@@ -28,19 +33,14 @@ extension SampleApp.Registry {
             rootSaga: .init()
         )
         .register { @MainActor in
-            ErrorHandling.Module()
-            Navigation.Module()
+            resolve(ErrorHandling.Module.self)
+            resolve(Navigation.Module.self)
             resolve(SampleApp.Module.self)
-            Auth.Module()
-            await Notes.Module()
+            resolve(Auth.Module.self)
+            await resolveAsync(Notes.Module.self)
         }
     }
 
-    private static func buildAppModule() -> SampleApp.Module {
-        SampleApp.Module(
-            store: resolve(Relux.Store.self)
-        )
-    }
 
     private static func buildReluxStore() -> Relux.Store {
         Relux.Store()
@@ -52,6 +52,28 @@ extension SampleApp.Registry {
 
     private static func buildReluxLogger() -> Relux.Logger {
         ReluxLogger()
+    }
+
+    private static func buildAppModule() -> SampleApp.Module {
+        SampleApp.Module(
+            store: resolve(Relux.Store.self)
+        )
+    }
+
+    private static func buildErrHandlingModule() -> ErrorHandling.Module {
+        ErrorHandling.Module()
+    }
+
+    private static func buildNavigationModule() -> Navigation.Module {
+        Navigation.Module()
+    }
+
+    private static func buildAuthModule() -> Auth.Module {
+        Auth.Module()
+    }
+
+    private static func buildNotesModule() async -> Notes.Module {
+        await Notes.Module()
     }
 }
 
