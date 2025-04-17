@@ -3,16 +3,30 @@ extension SampleApp.Business {
 }
 
 extension SampleApp.Business {
-    actor Saga: ISaga {
-        func apply(_ effect: any Relux.Effect) async {
-            switch effect as? Effect {
-                case .none: break
-                case .setAppContext: await setAppContext()
-            }
+    actor Saga {
+        private let store: Relux.Store
+
+        init(
+            store: Relux.Store
+        ) {
+            self.store = store
         }
     }
 }
 
+extension SampleApp.Business.Saga: SampleApp.Business.ISaga {
+    func apply(_ effect: any Relux.Effect) async {
+        switch effect as? SampleApp.Business.Effect {
+            case .none: break
+            case .setAppContext: await setAppContext()
+        }
+
+        switch effect as? Auth.Business.Effect {
+            case .runLogoutFlow: await self.store.cleanup()
+            default: break
+        }
+    }
+}
 extension SampleApp.Business.Saga {
     private func setAppContext() async {
         await actions {

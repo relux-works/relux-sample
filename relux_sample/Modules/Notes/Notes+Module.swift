@@ -2,7 +2,7 @@ import SwiftIoC
 
 extension Notes {
     struct Module: Relux.Module {
-        private static let ioc: IoC = Self.buildIoC()
+        private let ioc: IoC = Self.buildIoC()
 
         var states: [any Relux.AnyState]
         var sagas: [any Relux.Saga]
@@ -11,11 +11,11 @@ extension Notes {
 
         ) async {
             self.states = [
-                Self.ioc.get(by: Notes.Business.State.self)!,
-                await Self.ioc.getAsync(by: Notes.UI.State.self)!
+                self.ioc.get(by: Notes.Business.State.self)!,
+                await self.ioc.getAsync(by: Notes.UI.State.self)!
             ]
             self.sagas = [
-                Self.ioc.get(by: Notes.Business.ISaga.self)!
+                self.ioc.get(by: Notes.Business.ISaga.self)!
             ]
         }
     }
@@ -26,9 +26,9 @@ extension Notes.Module {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
-        ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: buildUIState)
+        ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
         ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: buildSvc)
-        ioc.register(Notes.Business.ISaga.self, lifecycle: .container, resolver: buildSaga)
+        ioc.register(Notes.Business.ISaga.self, lifecycle: .container, resolver: { buildSaga(ioc: ioc) })
 
         return ioc
     }
@@ -37,7 +37,7 @@ extension Notes.Module {
         Notes.Business.State()
     }
 
-    private static func buildUIState() async -> Notes.UI.State {
+    private static func buildUIState(ioc: IoC) async -> Notes.UI.State {
         await Notes.UI.State(
             state: ioc.get(by: Notes.Business.State.self)!
         )
@@ -47,7 +47,7 @@ extension Notes.Module {
         Notes.Business.Service()
     }
 
-    private static func buildSaga() -> Notes.Business.ISaga {
+    private static func buildSaga(ioc: IoC) -> Notes.Business.ISaga {
         Notes.Business.Saga(
             svc: ioc.get(by: Notes.Business.IService.self)!
         )

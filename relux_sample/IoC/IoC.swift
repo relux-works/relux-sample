@@ -15,6 +15,7 @@ extension SampleApp.Registry {
         ioc.register(Relux.Store.self, lifecycle: .container, resolver: Self.buildReluxStore)
         ioc.register(Relux.RootSaga.self, lifecycle: .container, resolver: Self.buildReluxRootSaga)
         ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
+        ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
     }
 }
 
@@ -29,10 +30,16 @@ extension SampleApp.Registry {
         .register { @MainActor in
             ErrorHandling.Module()
             Navigation.Module()
-            SampleApp.Module()
+            resolve(SampleApp.Module.self)
             Auth.Module()
             await Notes.Module()
         }
+    }
+
+    private static func buildAppModule() -> SampleApp.Module {
+        SampleApp.Module(
+            store: resolve(Relux.Store.self)
+        )
     }
 
     private static func buildReluxStore() -> Relux.Store {

@@ -18,14 +18,14 @@ extension Navigation.Business {
 extension Navigation {
     @MainActor
     struct Module: IModule {
-        private static let ioc: IoC = Self.buildIoC()
+        private let ioc: IoC = Self.buildIoC()
 
         let states: [any Relux.AnyState]
         let sagas: [any Relux.Saga] = []
 
         init() {
             self.states = [
-                Self.ioc.get(by: Navigation.Business.IRouter.self)!
+                self.ioc.get(by: Navigation.Business.IRouter.self)!
             ]
         }
     }
