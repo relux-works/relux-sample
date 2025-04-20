@@ -1,5 +1,8 @@
 import SwiftIoC
 
+// modal router
+typealias ModalRouter = Navigation.Business.ModalRouter
+
 // nav router specialisation
 typealias AppPage = Navigation.UI.Model.Page
 typealias AppRouter = Relux.Navigation.ProjectingRouter<AppPage>
@@ -26,7 +29,8 @@ extension Navigation {
 
         init() {
             self.states = [
-                self.ioc.get(by: Navigation.Business.IRouter.self)!
+                self.ioc.get(by: Navigation.Business.IRouter.self)!,
+                self.ioc.get(by: Navigation.Business.ModalRouter.self)!
             ]
         }
     }
@@ -37,10 +41,15 @@ extension Navigation.Module {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Navigation.Business.IRouter.self, lifecycle: .container, resolver: buildRouter)
+        ioc.register(Navigation.Business.ModalRouter.self, lifecycle: .container, resolver: buildModalRouter)
 
         return ioc
     }
     private static func buildRouter() -> Navigation.Business.IRouter {
         AppRouter(pages: [.splash])
+    }
+
+    private static func buildModalRouter() -> Navigation.Business.ModalRouter {
+        .init()
     }
 }

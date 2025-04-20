@@ -10,6 +10,19 @@ extension Account.UI.Container {
         }
 
         private var content: some View {
+            VStack {
+                debug
+                logout
+            }
+        }
+
+        private var debug: some View {
+            AsyncButton(action: actions.onOpenDebug) {
+                Text("Open Debug")
+            }
+        }
+
+        private var logout: some View {
             AsyncButton(action: actions.onLogout) {
                 Text("Logout")
             }

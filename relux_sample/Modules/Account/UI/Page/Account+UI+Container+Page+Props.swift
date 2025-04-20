@@ -5,5 +5,6 @@ extension Account.UI.Container.Page {
 
     struct Actions: ViewActions {
         let onLogout: @Sendable () async -> ()
+        let onOpenDebug: @Sendable () async -> ()
     }
 }

@@ -13,7 +13,8 @@ extension Account.UI {
             Page(
                 props: .init(),
                 actions: .init(
-                    onLogout: { await logout() }
+                    onLogout: { await logout() },
+                    onOpenDebug: { await openDebug() }
                 )
             )
         }
@@ -21,6 +22,12 @@ extension Account.UI {
 }
 
 extension Account.UI.Container {
+    private func openDebug() async {
+        await action {
+            ModalRouter.Action.present(page: .debug)
+        }
+    }
+
     private func logout() async {
         await action {
             Auth.Business.Effect.logout

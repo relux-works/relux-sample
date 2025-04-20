@@ -7,9 +7,14 @@ extension SampleApp.UI.Root {
         // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
         // If it’s declared using the @Observable macro, it’s available via @Environment.
         @EnvironmentObject var appRouter: AppRouter
+        @Environment(ModalRouter.self) private var modalRouter
+
+        let relux: Relux
 
         var body: some View {
             content
+                // simple way to centralised control of app modals
+                .sheet(item: modalRouter.binding.modalSheet, content: modalPage)
         }
 
         @ViewBuilder
@@ -31,5 +36,22 @@ extension SampleApp.UI.Root {
             Splash()
                 .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
         }
+    }
+}
+
+// modal pages
+extension SampleApp.UI.Root.Container {
+    private func modalPage(for item: Navigation.Business.Model.ModalPage) -> some View {
+        Group {
+            switch item {
+                case .debug: debugModal
+            }
+        }
+        // we have to pass states into env to each modal, due to it's outside of our rootView hierarchy
+        .passingObservableToEnvironment(fromStore: relux.store)
+    }
+
+    private var debugModal: some View {
+        Text("Debug page")
     }
 }

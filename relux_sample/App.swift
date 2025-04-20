@@ -19,22 +19,26 @@ struct SampleApp: App {
 
     var body: some Scene {
         WindowGroup {
+            // resolvedRelux also propagates Relux States into Root view Environment
+            // and access them can be reached with EnvironmentObject or Environment in view hierarchy
+            // it depends on your choice to use ObservableObject or @Observable macros for state
+            // under the hood passingObservableToEnvironment supports both ways
+            Relux.Resolver(
                 // simple splash view without any Relux interactions
-            SampleApp.UI.Root.Splash()
-                // resolvedRelux also propagates Relux States into Root view Environment
-                // and access them can be reached with EnvironmentObject or Environment in view hierarchy
-                // it depends on your choice to use ObservableObject or @Observable macros for state
-                // under the hood passingObservableToEnvironment supports both ways
-                .resolvedRelux(
-                    content: appContent,
-                    resolver: resolveModules
-                )
+                splash: splash,
+                content: appContent,
+                resolver: resolveModules
+            )
         }
+    }
+
+    private func splash() -> some View {
+        SampleApp.UI.Root.Splash()
     }
 
     private func appContent(relux: Relux) -> some View {
         // now relux is ready, we can use it strait forward
-        SampleApp.UI.Root.Container()
+        SampleApp.UI.Root.Container(relux: relux)
             .task { await setupAppContext() }
     }
 
