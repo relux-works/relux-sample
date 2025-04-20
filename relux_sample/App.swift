@@ -13,13 +13,13 @@ import SwiftUIRelux
 @main
 struct SampleApp: App {
     init() {
-        // configuring IoC container
+        // configures the IoC container.
         Registry.configure()
     }
 
     var body: some Scene {
         WindowGroup {
-            // simple splash view without any Relux interactions
+                // simple splash view without any Relux interactions
             SampleApp.UI.Root.Splash()
                 // resolvedRelux also propagates Relux States into Root view Environment
                 // and access them can be reached with EnvironmentObject or Environment in view hierarchy
@@ -42,6 +42,9 @@ struct SampleApp: App {
         await Registry.resolveAsync(Relux.self)
     }
 
+    // for now our Relux modules are successfully resolved
+    // we can start set our app context
+    // for instance, define is user authorised or not, what kind of flow we should present at first etz.
     private func setupAppContext() async {
         await actions(.concurrently) {
             SampleApp.Business.Effect.setAppContext

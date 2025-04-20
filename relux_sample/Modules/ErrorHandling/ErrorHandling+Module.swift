@@ -4,6 +4,7 @@ extension ErrorHandling {
     protocol IModule: Relux.Module {}
 }
 
+// relux module with resolved dependencies
 extension ErrorHandling {
     struct Module: IModule {
         private let ioc: IoC = Self.buildIoC()

@@ -1,5 +1,6 @@
 import SwiftIoC
 
+// relux module with resolved dependencies
 extension Notes {
     struct Module: Relux.Module {
         private let ioc: IoC = Self.buildIoC()

@@ -1,6 +1,7 @@
 import SwiftUI
 
 extension Account.UI {
+    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
         var body: some View {
             content

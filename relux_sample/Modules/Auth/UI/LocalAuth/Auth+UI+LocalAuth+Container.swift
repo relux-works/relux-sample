@@ -1,6 +1,7 @@
 import SwiftUI
 
 extension Auth.UI.LocalAuth {
+    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
 
         var body: some View {
@@ -13,7 +14,7 @@ extension Auth.UI.LocalAuth {
             Page(
                 props: .init(),
                 actions: .init(
-                    onTryLocalAuth: tryLocalAuth
+                    onTryLocalAuth: { await tryLocalAuth() }
                 )
             )
         }

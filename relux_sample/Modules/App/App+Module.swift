@@ -5,6 +5,7 @@ extension SampleApp {
     }
 }
 
+// relux module with resolved dependencies
 extension SampleApp {
     @MainActor
     struct Module: IModule {

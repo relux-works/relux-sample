@@ -1,3 +1,5 @@
+// module structure
+
 enum Notes {
     enum Data {}
     enum Business {

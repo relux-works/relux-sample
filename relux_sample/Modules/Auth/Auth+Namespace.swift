@@ -1,3 +1,5 @@
+// module structure
+
 enum Auth {
     enum Business {
         enum Model {}

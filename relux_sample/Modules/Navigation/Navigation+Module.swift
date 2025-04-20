@@ -1,5 +1,6 @@
 import SwiftIoC
 
+// nav router specialisation
 typealias AppPage = Navigation.UI.Model.Page
 typealias AppRouter = Relux.Navigation.ProjectingRouter<AppPage>
 typealias NavPathComponent = Relux.Navigation.PathComponent
@@ -14,7 +15,7 @@ extension Navigation.Business {
     protocol IRouter: Relux.HybridState {}
 }
 
-
+// relux module with resolved dependencies
 extension Navigation {
     @MainActor
     struct Module: IModule {

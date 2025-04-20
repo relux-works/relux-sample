@@ -1,3 +1,4 @@
+// module structure
 extension SampleApp {
     enum Data {}
     enum Business {}

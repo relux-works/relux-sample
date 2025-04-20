@@ -4,6 +4,7 @@ extension Auth {
     protocol IModule: Relux.Module {}
 }
 
+// relux module with resolved dependencies
 extension Auth {
     @MainActor
     struct Module: IModule {

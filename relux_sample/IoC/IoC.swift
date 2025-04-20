@@ -1,6 +1,9 @@
 import SwiftIoC
 
 extension SampleApp {
+    // the Registry entity is created for the app purposes
+    // we store ioc container with all resolvers in a static field
+    // also we put all our builders into its namespace
     @MainActor
     enum Registry {
         static let ioc = IoC(logger: IoC.Logger(enabled: false))
