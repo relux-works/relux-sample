@@ -2,8 +2,6 @@
 
 *.xcuserdatad
 
-# notes
-notes
 
 ## OS X
 *.DS_Store
