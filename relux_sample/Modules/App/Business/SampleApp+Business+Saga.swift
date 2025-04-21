@@ -22,15 +22,24 @@ extension SampleApp.Business.Saga: SampleApp.Business.ISaga {
         }
 
         switch effect as? Auth.Business.Effect {
-            case .runLogoutFlow: await self.store.cleanup()
+            case .runLogoutFlow: await cleanupAppCache()
             default: break
         }
     }
 }
+
 extension SampleApp.Business.Saga {
     private func setAppContext() async {
         await actions {
             AppRouter.Action.set([.auth(page: .localAuth)])
         }
+    }
+
+    private func cleanupAppCache() async {
+        // Wipe every state in the store except those listed in `exclusions`.
+        // AppRouter is excluded so the navigation stack survives logout.
+        await self.store.cleanup(
+            exclusions: [AppRouter.self]
+        )
     }
 }
