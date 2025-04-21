@@ -25,7 +25,6 @@ Carthage/Build
 *.resolved
 .gitrelease
  *.pbxproj
-*.entitlements
 gitrelease
 
 DerivedData/
