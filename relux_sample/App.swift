@@ -12,7 +12,9 @@ import SwiftUIRelux
 
 @main
 struct SampleApp: App {
-    static var relux: Relux!
+    static var relux: Relux {
+        get async { await Registry.ioc.waitForResolve(Relux.self) }
+    }
 
     init() {
         // configures the IoC container.
@@ -45,9 +47,7 @@ struct SampleApp: App {
     }
 
     private func resolveModules() async -> Relux {
-        let relux = await Registry.resolveAsync(Relux.self)
-        Self.relux = relux
-        return relux
+        await Registry.resolveAsync(Relux.self)
     }
 
     // for now our Relux modules are successfully resolved

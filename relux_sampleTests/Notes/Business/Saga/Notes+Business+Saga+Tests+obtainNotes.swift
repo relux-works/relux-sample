@@ -1,4 +1,5 @@
 import Testing
+import SwiftMocks
 @testable import relux_sample
 
 extension Notes_Business_Saga_Tests {
@@ -6,14 +7,15 @@ extension Notes_Business_Saga_Tests {
     @Test func obtainNotes_Success() async throws {
         // Arrange
         let reluxLogger = await Relux.Testing.MockModule<Action, Effect, SuccessPhantom>()
-        _ = await Task { @MainActor in relux.register(reluxLogger) }.value
+        _ = await Task { @MainActor in await SampleApp.relux.register(reluxLogger) }.value
 
         let service = Notes.Business.ServiceMock()
         let saga = Notes.Business.Saga(svc: service)
 
-        service.mock.obtainNotesCalls.mockCall {
-            []
+        service.mock.getNotesCalls.mockCall {
+            .success([])
         }
+
 
         // Act
 //        await saga.apply(Effect.prepareOrderESimRequest)
