@@ -18,8 +18,6 @@
 		70B138BB2DA9567B003ADE2C /* SwiftPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BA2DA9567B003ADE2C /* SwiftPlus */; };
 		70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BD2DA9569E003ADE2C /* Algorithms */; };
 		70B138C52DA95C65003ADE2C /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138C42DA95C65003ADE2C /* FoundationPlus */; };
-		70B3DD3B2DB6A5D300FA5FA8 /* SwiftMocks in Frameworks */ = {isa = PBXBuildFile; productRef = 70B3DD3A2DB6A5D300FA5FA8 /* SwiftMocks */; };
-		70B3DD3D2DB6A5DC00FA5FA8 /* SwiftMocks in Frameworks */ = {isa = PBXBuildFile; productRef = 70B3DD3C2DB6A5DC00FA5FA8 /* SwiftMocks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,7 +84,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				70B3DD3D2DB6A5DC00FA5FA8 /* SwiftMocks in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,7 +91,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				70B3DD3B2DB6A5D300FA5FA8 /* SwiftMocks in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,7 +179,6 @@
 			);
 			name = relux_sampleTests;
 			packageProductDependencies = (
-				70B3DD3C2DB6A5DC00FA5FA8 /* SwiftMocks */,
 			);
 			productName = relux_sampleTests;
 			productReference = 70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */;
@@ -207,7 +202,6 @@
 			);
 			name = relux_sampleUITests;
 			packageProductDependencies = (
-				70B3DD3A2DB6A5D300FA5FA8 /* SwiftMocks */,
 			);
 			productName = relux_sampleUITests;
 			productReference = 70A603C62D8ECD6D00BE2349 /* relux_sampleUITests.xctest */;
@@ -253,7 +247,6 @@
 				70B138B92DA9567B003ADE2C /* XCRemoteSwiftPackageReference "swift-stdlibplus" */,
 				70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */,
 				70B138C32DA95C65003ADE2C /* XCRemoteSwiftPackageReference "darwin-foundationplus" */,
-				70B3DD372DB6A5C900FA5FA8 /* XCRemoteSwiftPackageReference "SwiftMocks" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70A603AC2D8ECD6900BE2349 /* Products */;
@@ -711,14 +704,6 @@
 				minimumVersion = 4.0.0;
 			};
 		};
-		70B3DD372DB6A5C900FA5FA8 /* XCRemoteSwiftPackageReference "SwiftMocks" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ivalx1s/SwiftMocks.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.3;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -772,16 +757,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 70B138C32DA95C65003ADE2C /* XCRemoteSwiftPackageReference "darwin-foundationplus" */;
 			productName = FoundationPlus;
-		};
-		70B3DD3A2DB6A5D300FA5FA8 /* SwiftMocks */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70B3DD372DB6A5C900FA5FA8 /* XCRemoteSwiftPackageReference "SwiftMocks" */;
-			productName = SwiftMocks;
-		};
-		70B3DD3C2DB6A5DC00FA5FA8 /* SwiftMocks */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70B3DD372DB6A5C900FA5FA8 /* XCRemoteSwiftPackageReference "SwiftMocks" */;
-			productName = SwiftMocks;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
