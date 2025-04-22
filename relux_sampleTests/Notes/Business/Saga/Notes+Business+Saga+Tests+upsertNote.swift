@@ -4,7 +4,7 @@ import SwiftMocks
 
 extension NotesTests.Business.Saga {
     fileprivate enum SuccessPhantom {}
-    @Test func obtainNotes_Success() async throws {
+    @Test func upsertNote_Success() async throws {
         // Arrange
         let reluxLogger = await Relux.Testing.MockModule<Action, Effect, SuccessPhantom>()
         _ = await Task { @MainActor in await SampleApp.relux.register(reluxLogger) }.value
@@ -12,19 +12,19 @@ extension NotesTests.Business.Saga {
         let service = Notes.Business.ServiceMock()
         let saga = Notes.Business.Saga(svc: service)
 
-        let notes: [Model.Note] = .stub
-        service.obtainNotesHandler = { .success(notes) }
+        let note = Model.Note.stubRandom()
+        service.upsertNotesHandler = { _ in .success(()) }
 
         // Act
-        await saga.apply(Effect.obtainNotes)
+        await saga.apply(Effect.upsert(note: note))
 
         // Assert
-        let successAction = await reluxLogger.getAction(Action.obtainNotesSuccess(notes: notes))
+        let successAction = await reluxLogger.getAction(Action.upsertNoteSuccess(note: note))
         #expect(successAction.isNotNil)
     }
 
     fileprivate enum FailurePhantom {}
-    @Test func obtainNotes_Failure() async throws {
+    @Test func upsertNote_Failure() async throws {
         // Arrange
         let reluxLogger = await Relux.Testing.MockModule<Action, Effect, FailurePhantom>()
         _ = await Task { @MainActor in await SampleApp.relux.register(reluxLogger) }.value
@@ -32,14 +32,15 @@ extension NotesTests.Business.Saga {
         let service = Notes.Business.ServiceMock()
         let saga = Notes.Business.Saga(svc: service)
 
-        let err: Err = .obtainFailed(cause: StubErr())
-        service.obtainNotesHandler = { .failure(err) }
+        let note = Model.Note.stubRandom()
+        let err: Err = .upsertFailed(note: note, cause: StubErr())
+        service.upsertNotesHandler = { _ in .failure(err) }
 
         // Act
-        await saga.apply(Effect.obtainNotes)
+        await saga.apply(Effect.upsert(note: note))
 
         // Assert
-        let failureAction = await reluxLogger.getAction(Action.obtainNotesFail(err: err))
+        let failureAction = await reluxLogger.getAction(Action.upsertNoteFail(err: err))
         #expect(failureAction.isNotNil)
 
         let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))

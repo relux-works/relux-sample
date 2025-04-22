@@ -45,7 +45,7 @@ extension Notes.Business.Saga {
                 await action { Notes.Business.Action.upsertNoteSuccess(note: note) }
             case let .failure(err):
                 await actions(.concurrently) {
-                    Notes.Business.Action.upsertNoteSuccess(note: note)
+                    Notes.Business.Action.upsertNoteFail(err: err)
                     ErrorHandling.Business.Effect.track(error: err)
                 }
         }

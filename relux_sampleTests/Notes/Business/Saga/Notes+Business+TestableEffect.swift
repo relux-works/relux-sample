@@ -17,7 +17,7 @@ extension Notes.Business.Effect {
 }
 
 extension Relux.Testing.MockModule {
-    func effectOccured(_ effect: Notes.Business.Effect) async -> Notes.Business.Effect? {
+    func getEffect(_ effect: Notes.Business.Effect) async -> Notes.Business.Effect? {
         await self
             .effectsLogger
             .effects

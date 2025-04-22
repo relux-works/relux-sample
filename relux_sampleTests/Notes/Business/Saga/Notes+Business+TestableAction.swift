@@ -30,7 +30,7 @@ extension Notes.Business.Action {
 }
 
 extension Relux.Testing.MockModule {
-    func actionOccured(_ action: Notes.Business.Action) async -> Notes.Business.Action? {
+    func getAction(_ action: Notes.Business.Action) async -> Notes.Business.Action? {
         await self
             .actionsLogger
             .actions

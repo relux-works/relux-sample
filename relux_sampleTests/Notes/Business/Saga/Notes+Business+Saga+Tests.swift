@@ -2,8 +2,7 @@ import Testing
 import Relux
 @testable import relux_sample
 
-@Suite(.serialized, .timeLimit(.minutes(1)))
-struct Notes_Business_Saga_Tests {
+extension NotesTests.Business.Saga {
     typealias Action = Notes.Business.Action
     typealias Effect = Notes.Business.Effect
     typealias Err = Notes.Business.Err

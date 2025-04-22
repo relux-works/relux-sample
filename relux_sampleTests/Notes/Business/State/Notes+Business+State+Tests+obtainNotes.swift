@@ -1,7 +1,7 @@
 import Testing
 @testable import relux_sample
 
-extension Notes_Business_State_Tests {
+extension NotesTests.Business.State {
     @Test func obtainNotesSuccess() async throws {
         // Arrange
         let state = State()

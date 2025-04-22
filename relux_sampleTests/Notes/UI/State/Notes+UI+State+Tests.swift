@@ -1,8 +1,7 @@
 import Testing
 @testable import relux_sample
 
-@Suite(.timeLimit(.minutes(1)))
-struct Notes_UI_ViewState_Tests {
+extension NotesTests.UI.State {
     typealias Model = Notes.Business.Model
     typealias Action = Notes.Business.Action
     typealias BusinessState = Notes.Business.State
