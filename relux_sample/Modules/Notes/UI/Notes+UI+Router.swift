@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension Notes.UI {
     @ViewBuilder
     static func handleRoute(for page: Notes.UI.Model.Page) -> some View {

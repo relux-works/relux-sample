@@ -28,8 +28,8 @@ extension Auth.Module {
     private static func buildIoC() -> IoC {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
-        ioc.register(Auth.Business.IState.self, lifecycle: .container, resolver: buildState)
-        ioc.register(Auth.Business.IService.self, lifecycle: .container, resolver: buildSvc)
+        ioc.register(Auth.Business.IState.self, lifecycle: .container, resolver: { buildState() })
+        ioc.register(Auth.Business.IService.self, lifecycle: .container, resolver: { buildSvc() })
         ioc.register(Auth.Business.ISaga.self, lifecycle: .container, resolver: { buildSaga(ioc: ioc) })
 
         return ioc

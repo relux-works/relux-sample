@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension SampleApp.UI.Root {
     @ViewBuilder
     static func handleRoute(for page: AppPage) -> some View {

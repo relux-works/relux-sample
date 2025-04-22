@@ -35,7 +35,7 @@ extension Auth.Business.Saga {
     }
 
     private func obtainAvailableBiometryType() async {
-        let type = svc.availableBiometry
+        let type = await svc.availableBiometry
         await action {
             Auth.Business.Action.obtainAvailableBiometryTypeSucceed(type: type)
         }
@@ -62,7 +62,7 @@ extension Auth.Business.Saga {
     }
 
     private func runLogoutFlow() async {
-        svc.recreateLAContext()
+        await svc.recreateLAContext()
         await actions {
             AppRouter.Action.set([.auth(page: .localAuth)])
             Auth.Business.Action.logOutSucceed

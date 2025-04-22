@@ -1,19 +1,19 @@
-import LocalAuthentication
+@preconcurrency import LocalAuthentication
 
 extension Auth.Business {
-    protocol IService {
+    protocol IService: Sendable {
         typealias Err = Auth.Business.Err
         typealias Model = Auth.Business.Model
 
-        var laContext: LAContext { get }
-        var availableBiometry: Model.BiometryType { get }
+        var laContext: LAContext { get async }
+        var availableBiometry: Model.BiometryType { get async }
         func runLocalAuth() async -> Result<Bool, Err>
-        func recreateLAContext()
+        func recreateLAContext() async
     }
 }
 
 extension Auth.Business {
-    final class Service {
+    actor Service {
         private var laCtx: LAContext
 
         init() {
@@ -23,23 +23,25 @@ extension Auth.Business {
 }
 
 extension Auth.Business.Service: Auth.Business.IService {
-    var laContext: LAContext { laCtx }
+    var laContext: LAContext { get async { laCtx } }
 
-    var availableBiometry: Model.BiometryType {
+    var availableBiometry: Model.BiometryType { get async {
+
         var error: NSError?
-        let allowed = laContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        let allowed = await laContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
 
-        return switch laContext.biometryType {
+        return switch await laContext.biometryType {
             case .none: .other(allowed: allowed)
             case .touchID: .touch(allowed: allowed)
             case .faceID: .face(allowed: allowed)
             case .opticID: .other(allowed: allowed)
             @unknown default: .other(allowed: allowed)
         }
-    }
+    }}
 
     func runLocalAuth() async -> Result<Bool, Auth.Business.Err> {
-        await withCheckedContinuation { ctx in
+        let laContext = await self.laContext
+        return await withCheckedContinuation { ctx in
             var error: NSError?
             if laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
                 let reason = "We need to unlock your data."

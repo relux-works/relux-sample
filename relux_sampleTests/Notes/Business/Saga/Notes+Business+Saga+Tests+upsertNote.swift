@@ -6,7 +6,7 @@ extension NotesTests.Business.Saga {
     @Test func upsertNote_Success() async throws {
         // Arrange
         let reluxLogger = await Relux.Testing.MockModule<Action, Effect, SuccessPhantom>()
-        _ = await Task { @MainActor in await SampleApp.relux.register(reluxLogger) }.value
+        await SampleApp.relux.register(reluxLogger)
 
         let service = Notes.Business.ServiceMock()
         let saga = Notes.Business.Saga(svc: service)
@@ -20,13 +20,16 @@ extension NotesTests.Business.Saga {
         // Assert
         let successAction = await reluxLogger.getAction(Action.upsertNoteSuccess(note: note))
         #expect(successAction.isNotNil)
+
+        // Teardown
+        await SampleApp.relux.unregister(reluxLogger)
     }
 
     fileprivate enum FailurePhantom {}
     @Test func upsertNote_Failure() async throws {
         // Arrange
         let reluxLogger = await Relux.Testing.MockModule<Action, Effect, FailurePhantom>()
-        _ = await Task { @MainActor in await SampleApp.relux.register(reluxLogger) }.value
+        await SampleApp.relux.register(reluxLogger)
 
         let service = Notes.Business.ServiceMock()
         let saga = Notes.Business.Saga(svc: service)
@@ -44,5 +47,8 @@ extension NotesTests.Business.Saga {
 
         let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))
         #expect(errEffect.isNotNil)
+
+        // Teardown
+        await SampleApp.relux.unregister(reluxLogger)
     }
 }

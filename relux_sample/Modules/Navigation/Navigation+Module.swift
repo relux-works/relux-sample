@@ -40,11 +40,12 @@ extension Navigation.Module {
     private static func buildIoC() -> IoC {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
-        ioc.register(Navigation.Business.IRouter.self, lifecycle: .container, resolver: buildRouter)
-        ioc.register(Navigation.Business.ModalRouter.self, lifecycle: .container, resolver: buildModalRouter)
+        ioc.register(Navigation.Business.IRouter.self, lifecycle: .container, resolver: { buildRouter() })
+        ioc.register(Navigation.Business.ModalRouter.self, lifecycle: .container, resolver: { buildModalRouter() })
 
         return ioc
     }
+
     private static func buildRouter() -> Navigation.Business.IRouter {
         AppRouter(pages: [.splash])
     }

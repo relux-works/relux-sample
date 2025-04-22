@@ -5,6 +5,7 @@ enum Notes {
     enum Business {
         enum Model {}
     }
+
     enum UI {
         enum Model {}
         enum Component {}

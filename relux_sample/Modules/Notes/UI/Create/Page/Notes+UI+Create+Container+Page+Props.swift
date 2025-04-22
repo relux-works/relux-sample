@@ -4,6 +4,6 @@ extension Notes.UI.Create.Container.Page {
     }
 
     struct Actions: ViewActions {
-        let onCreate: (Note) async -> Void
+        let onCreate: @Sendable (Note) async -> Void
     }
 }
