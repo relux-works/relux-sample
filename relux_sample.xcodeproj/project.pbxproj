@@ -103,6 +103,7 @@
 				70A603AD2D8ECD6900BE2349 /* relux_sample */,
 				70A603BF2D8ECD6D00BE2349 /* relux_sampleTests */,
 				70A603C92D8ECD6D00BE2349 /* relux_sampleUITests */,
+				70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */,
 				70A603AC2D8ECD6900BE2349 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,6 +116,13 @@
 				70A603C62D8ECD6D00BE2349 /* relux_sampleUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

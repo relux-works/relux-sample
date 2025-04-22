@@ -12,6 +12,10 @@ import SwiftUIRelux
 
 @main
 struct SampleApp: App {
+    static var relux: Relux {
+        get async { await Registry.ioc.waitForResolve(Relux.self) }
+    }
+
     init() {
         // configures the IoC container.
         Registry.configure()
