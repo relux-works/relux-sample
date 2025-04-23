@@ -11,10 +11,7 @@ struct NotesTests {
         @Suite
         struct State { }
     }
-
     @Suite
     struct UI {
-        @Suite
-        struct State { }
     }
 }
