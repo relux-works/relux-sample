@@ -21,6 +21,7 @@ extension NotesTests.Business.Saga {
                 // Assert
             let successAction = await reluxLogger.getAction(Action.deleteNoteSuccess(note: note))
             #expect(successAction.isNotNil)
+            #expect(service.deleteNotesCallCount == 1)
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)
@@ -48,6 +49,8 @@ extension NotesTests.Business.Saga {
 
             let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))
             #expect(errEffect.isNotNil)
+            #expect(service.deleteNotesCallCount == 1)
+
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)
@@ -73,6 +76,7 @@ extension NotesTests.Business.Saga {
                 // Assert
             let successAction = await reluxLogger.getAction(Action.obtainNotesSuccess(notes: notes))
             #expect(successAction.isNotNil)
+            #expect(service.obtainNotesCallCount == 1)
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)
@@ -99,6 +103,7 @@ extension NotesTests.Business.Saga {
 
             let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))
             #expect(errEffect.isNotNil)
+            #expect(service.obtainNotesCallCount == 1)
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)
@@ -124,6 +129,7 @@ extension NotesTests.Business.Saga {
                 // Assert
             let successAction = await reluxLogger.getAction(Action.upsertNoteSuccess(note: note))
             #expect(successAction.isNotNil)
+            #expect(service.upsertNotesCallCount == 1)
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)
@@ -151,6 +157,7 @@ extension NotesTests.Business.Saga {
 
             let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))
             #expect(errEffect.isNotNil)
+            #expect(service.upsertNotesCallCount == 1)
 
                 // Teardown
             await SampleApp.relux.unregister(reluxLogger)

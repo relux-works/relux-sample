@@ -2,7 +2,6 @@ import Testing
 @testable import relux_sample
 
 extension NotesTests.Business.State {
-    @Suite
     struct InitialValue {
         @Test func initialState() async throws {
                 // Arrange
@@ -16,7 +15,6 @@ extension NotesTests.Business.State {
         }
     }
 
-    @Suite
     struct DeleteNote {
         @Test func deleteNoteSuccess() async throws {
                 // Arrange
@@ -42,7 +40,6 @@ extension NotesTests.Business.State {
         }
     }
 
-    @Suite
     struct ObtainNotes {
         @Test func obtainNotesSuccess() async throws {
                 // Arrange
@@ -71,7 +68,6 @@ extension NotesTests.Business.State {
         }
     }
 
-    @Suite
     struct UpsertNote {
         @Test func upsertNoteSuccess() async throws {
                 // Arrange
@@ -85,6 +81,5 @@ extension NotesTests.Business.State {
                 // Assert
             #expect(await state.notes == .success([note]))
         }
-
     }
 }
