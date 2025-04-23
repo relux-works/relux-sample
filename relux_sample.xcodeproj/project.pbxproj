@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		701F04CB2D93062700BC99C2 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CA2D93062700BC99C2 /* Relux */; };
 		701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */; };
+		70714CBA2DB904A10056E0F3 /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70714CB92DB904A10056E0F3 /* FoundationPlus */; };
+		70714CBD2DB905F40056E0F3 /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70714CBC2DB905F40056E0F3 /* FoundationPlus */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604062D8EF55300BE2349 /* Logger in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604052D8EF55300BE2349 /* Logger */; };
 		70A604BB2D8F401600BE2349 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
@@ -17,7 +19,6 @@
 		70A604CF2D916C1F00BE2349 /* SwiftUIPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CE2D916C1F00BE2349 /* SwiftUIPlus */; };
 		70B138BB2DA9567B003ADE2C /* SwiftPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BA2DA9567B003ADE2C /* SwiftPlus */; };
 		70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BD2DA9569E003ADE2C /* Algorithms */; };
-		70B138C52DA95C65003ADE2C /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138C42DA95C65003ADE2C /* FoundationPlus */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,7 +76,8 @@
 				70A604BB2D8F401600BE2349 /* Relux in Frameworks */,
 				701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */,
 				70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */,
-				70B138C52DA95C65003ADE2C /* FoundationPlus in Frameworks */,
+				70714CBD2DB905F40056E0F3 /* FoundationPlus in Frameworks */,
+				70714CBA2DB904A10056E0F3 /* FoundationPlus in Frameworks */,
 				70B138BB2DA9567B003ADE2C /* SwiftPlus in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -155,7 +157,8 @@
 				701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */,
 				70B138BA2DA9567B003ADE2C /* SwiftPlus */,
 				70B138BD2DA9569E003ADE2C /* Algorithms */,
-				70B138C42DA95C65003ADE2C /* FoundationPlus */,
+				70714CB92DB904A10056E0F3 /* FoundationPlus */,
+				70714CBC2DB905F40056E0F3 /* FoundationPlus */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -246,7 +249,7 @@
 				701F04CC2D9352FB00BC99C2 /* XCRemoteSwiftPackageReference "swiftui-relux" */,
 				70B138B92DA9567B003ADE2C /* XCRemoteSwiftPackageReference "swift-stdlibplus" */,
 				70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */,
-				70B138C32DA95C65003ADE2C /* XCRemoteSwiftPackageReference "darwin-foundationplus" */,
+				70714CBB2DB905F40056E0F3 /* XCRemoteSwiftPackageReference "darwin-foundationplus" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70A603AC2D8ECD6900BE2349 /* Products */;
@@ -656,6 +659,14 @@
 				minimumVersion = 6.1.0;
 			};
 		};
+		70714CBB2DB905F40056E0F3 /* XCRemoteSwiftPackageReference "darwin-foundationplus" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ivalx1s/darwin-foundationplus.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.4;
+			};
+		};
 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ivalx1s/swift-ioc.git";
@@ -696,14 +707,6 @@
 				minimumVersion = 1.2.1;
 			};
 		};
-		70B138C32DA95C65003ADE2C /* XCRemoteSwiftPackageReference "darwin-foundationplus" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ivalx1s/darwin-foundationplus.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -715,6 +718,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 701F04CC2D9352FB00BC99C2 /* XCRemoteSwiftPackageReference "swiftui-relux" */;
 			productName = SwiftUIRelux;
+		};
+		70714CB92DB904A10056E0F3 /* FoundationPlus */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FoundationPlus;
+		};
+		70714CBC2DB905F40056E0F3 /* FoundationPlus */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 70714CBB2DB905F40056E0F3 /* XCRemoteSwiftPackageReference "darwin-foundationplus" */;
+			productName = FoundationPlus;
 		};
 		70A603E62D8ED02000BE2349 /* SwiftIoC */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -752,11 +764,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */;
 			productName = Algorithms;
-		};
-		70B138C42DA95C65003ADE2C /* FoundationPlus */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70B138C32DA95C65003ADE2C /* XCRemoteSwiftPackageReference "darwin-foundationplus" */;
-			productName = FoundationPlus;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
