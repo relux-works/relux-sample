@@ -44,12 +44,13 @@ extension NotesTests.Business.Saga {
             await saga.apply(Effect.delete(note: note))
 
             // Assert
+            #expect(service.deleteNotesCallCount == 1)
+
             let failureAction = await reluxLogger.getAction(Action.deleteNoteFail(err: err))
             #expect(failureAction.isNotNil)
 
             let errEffect = await reluxLogger.getEffect(ErrEffect.track(error: err))
             #expect(errEffect.isNotNil)
-            #expect(service.deleteNotesCallCount == 1)
 
             // Teardown
             await SampleApp.relux.unregister(reluxLogger)
