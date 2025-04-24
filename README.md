@@ -116,6 +116,8 @@ Additional dependencies
 	•	swift-stdlibplus
 	•	swiftui-plus
 
-🪪 License
+🪪 License MIT
+*Authors*
+• Alexis Grigorev
+• Artem Grishchenko
 
-MIT
