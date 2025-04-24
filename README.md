@@ -117,7 +117,9 @@ Additional dependencies
 	•	swiftui-plus
 
 🪪 License MIT
-*Authors*
-• Alexis Grigorev
-• Artem Grishchenko
+
+
+## *Authors*
+- Alexis Grigorev
+- Artem Grishchenko
 
