@@ -29,7 +29,7 @@ extension NotesTests.Business.Saga {
 
         fileprivate enum FailurePhantom {}
         @Test func deleteNote_Failure() async throws {
-                // Arrange
+            // Arrange
             let reluxLogger = await Relux.Testing.MockModule<Action, Effect, FailurePhantom>()
             await SampleApp.relux.register(reluxLogger)
 
@@ -40,10 +40,10 @@ extension NotesTests.Business.Saga {
             let err: Err = .deleteFailed(noteId: note.id, cause: StubErr())
             service.deleteNotesHandler = { _ in .failure(err) }
 
-                // Act
+            // Act
             await saga.apply(Effect.delete(note: note))
 
-                // Assert
+            // Assert
             let failureAction = await reluxLogger.getAction(Action.deleteNoteFail(err: err))
             #expect(failureAction.isNotNil)
 
@@ -51,8 +51,7 @@ extension NotesTests.Business.Saga {
             #expect(errEffect.isNotNil)
             #expect(service.deleteNotesCallCount == 1)
 
-
-                // Teardown
+            // Teardown
             await SampleApp.relux.unregister(reluxLogger)
         }
     }
