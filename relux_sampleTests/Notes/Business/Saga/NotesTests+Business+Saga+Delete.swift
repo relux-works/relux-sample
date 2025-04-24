@@ -9,7 +9,7 @@ extension NotesTests.Business.Saga {
             let reluxLogger = await Relux.Testing.MockModule<Action, Effect, SuccessPhantom>()
             await SampleApp.relux.register(reluxLogger)
 
-            let service = Notes.Business.ServiceMock()
+            let service = NotesTests.Business.ServiceMock()
             let saga = Notes.Business.Saga(svc: service)
 
             let note = Model.Note.stubRandom()
@@ -33,7 +33,7 @@ extension NotesTests.Business.Saga {
             let reluxLogger = await Relux.Testing.MockModule<Action, Effect, FailurePhantom>()
             await SampleApp.relux.register(reluxLogger)
 
-            let service = Notes.Business.ServiceMock()
+            let service = NotesTests.Business.ServiceMock()
             let saga = Notes.Business.Saga(svc: service)
 
             let note = Model.Note.stubRandom()
