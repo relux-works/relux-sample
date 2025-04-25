@@ -191,3 +191,4 @@ Relux Sample is released under the MIT License.
 
 - Alexis Grigorev
 - Artem Grishchenko
+- Ivan Oparin
