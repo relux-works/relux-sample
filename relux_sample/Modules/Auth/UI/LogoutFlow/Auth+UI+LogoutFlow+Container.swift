@@ -19,7 +19,7 @@ extension Auth.UI.Initial {
 
 extension Auth.UI.Initial.Container {
     private func runLogoutFlow() async {
-        await action {
+        await actions {
             Auth.Business.Effect.runLogoutFlow
         }
     }

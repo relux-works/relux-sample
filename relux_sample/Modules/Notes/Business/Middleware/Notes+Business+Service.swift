@@ -11,28 +11,36 @@ extension Notes.Business {
 
 extension Notes.Business {
     actor Service {
-        private var notes: Dictionary<Note.Id, Note> = [
-            Note(id: .init(), createdAt: .now, title: "title 1", content: "content 1"),
-            Note(id: .init(), createdAt: .now.add(minutes: -1), title: "title 2", content: "content 2"),
-            Note(id: .init(), createdAt: .now.add(days: -1), title: "title 3", content: "content 3"),
-            Note(id: .init(), createdAt: .now.add(days: -2), title: "title 4", content: "content 4"),
-            Note(id: .init(), createdAt: .now.add(days: -2).add(hours: -2).add(minutes: -2), title: "title 5", content: "content 5"),
-        ].keyed(by: \.id)
+        private let fetcher: Notes.Data.Api.IFetcher
+
+        init(
+            fetcher: Notes.Data.Api.IFetcher
+        ) {
+            self.fetcher = fetcher
+        }
     }
 }
 
 extension Notes.Business.Service: Notes.Business.IService {
-    func getNotes() async -> Result<[Notes.Business.Model.Note], Notes.Business.Err> {
-        .success(notes.values.sorted())
+    func getNotes() async -> Result<[Note], Err> {
+        switch await self.fetcher.getNotes() {
+            case let .success(notes): .success(
+                notes
+                    .map { Note(from: $0) } 
+                    .sorted()
+            )
+            case let .failure(err): .failure(err)
+        }
     }
     
     func upsert(note: Notes.Business.Model.Note) async -> Result<Void, Notes.Business.Err> {
-        self.notes[note.id] = note
-        return .success(())
+        await self.fetcher.upsert(note: note.asDto)
+
+        // uncomment this to check "Notes.Flow.upsert" result completeness
+//        return .failure(.notImplemented)
     }
     
-    func delete(noteId: Notes.Business.Model.Note.Id) -> Result<Void, Notes.Business.Err> {
-        self.notes.removeValue(forKey: noteId)
-        return .success(())
+    func delete(noteId: Notes.Business.Model.Note.Id) async -> Result<Void, Notes.Business.Err> {
+        await self.fetcher.deletetNote(by: noteId)
     }
 }

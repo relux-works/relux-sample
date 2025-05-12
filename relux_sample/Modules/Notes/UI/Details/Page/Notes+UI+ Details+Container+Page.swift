@@ -86,3 +86,15 @@ extension Notes.UI.Details.Container.Page {
         }.padding()
     }
 }
+
+#Preview {
+    Notes.UI.Details.Container.Page(
+        props: .init(
+            note: .success(.init(id: .init(), createdAt: .now, title: "title", content: "content"))
+        ),
+        actions: .init(
+            onEdit: {_ in
+            }
+        )
+    )
+}

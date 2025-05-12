@@ -54,7 +54,7 @@ extension SampleApp.Registry {
     }
 
     private static func buildReluxLogger() -> Relux.Logger {
-        ReluxLogger()
+        Logger()
     }
 
     private static func buildAppModule() -> SampleApp.Module {

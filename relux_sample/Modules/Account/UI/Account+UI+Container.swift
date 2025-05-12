@@ -23,13 +23,13 @@ extension Account.UI {
 
 extension Account.UI.Container {
     private func openDebug() async {
-        await action {
+        await actions {
             ModalRouter.Action.present(page: .debug)
         }
     }
 
     private func logout() async {
-        await action {
+        await actions {
             Auth.Business.Effect.logout
         }
     }

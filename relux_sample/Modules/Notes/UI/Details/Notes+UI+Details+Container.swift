@@ -46,7 +46,7 @@ extension Notes.UI.Details.Container {
     }
 
     private func openEdit(note: Note) async {
-        await action {
+        await actions {
             AppRouter.Action.push(.app(page: .notes(.edit(note: note))))
         }
     }

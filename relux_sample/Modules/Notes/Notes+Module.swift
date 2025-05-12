@@ -3,20 +3,19 @@ import SwiftIoC
 // relux module with resolved dependencies
 extension Notes {
     struct Module: Relux.Module {
-        private let ioc: IoC = Self.buildIoC()
+        private let ioc: IoC
 
         var states: [any Relux.AnyState]
         var sagas: [any Relux.Saga]
-        
-        init(
 
-        ) async {
+        init() async {
+            self.ioc = Self.buildIoC()
             self.states = [
                 self.ioc.get(by: Notes.Business.State.self)!,
                 await self.ioc.getAsync(by: Notes.UI.State.self)!
             ]
             self.sagas = [
-                self.ioc.get(by: Notes.Business.ISaga.self)!
+                self.ioc.get(by: Notes.Business.IFlow.self)!
             ]
         }
     }
@@ -28,8 +27,9 @@ extension Notes.Module {
 
         ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
         ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
-        ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: buildSvc)
-        ioc.register(Notes.Business.ISaga.self, lifecycle: .container, resolver: { buildSaga(ioc: ioc) })
+        ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { buildSvc(ioc: ioc) })
+        ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { buildFetcher(ioc: ioc) })
+        ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { buildFlow(ioc: ioc) })
 
         return ioc
     }
@@ -44,12 +44,18 @@ extension Notes.Module {
         )
     }
 
-    private static func buildSvc() -> Notes.Business.IService {
-        Notes.Business.Service()
+    private static func buildSvc(ioc: IoC) -> Notes.Business.IService {
+        Notes.Business.Service(
+            fetcher: ioc.get(by: Notes.Data.Api.IFetcher.self)!
+        )
     }
 
-    private static func buildSaga(ioc: IoC) -> Notes.Business.ISaga {
-        Notes.Business.Saga(
+    private static func buildFetcher(ioc: IoC) -> Notes.Data.Api.IFetcher {
+        Notes.Data.Api.Fetcher()
+    }
+
+    private static func buildFlow(ioc: IoC) -> Notes.Business.IFlow {
+        Notes.Business.Flow(
             svc: ioc.get(by: Notes.Business.IService.self)!
         )
     }

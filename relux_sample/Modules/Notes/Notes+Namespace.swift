@@ -1,7 +1,11 @@
 // module structure
-
 enum Notes {
-    enum Data {}
+    enum Data {
+        enum Api {
+            enum DTO {}
+        }
+    }
+
     enum Business {
         enum Model {}
     }

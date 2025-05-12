@@ -29,14 +29,14 @@ extension Auth.Business.Saga: Auth.Business.ISaga {
 
 extension Auth.Business.Saga {
     private func checkAuthContext() async {
-        await action {
+        await actions {
             AppRouter.Action.set([.auth(page: .localAuth)])
         }
     }
 
     private func obtainAvailableBiometryType() async {
         let type = await svc.availableBiometry
-        await action {
+        await actions {
             Auth.Business.Action.obtainAvailableBiometryTypeSucceed(type: type)
         }
     }
@@ -49,7 +49,7 @@ extension Auth.Business.Saga {
                     AppRouter.Action.push(.app(page: .main))
                 }
             case let .failure(err):
-                await action {
+                await actions {
                     Auth.Business.Action.authFailed(err: err)
                 }
         }

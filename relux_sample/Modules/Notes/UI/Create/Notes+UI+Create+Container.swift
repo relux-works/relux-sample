@@ -28,8 +28,14 @@ extension Notes.UI.Create {
 // reactions
 extension Notes.UI.Create.Container {
     private func create(_ note: Note) async {
-        await actions {
-            Notes.Business.Effect.upsert(note: note)
+        switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
+            case .success: await close()
+            case .failure: break
+        }
+    }
+
+    private func close() async {
+        await action {
             AppRouter.Action.removeLast()
         }
     }

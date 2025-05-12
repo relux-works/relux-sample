@@ -38,13 +38,13 @@ extension Notes.UI.List.Container {
     }
 
     private func openCreateNote() async {
-        await action {
+        await actions{
             AppRouter.Action.push(.app(page: .notes(.create)))
         }
     }
 
     private func remove(_ note: Note) async {
-        await action {
+        await actions {
             Notes.Business.Effect.delete(note: note)
         }
     }

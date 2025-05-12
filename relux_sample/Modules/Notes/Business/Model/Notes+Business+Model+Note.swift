@@ -9,6 +9,26 @@ extension Notes.Business.Model {
     }
 }
 
+extension Notes.Business.Model.Note {
+    init(from apiModel: Notes.Data.Api.DTO.Note) {
+        self.id = apiModel.id
+        self.createdAt = apiModel.date
+        self.title = apiModel.title
+        self.content = apiModel.content
+    }
+}
+
+extension Notes.Business.Model.Note {
+    var asDto: Notes.Data.Api.DTO.Note {
+        .init(
+            id: self.id,
+            date: self.createdAt,
+            title: self.title,
+            content: self.content
+        )
+    }
+}
+
 extension Notes.Business.Model.Note: Identifiable {}
 
 extension Notes.Business.Model.Note: Sendable {}

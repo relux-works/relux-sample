@@ -42,7 +42,7 @@ extension Relux {
         }
 
         private func reactOnTap() async {
-            await action {
+            await actions {
                 AppRouter.Action.push(page)
             }
             await onNavigated?()

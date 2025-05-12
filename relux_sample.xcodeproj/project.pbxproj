@@ -11,6 +11,7 @@
 		701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CD2D9352FB00BC99C2 /* SwiftUIRelux */; };
 		70714CBA2DB904A10056E0F3 /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70714CB92DB904A10056E0F3 /* FoundationPlus */; };
 		70714CBD2DB905F40056E0F3 /* FoundationPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70714CBC2DB905F40056E0F3 /* FoundationPlus */; };
+		70A39F1F2DBAB02600112F5E /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A39F1E2DBAB02600112F5E /* Relux */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604062D8EF55300BE2349 /* Logger in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604052D8EF55300BE2349 /* Logger */; };
 		70A604BB2D8F401600BE2349 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
@@ -74,6 +75,7 @@
 				701F04CB2D93062700BC99C2 /* Relux in Frameworks */,
 				70A604CF2D916C1F00BE2349 /* SwiftUIPlus in Frameworks */,
 				70A604BB2D8F401600BE2349 /* Relux in Frameworks */,
+				70A39F1F2DBAB02600112F5E /* Relux in Frameworks */,
 				701F04CE2D9352FB00BC99C2 /* SwiftUIRelux in Frameworks */,
 				70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */,
 				70714CBD2DB905F40056E0F3 /* FoundationPlus in Frameworks */,
@@ -159,6 +161,7 @@
 				70B138BD2DA9569E003ADE2C /* Algorithms */,
 				70714CB92DB904A10056E0F3 /* FoundationPlus */,
 				70714CBC2DB905F40056E0F3 /* FoundationPlus */,
+				70A39F1E2DBAB02600112F5E /* Relux */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -656,7 +659,7 @@
 			repositoryURL = "https://github.com/ivalx1s/swiftui-relux.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 6.1.0;
+				minimumVersion = 6.2.0;
 			};
 		};
 		70714CBB2DB905F40056E0F3 /* XCRemoteSwiftPackageReference "darwin-foundationplus" */ = {
@@ -727,6 +730,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 70714CBB2DB905F40056E0F3 /* XCRemoteSwiftPackageReference "darwin-foundationplus" */;
 			productName = FoundationPlus;
+		};
+		70A39F1E2DBAB02600112F5E /* Relux */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Relux;
 		};
 		70A603E62D8ED02000BE2349 /* SwiftIoC */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -3,10 +3,10 @@ import Logger
 import Foundation
 
 // relux logger implementation based on OS.log
-struct ReluxLogger: Relux.Logger {
-    @_transparent
+struct Logger: Relux.Logger {
     func logAction(
         _ action: any Relux.EnumReflectable,
+        result: Relux.ActionResult?,
         startTimeInMillis: Int,
         privacy: Relux.OSLogPrivacy,
         fileID: String = #fileID,
@@ -14,21 +14,19 @@ struct ReluxLogger: Relux.Logger {
         lineNumber: Int = #line
     ) {
         let execDurationMillis = Int(Date.now.timeIntervalSince1970 * 1000) - startTimeInMillis
-        let sender = "\(action.caseName) \(action.associatedValues); execution duration: \(execDurationMillis)ms"
-        log(sender, category: .relux, fileID: fileID, functionName: functionName, lineNumber: lineNumber)
+        let sender = "\(action.caseName) \(action.associatedValues);"
+        let duration = "execution duration: \(execDurationMillis)ms"
+        let msg = [sender, duration, result?.description].compactMap { $0 }.joined(separator: "\n")
+        os.Logger.relux.log(level: .debug, "\(msg, align: .left(columns: 30), privacy: .private)")
     }
+}
 
-    @_transparent
-    func logAction(
-        _ action: any Relux.EnumReflectable,
-        text: String,
-        privacy: Relux.OSLogPrivacy,
-        fileID: String = #fileID,
-        functionName: String = #function,
-        lineNumber: Int = #line
-    ) {
-        let sender = "\(action.caseName) \(action.associatedValues)"
-        log("\(text) \(sender)", category: .relux, fileID: fileID, functionName: functionName, lineNumber: lineNumber)
+extension Relux.ActionResult {
+    var description: String? {
+        switch self {
+            case let .success(payload): "success: \(payload)"
+            case let .failure(err): "failure: \(err)"
+        }
     }
 }
 
