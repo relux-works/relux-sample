@@ -6,9 +6,16 @@ func log(_ msg: String) {
     Logger.log(msg)
 }
 
+func log(_ err: Error) {
+    Logger.log(err)
+}
+
 struct Logger {
     static func log(_ msg: String) {
         os.Logger.info.log(level: .debug, "\(msg, align: .left(columns: 30), privacy: .private)")
+    }
+    static func log(_ err: Error) {
+        os.Logger.err.log(level: .error, "\("\(err)", align: .left(columns: 30), privacy: .private)")
     }
 }
 
@@ -27,7 +34,14 @@ extension Logger: Relux.Logger {
         let sender = "\(action.caseName) \(action.associatedValues);"
         let duration = "execution duration: \(execDurationMillis)ms"
         let msg = [sender, duration, result?.description].compactMap { $0 }.joined(separator: "\n")
-        os.Logger.relux.log(level: .debug, "\(msg, align: .left(columns: 30), privacy: .private)")
+
+        let (logger, type): (os.Logger, OSLogType) = switch result {
+            case .none: (os.Logger.relux, .debug)
+            case .success: (os.Logger.relux, .debug)
+            case .failure: (os.Logger.reluxErr, .error)
+        }
+
+        logger.log(level: type, "\(msg, align: .left(columns: 30), privacy: .private)")
     }
 }
 
@@ -44,6 +58,8 @@ extension os.Logger {
     static var host: String { Bundle.main.bundleIdentifier! }
 
     static let relux = os.Logger(subsystem: host, category: "🔁 Relux")
+    static let reluxErr = os.Logger(subsystem: host, category: "🔁❗️ Relux Err")
     static let info = os.Logger(subsystem: host, category: "ℹ️ Info")
+    static let err = os.Logger(subsystem: host, category: "❗️ Err")
 }
 
