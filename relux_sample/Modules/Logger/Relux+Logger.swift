@@ -1,9 +1,19 @@
 import Relux
-import Logger
 import Foundation
+import os.log
+
+func log(_ msg: String) {
+    Logger.log(msg)
+}
+
+struct Logger {
+    static func log(_ msg: String) {
+        os.Logger.info.log(level: .debug, "\(msg, align: .left(columns: 30), privacy: .private)")
+    }
+}
 
 // relux logger implementation based on OS.log
-struct Logger: Relux.Logger {
+extension Logger: Relux.Logger {
     func logAction(
         _ action: any Relux.EnumReflectable,
         result: Relux.ActionResult?,
@@ -31,5 +41,9 @@ extension Relux.ActionResult {
 }
 
 extension os.Logger {
+    static var host: String { Bundle.main.bundleIdentifier! }
+
     static let relux = os.Logger(subsystem: host, category: "🔁 Relux")
+    static let info = os.Logger(subsystem: host, category: "ℹ️ Info")
 }
+

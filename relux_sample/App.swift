@@ -1,6 +1,5 @@
 @_exported import Algorithms
 @_exported import FoundationPlus
-@_exported import Logger
 @_exported import Relux
 @_exported import ReluxRouter
 @_exported import SwiftPlus
