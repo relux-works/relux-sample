@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftUIRelux
+import Logging
 
 @main
 struct SampleApp: App {

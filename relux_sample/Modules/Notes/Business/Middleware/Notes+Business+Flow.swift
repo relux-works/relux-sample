@@ -1,6 +1,7 @@
 // Relux Flow it's an entity which returns a specific Result
 // to define has the flow completed successfully or failed
 // during the all effects hierarchy
+
 extension Notes.Business {
     protocol IFlow: Relux.Flow {}
 }
@@ -8,12 +9,24 @@ extension Notes.Business {
 extension Notes.Business {
     actor Flow {
         private typealias Model = Notes.Business.Model
+        let dispatcher: Relux.Dispatcher
         private let svc: Notes.Business.IService
 
         init(
+            dispatcher: Relux.Dispatcher,
             svc: Notes.Business.IService
         ) {
+            self.dispatcher = dispatcher
             self.svc = svc
+        }
+
+        init(
+            svc: Notes.Business.IService
+        ) async {
+            self.init(
+                dispatcher: await Self.defaultDispatcher,
+                svc: svc
+            )
         }
     }
 }
@@ -38,12 +51,14 @@ extension Notes.Business.Flow {
                 await actions {
                     Notes.Business.Action.obtainNotesSuccess(notes: notes)
                 }
+                return .success
             case let .failure(err):
                 // await for result
                 await actions(.concurrently) {
                     Notes.Business.Action.obtainNotesFail(err: err)
                     ErrorHandling.Business.Effect.track(error: err)
                 }
+                return .success
         }
     }
 

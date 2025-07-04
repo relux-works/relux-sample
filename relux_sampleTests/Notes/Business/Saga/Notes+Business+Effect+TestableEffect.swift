@@ -15,13 +15,3 @@ extension Notes.Business.Effect {
         .notImplemented()
     }
 }
-
-extension Relux.Testing.MockModule {
-    func getEffect(_ effect: Notes.Business.Effect) async -> Notes.Business.Effect? {
-        await self
-            .effectsLogger
-            .effects
-            .compactMap { $0 as? Notes.Business.Effect }
-            .first { $0.asTestableEffect == effect.asTestableEffect }
-    }
-}

@@ -28,13 +28,3 @@ extension Notes.Business.Action {
         }
     }
 }
-
-extension Relux.Testing.MockModule {
-    func getAction(_ action: Notes.Business.Action) async -> Notes.Business.Action? {
-        await self
-            .actionsLogger
-            .actions
-            .compactMap { $0 as? Notes.Business.Action }
-            .first { $0.asTestableAction == action.asTestableAction }
-    }
-}

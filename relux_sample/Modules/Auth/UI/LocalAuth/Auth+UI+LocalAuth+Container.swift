@@ -23,6 +23,10 @@ extension Auth.UI.LocalAuth {
 
 extension Auth.UI.LocalAuth.Container {
     private func tryLocalAuth() async {
+        performAsync {
+            Auth.Business.Effect.authorizeWithBiometry
+
+        }
         await actions {
             Auth.Business.Effect.authorizeWithBiometry
         }

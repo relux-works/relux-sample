@@ -10,12 +10,13 @@ extension Notes {
 
         init() async {
             self.ioc = Self.buildIoC()
+
             self.states = [
                 self.ioc.get(by: Notes.Business.State.self)!,
                 await self.ioc.getAsync(by: Notes.UI.State.self)!
             ]
             self.sagas = [
-                self.ioc.get(by: Notes.Business.IFlow.self)!
+                await self.ioc.getAsync(by: Notes.Business.IFlow.self)!
             ]
         }
     }
@@ -29,7 +30,7 @@ extension Notes.Module {
         ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
         ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { buildSvc(ioc: ioc) })
         ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { buildFetcher(ioc: ioc) })
-        ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { buildFlow(ioc: ioc) })
+        ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { await buildFlow(ioc: ioc) })
 
         return ioc
     }
@@ -54,8 +55,8 @@ extension Notes.Module {
         Notes.Data.Api.Fetcher()
     }
 
-    private static func buildFlow(ioc: IoC) -> Notes.Business.IFlow {
-        Notes.Business.Flow(
+    private static func buildFlow(ioc: IoC) async -> Notes.Business.IFlow {
+        await Notes.Business.Flow(
             svc: ioc.get(by: Notes.Business.IService.self)!
         )
     }
