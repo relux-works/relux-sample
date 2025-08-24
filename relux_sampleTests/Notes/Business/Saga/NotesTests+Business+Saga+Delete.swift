@@ -3,6 +3,7 @@ import Testing
 
 extension NotesTests.Business.Saga {
     struct Delete {
+
         @Test func deleteNote_Success() async throws {
                 // Arrange
             let logger = Relux.Testing.Logger()

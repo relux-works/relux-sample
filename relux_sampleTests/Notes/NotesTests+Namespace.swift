@@ -5,7 +5,7 @@ import Testing
 struct NotesTests {
     @Suite
     struct Business {
-        @Suite(.serialized)
+        @Suite
         struct Saga { }
 
         @Suite

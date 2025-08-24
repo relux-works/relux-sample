@@ -7,28 +7,22 @@ extension Notes.Business {
 }
 
 extension Notes.Business {
+
     actor Flow {
         private typealias Model = Notes.Business.Model
         let dispatcher: Relux.Dispatcher
         private let svc: Notes.Business.IService
 
         init(
-            dispatcher: Relux.Dispatcher,
-            svc: Notes.Business.IService
-        ) {
-            self.dispatcher = dispatcher
-            self.svc = svc
-        }
-
-        init(
+            dispatcher: Relux.Dispatcher? = .none,
             svc: Notes.Business.IService
         ) async {
-            self.init(
-                dispatcher: await Self.defaultDispatcher,
-                svc: svc
-            )
+            let defaultDispatcher =  await Self.defaultDispatcher
+            self.dispatcher = dispatcher ?? defaultDispatcher
+            self.svc = svc
         }
     }
+
 }
 
 extension Notes.Business.Flow: Notes.Business.IFlow {
