@@ -159,23 +159,23 @@ Tests are provided for the Relux architecture and business logic.
 ```swift
 // Example test for Notes.Business.Saga
 @Test func obtainNotes_Success() async throws {
-    // Arrange
-    let reluxLogger = await Relux.Testing.MockModule<Action, Effect, SuccessPhantom>()
-    await SampleApp.relux.register(reluxLogger)
+        // Arrange
+    let logger = Relux.Testing.Logger()
+    let dispatcher = Relux.Dispatcher(logger: logger)
 
     let service = NotesTests.Business.ServiceMock()
-    let saga = Notes.Business.Saga(svc: service)
+    let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
 
-    // Act
-    await saga.apply(Effect.obtainNotes)
+    let note = Model.Note.stubRandom()
+    service.deleteNotesHandler = { _ in .success(()) }
 
-    // Assert
-    let successAction = await reluxLogger.getAction(Action.obtainNotesSuccess(notes: notes))
+        // Act
+    _ = await flow.apply(Effect.delete(note: note))
+
+        // Assert
+    let successAction = logger.getAction(Action.deleteNoteSuccess(note: note))
     #expect(successAction.isNotNil)
-    #expect(service.obtainNotesCallCount == 1)
-
-    // Teardown
-    await SampleApp.relux.unregister(reluxLogger)
+    #expect(service.deleteNotesCallCount == 1)
 }
 ```
 
