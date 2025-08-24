@@ -10,7 +10,7 @@ extension NotesTests.Business.Saga {
             let dispatcher = Relux.Dispatcher(logger: logger)
 
             let service = NotesTests.Business.ServiceMock()
-            let flow =  Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+            let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
 
             let note = Model.Note.stubRandom()
             service.deleteNotesHandler = { _ in .success(()) }
@@ -30,7 +30,7 @@ extension NotesTests.Business.Saga {
             let dispatcher = Relux.Dispatcher(logger: logger)
 
             let service = NotesTests.Business.ServiceMock()
-            let flow =  Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+            let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
 
             let note = Model.Note.stubRandom()
             let err: Err = .deleteFailed(noteId: note.id, cause: StubErr())

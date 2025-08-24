@@ -9,7 +9,7 @@ extension NotesTests.Business.Saga {
             let dispatcher = Relux.Dispatcher(logger: logger)
 
             let service = NotesTests.Business.ServiceMock()
-            let flow = Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+            let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
 
             let note = Model.Note.stubRandom()
             service.upsertNotesHandler = { _ in .success(()) }
@@ -28,7 +28,7 @@ extension NotesTests.Business.Saga {
             let logger = Relux.Testing.Logger()
             let dispatcher = Relux.Dispatcher(logger: logger)
             let service = NotesTests.Business.ServiceMock()
-            let flow = Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+            let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
 
             let note = Model.Note.stubRandom()
             let err: Err = .upsertFailed(note: note, cause: StubErr())
