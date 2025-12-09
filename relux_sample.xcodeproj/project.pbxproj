@@ -21,6 +21,7 @@
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
 		AA5CB2AF2EE8CB8B0077BFF8 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2AE2EE8CB8B0077BFF8 /* Auth */; };
 		AA5CB2B12EE8CB8B0077BFF8 /* AuthImplementation in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B02EE8CB8B0077BFF8 /* AuthImplementation */; };
+		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2B22EE8CB900077BFF8 /* Auth in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2AE2EE8CB8B0077BFF8 /* Auth */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2B42EE8CB910077BFF8 /* AuthImplementation in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B02EE8CB8B0077BFF8 /* AuthImplementation */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -95,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +188,7 @@
 			);
 			name = relux_sampleTests;
 			packageProductDependencies = (
+				70A604BA2D8F401600BE2349 /* Relux */,
 			);
 			productName = relux_sampleTests;
 			productReference = 70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */;
