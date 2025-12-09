@@ -22,12 +22,12 @@ extension View {
 extension Relux {
     struct NavigationLink<Content: View>: View {
         private let page: AppPage
-        private let onNavigated: (() async -> ())?
+        private let onNavigated: (@Sendable () async -> ())?
         @ViewBuilder private let content: () -> Content
 
         init(
             page: AppPage,
-            onNavigated: (() async -> ())? = nil,
+            onNavigated: (@Sendable () async -> ())? = nil,
             @ViewBuilder content: @escaping () -> Content
         ) {
             self.page = page
@@ -36,16 +36,24 @@ extension Relux {
         }
 
         var body: some View {
-            AsyncButton(action: reactOnTap) {
+            AsyncButton(action: Self.buildAction(page: page, onNavigated: onNavigated)) {
                 content()
             }
         }
 
-        private func reactOnTap() async {
-            await actions {
-                AppRouter.Action.push(page)
+        /// Make the button action @Sendable and detach it from the
+        /// view's generic type to silence strict-concurrency checks
+        /// about capturing `Content.Type` in an isolated closure.
+        private static func buildAction(
+            page: AppPage,
+            onNavigated: (@Sendable () async -> ())?
+        ) -> @Sendable () async -> Void {
+            { @Sendable in
+                await actions {
+                    AppRouter.Action.push(page)
+                }
+                await onNavigated?()
             }
-            await onNavigated?()
         }
     }
 }
