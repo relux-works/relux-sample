@@ -1,3 +1,7 @@
+import Auth
+import AuthAPI
+import AuthUI
+import AuthUIAPI
 import SwiftIoC
 
 extension SampleApp {
@@ -18,6 +22,9 @@ extension SampleApp.Registry {
         ioc.register(Relux.Store.self, lifecycle: .container, resolver: Self.buildReluxStore)
         ioc.register(Relux.RootSaga.self, lifecycle: .container, resolver: Self.buildReluxRootSaga)
         ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
+
+        ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: Self.buildAuthRouter)
+        ioc.register(AuthUIProviding.self, lifecycle: .container, resolver: Self.buildAuthUIRouter)
 
         ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
         ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
@@ -72,11 +79,21 @@ extension SampleApp.Registry {
     }
 
     private static func buildAuthModule() -> Auth.Module {
-        Auth.Module()
+        Auth.Module(
+            router: resolve(Auth.Business.IRouter.self)
+        )
     }
 
     private static func buildNotesModule() async -> Notes.Module {
         await Notes.Module()
+    }
+
+    private static func buildAuthRouter() -> Auth.Business.IRouter {
+        AuthRouterAdapter()
+    }
+
+    private static func buildAuthUIRouter() -> any AuthUIProviding {
+        AuthUIRouter()
     }
 }
 

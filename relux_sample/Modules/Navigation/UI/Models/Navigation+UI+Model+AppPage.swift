@@ -1,3 +1,4 @@
+import AuthAPI
 import ReluxRouter
 
 extension Navigation.UI.Model {
@@ -7,4 +8,3 @@ extension Navigation.UI.Model {
         case app(page: SampleApp.UI.Main.Model.Page = .main)
     }
 }
-
