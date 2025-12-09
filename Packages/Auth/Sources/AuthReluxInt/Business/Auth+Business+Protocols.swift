@@ -1,4 +1,4 @@
-import LocalAuthentication
+import AuthModels
 import Relux
 
 extension Auth.Business {

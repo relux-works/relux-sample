@@ -1,4 +1,4 @@
-import Auth
+import AuthReluxInt
 import SwiftUI
 import SwiftUIRelux
 

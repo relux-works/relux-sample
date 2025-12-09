@@ -1,4 +1,4 @@
-import Auth
+import AuthReluxInt
 import Relux
 
 struct AuthRouterAdapter: Auth.Business.IRouter {

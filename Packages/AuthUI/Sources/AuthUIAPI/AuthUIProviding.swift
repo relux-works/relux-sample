@@ -1,4 +1,5 @@
-import Auth
+import AuthModels
+import AuthReluxInt
 import SwiftUI
 
 public protocol AuthUIProviding: Sendable {

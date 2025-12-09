@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -19,14 +19,15 @@ let package = Package(
         .target(
             name: "AuthUIAPI",
             dependencies: [
-                .product(name: "Auth", package: "Auth")
+                .product(name: "AuthModels", package: "Auth"),
+                .product(name: "AuthReluxInt", package: "Auth")
             ]
         ),
         .target(
             name: "AuthUI",
             dependencies: [
                 "AuthUIAPI",
-                .product(name: "Auth", package: "Auth"),
+                .product(name: "AuthReluxInt", package: "Auth"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux")
             ]
         )

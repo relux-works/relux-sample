@@ -1,6 +1,7 @@
-import Auth
-import AuthServiceInterface
-import AuthServiceImplementation
+import AuthModels
+import AuthReluxInt
+import AuthServiceInt
+import AuthServiceImpl
 import Relux
 import SwiftIoC
 

@@ -1,6 +1,6 @@
 @preconcurrency import LocalAuthentication
-import Auth
-import AuthServiceInterface
+import AuthModels
+import AuthServiceInt
 
 extension Auth.Business {
     public actor Service {

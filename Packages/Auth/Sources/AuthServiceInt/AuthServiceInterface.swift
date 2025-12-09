@@ -1,4 +1,4 @@
-import Auth
+import AuthModels
 import LocalAuthentication
 
 extension Auth.Business {

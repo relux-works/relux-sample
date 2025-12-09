@@ -2,7 +2,8 @@
 @_exported import ReluxRouter
 @_exported import SwiftUIRelux
 
-import Auth
+import AuthModels
+import AuthReluxInt
 import SwiftUI
 import SwiftUIRelux
 import Logging
