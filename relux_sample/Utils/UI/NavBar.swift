@@ -25,15 +25,17 @@ public struct NavBar<Middle: View, Leading: View, Trailing: View>: View {
         self.alignment = alignment
     }
 
-    #warning("using zstack impacts layers")
-    // e.g. middle content draws on top of leading
-    // which is not obvious from point of use
-    // may need another logic or zIndex priority exposed in api
     public var body: some View {
         ZStack(alignment: alignment) {
-            HStack(spacing: 0) { leading(); Spacer(minLength: 0);}
-            HStack(spacing: 0) { middle();}
-            HStack(spacing: 0) { Spacer(minLength: 0); trailing();}
+            // keep leading / trailing above middle so buttons stay tappable
+            HStack(spacing: 0) { leading(); Spacer(minLength: 0) }
+                .zIndex(1)
+
+            HStack(spacing: 0) { middle() }
+                .zIndex(0)
+
+            HStack(spacing: 0) { Spacer(minLength: 0); trailing() }
+                .zIndex(1)
         }
     }
 }
