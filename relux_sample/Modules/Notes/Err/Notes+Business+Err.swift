@@ -1,5 +1,5 @@
 extension Notes.Business {
-    enum Err: Error {
+    enum Err: Error, Sendable {
         case notImplemented
         case obtainFailed(cause: Error)
         case upsertFailed(note: Model.Note, cause: Error)
