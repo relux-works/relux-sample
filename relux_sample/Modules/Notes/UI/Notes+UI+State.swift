@@ -1,3 +1,4 @@
+
 extension Notes.UI {
     final class State: ObservableObject, Relux.UIState {
         typealias Note = Notes.Business.Model.Note
