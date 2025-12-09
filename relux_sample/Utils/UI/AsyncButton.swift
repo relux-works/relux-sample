@@ -79,7 +79,7 @@ public extension AsyncButton {
         actionPriority: TaskPriority? = nil,
         actionOptions: Set<ActionOption> = [ActionOption.disableButton],
         role: ButtonRole? = .none,
-        action: Relux.UI.ViewCallback,
+        action: Relux.UI.ViewCallback<Void>,
         @ViewBuilder label: @escaping () -> Label
     ) {
         self.actionPriority = actionPriority

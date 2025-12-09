@@ -8,6 +8,6 @@ extension Notes.UI.Edit.Container.Page {
 
     struct Actions: ViewCallbacks, Equatable {
         let onSave: ViewInputCallback<Note>
-        let onRemove: ViewCallback
+        let onRemove: ViewCallback<Void>
     }
 }

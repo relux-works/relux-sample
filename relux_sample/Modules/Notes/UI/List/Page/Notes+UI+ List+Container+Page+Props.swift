@@ -7,8 +7,8 @@ extension Notes.UI.List.Container.Page {
     }
 
     struct Actions: ViewCallbacks, Equatable {
-        let onReload: ViewCallback
-        let onCreate: ViewCallback
+        let onReload: ViewCallback<Void>
+        let onCreate: ViewCallback<Void>
         let onRemove: ViewInputCallback<Note>
     }
 }

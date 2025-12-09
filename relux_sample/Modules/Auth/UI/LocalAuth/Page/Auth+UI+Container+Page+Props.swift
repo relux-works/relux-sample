@@ -6,6 +6,6 @@ extension Auth.UI.LocalAuth.Container.Page {
     }
 
     struct Actions: ViewCallbacks, Equatable {
-        let onTryLocalAuth: ViewCallback
+        let onTryLocalAuth: ViewCallback<Void>
     }
 }

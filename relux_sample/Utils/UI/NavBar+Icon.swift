@@ -9,7 +9,7 @@ enum NavBarBtn {
     }
     
     @MainActor
-    static func iconBtn(systemName: String, action: Relux.UI.ViewCallback) -> some View {
+    static func iconBtn(systemName: String, action: Relux.UI.ViewCallback<Void>) -> some View {
         AsyncButton(action: action) {
             Image(systemName: systemName)
         }
