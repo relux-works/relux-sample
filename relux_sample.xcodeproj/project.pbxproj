@@ -21,6 +21,8 @@
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
 		AA5CB2AF2EE8CB8B0077BFF8 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2AE2EE8CB8B0077BFF8 /* Auth */; };
 		AA5CB2B12EE8CB8B0077BFF8 /* AuthImplementation in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B02EE8CB8B0077BFF8 /* AuthImplementation */; };
+		AA5CB2BC2EE8D7F60077BFF8 /* AuthServiceInterface in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B52EE8D5AF0077BFF8 /* AuthServiceInterface */; };
+		AA5CB2BD2EE8D7F60077BFF8 /* AuthServiceImplementation in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B72EE8D5BF0077BFF8 /* AuthServiceImplementation */; };
 		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2B22EE8CB900077BFF8 /* Auth in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2AE2EE8CB8B0077BFF8 /* Auth */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2B42EE8CB910077BFF8 /* AuthImplementation in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2B02EE8CB8B0077BFF8 /* AuthImplementation */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -45,6 +47,8 @@
 			files = (
 				AA5CB2B42EE8CB910077BFF8 /* AuthImplementation in Embed Frameworks */,
 				AA5CB2B22EE8CB900077BFF8 /* Auth in Embed Frameworks */,
+				AA5CB2BA2EE8D5D00077BFF8 /* AuthServiceInterface in Embed Frameworks */,
+				AA5CB2BB2EE8D5D50077BFF8 /* AuthServiceImplementation in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +88,8 @@
 				704F5C342E168CBD00FCAE62 /* Relux in Frameworks */,
 				AA5CB2AF2EE8CB8B0077BFF8 /* Auth in Frameworks */,
 				AA5CB2B12EE8CB8B0077BFF8 /* AuthImplementation in Frameworks */,
+				AA5CB2BC2EE8D7F60077BFF8 /* AuthServiceInterface in Frameworks */,
+				AA5CB2BD2EE8D7F60077BFF8 /* AuthServiceImplementation in Frameworks */,
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
 				70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */,
@@ -97,6 +103,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */,
+				AA5CB2BC2EE8D7F60077BFF8 /* AuthServiceInterface in Frameworks */,
+				AA5CB2BD2EE8D7F60077BFF8 /* AuthServiceImplementation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,6 +173,8 @@
 				70E0BEEF2E00000100000014 /* AuthUI */,
 				AA5CB2AE2EE8CB8B0077BFF8 /* Auth */,
 				AA5CB2B02EE8CB8B0077BFF8 /* AuthImplementation */,
+				AA5CB2B52EE8D5AF0077BFF8 /* AuthServiceInterface */,
+				AA5CB2B72EE8D5BF0077BFF8 /* AuthServiceImplementation */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -658,6 +668,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */;
 			productName = AuthUI;
+		};
+		AA5CB2B52EE8D5AF0077BFF8 /* AuthServiceInterface */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthServiceInterface;
+		};
+		AA5CB2B72EE8D5BF0077BFF8 /* AuthServiceImplementation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthServiceImplementation;
 		};
 		AA5CB2AE2EE8CB8B0077BFF8 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;

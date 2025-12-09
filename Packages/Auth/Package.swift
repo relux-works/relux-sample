@@ -17,6 +17,16 @@ let package = Package(
             name: "AuthImplementation",
             type: .dynamic,
             targets: ["AuthImplementation"]
+        ),
+        .library(
+            name: "AuthServiceInterface",
+            type: .dynamic,
+            targets: ["AuthServiceInterface"]
+        ),
+        .library(
+            name: "AuthServiceImplementation",
+            type: .dynamic,
+            targets: ["AuthServiceImplementation"]
         )
     ],
     dependencies: [
@@ -38,6 +48,19 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "AuthServiceInterface",
+            dependencies: [
+                .product(name: "Auth", package: "Auth-Self"),
+            ]
+        ),
+        .target(
+            name: "AuthServiceImplementation",
+            dependencies: [
+                .product(name: "Auth", package: "Auth-Self"),
+                .product(name: "AuthServiceInterface", package: "Auth-Self"),
+            ]
+        ),
+        .target(
             name: "Auth",
             dependencies: [
                 .product(name: "Relux", package: "darwin-relux"),
@@ -47,6 +70,8 @@ let package = Package(
             name: "AuthImplementation",
             dependencies: [
                 .product(name: "Auth", package: "Auth-Self"),
+                .product(name: "AuthServiceInterface", package: "Auth-Self"),
+                .product(name: "AuthServiceImplementation", package: "Auth-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "darwin-relux"),
             ]

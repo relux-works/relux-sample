@@ -1,4 +1,5 @@
 import Auth
+import AuthServiceInterface
 import Relux
 
 extension Auth.Business {
