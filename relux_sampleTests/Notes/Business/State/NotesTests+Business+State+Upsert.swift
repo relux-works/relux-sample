@@ -1,5 +1,5 @@
 import Testing
-import Testing
+import Relux
 @testable import relux_sample
 
 extension NotesTests.Business.State {

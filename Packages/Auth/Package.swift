@@ -8,10 +8,19 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .library(name: "Auth", targets: ["Auth"]),
-        .library(name: "AuthImplementation", targets: ["AuthImplementation"])
+        .library(
+            name: "Auth",
+            type: .dynamic,
+            targets: ["Auth"]
+        ),
+        .library(
+            name: "AuthImplementation",
+            type: .dynamic,
+            targets: ["AuthImplementation"]
+        )
     ],
     dependencies: [
+        .package(name: "Auth-Self", path: "."),
         .package(url: "https://github.com/ivalx1s/swift-ioc.git", from: "1.0.1"),
         .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
     ],
@@ -25,7 +34,7 @@ let package = Package(
         .target(
             name: "AuthImplementation",
             dependencies: [
-                "Auth",
+                .product(name: "Auth", package: "Auth-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "darwin-relux"),
             ]
