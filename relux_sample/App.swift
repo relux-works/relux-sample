@@ -3,7 +3,6 @@
 @_exported import Relux
 @_exported import ReluxRouter
 @_exported import SwiftPlus
-@_exported import SwiftUIPlus
 @_exported import SwiftUIRelux
 
 import SwiftUI
