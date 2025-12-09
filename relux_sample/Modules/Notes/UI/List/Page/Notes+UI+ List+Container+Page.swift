@@ -23,7 +23,7 @@ extension Notes.UI.List.Container {
 // header
 extension Notes.UI.List.Container.Page {
     private var createBtn: some View {
-        NavBar.iconBtn(
+        NavBarBtn.iconBtn(
             systemName: "plus",
             action: actions.onCreate
         )

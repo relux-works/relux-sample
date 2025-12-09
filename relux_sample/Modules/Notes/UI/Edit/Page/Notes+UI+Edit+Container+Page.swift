@@ -29,7 +29,7 @@ extension Notes.UI.Edit.Container {
 // header
 extension Notes.UI.Edit.Container.Page {
     private var removeBtn: some View {
-        NavBar.iconBtn(
+        NavBarBtn.iconBtn(
             systemName: "trash",
             action: actions.onRemove
         )

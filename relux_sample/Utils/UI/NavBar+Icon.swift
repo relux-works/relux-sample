@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum NavBar {
+enum NavBarBtn {
     @MainActor
     static func iconBtn(systemName: String, action: @escaping @Sendable () async -> Void) -> some View {
         AsyncButton(action: action) {

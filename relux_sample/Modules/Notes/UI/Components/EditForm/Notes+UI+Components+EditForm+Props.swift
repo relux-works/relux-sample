@@ -1,5 +1,7 @@
+import SwiftUI
+
 extension Notes.UI.Component.EditForm {
-    struct Props {
+    struct Props: DynamicProperty {
         let title: String
         @Binding var note: Note
     }

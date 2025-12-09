@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CB2D9169E300BE2349 /* SwiftUIRelux */; };
-		7023D0E02DD23EDA000A3E51 /* SwiftUIPlus in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CE2D916C1F00BE2349 /* SwiftUIPlus */; };
 		704F5C342E168CBD00FCAE62 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C332E168CBD00FCAE62 /* Relux */; };
 		704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C362E168D3500FCAE62 /* SwiftUIRelux */; };
 		704F64052E17D3F500FCAE62 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F64042E17D3F500FCAE62 /* SwiftUIRelux */; };
@@ -73,7 +72,6 @@
 				704F64052E17D3F500FCAE62 /* SwiftUIRelux in Frameworks */,
 				70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */,
 				704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */,
-				7023D0E02DD23EDA000A3E51 /* SwiftUIPlus in Frameworks */,
 				7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */,
 				70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */,
 				704F5C342E168CBD00FCAE62 /* Relux in Frameworks */,
@@ -153,7 +151,6 @@
 				70A604BA2D8F401600BE2349 /* Relux */,
 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
-				70A604CE2D916C1F00BE2349 /* SwiftUIPlus */,
 				701F04CA2D93062700BC99C2 /* Relux */,
 				70B138BA2DA9567B003ADE2C /* SwiftPlus */,
 				70B138BD2DA9569E003ADE2C /* Algorithms */,
@@ -247,7 +244,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */,
-				70A604CD2D916C1F00BE2349 /* XCRemoteSwiftPackageReference "swiftui-plus" */,
 				70B138B92DA9567B003ADE2C /* XCRemoteSwiftPackageReference "swift-stdlibplus" */,
 				70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */,
 				70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */,
@@ -687,14 +683,6 @@
 				minimumVersion = 1.0.1;
 			};
 		};
-		70A604CD2D916C1F00BE2349 /* XCRemoteSwiftPackageReference "swiftui-plus" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ivalx1s/swiftui-plus.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.2;
-			};
-		};
 		70B138B92DA9567B003ADE2C /* XCRemoteSwiftPackageReference "swift-stdlibplus" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ivalx1s/swift-stdlibplus.git";
@@ -756,11 +744,6 @@
 		70A604CB2D9169E300BE2349 /* SwiftUIRelux */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftUIRelux;
-		};
-		70A604CE2D916C1F00BE2349 /* SwiftUIPlus */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70A604CD2D916C1F00BE2349 /* XCRemoteSwiftPackageReference "swiftui-plus" */;
-			productName = SwiftUIPlus;
 		};
 		70B138BA2DA9567B003ADE2C /* SwiftPlus */ = {
 			isa = XCSwiftPackageProductDependency;

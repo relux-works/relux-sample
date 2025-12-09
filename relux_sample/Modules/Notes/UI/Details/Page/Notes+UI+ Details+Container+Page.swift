@@ -30,7 +30,7 @@ extension Notes.UI.Details.Container.Page {
 
     @ViewBuilder
     private func editBtn(for note: Note) -> some View {
-        NavBar.iconBtn(systemName: "square.and.pencil") {
+        NavBarBtn.iconBtn(systemName: "square.and.pencil") {
             await actions.onEdit(note)
         }
     }

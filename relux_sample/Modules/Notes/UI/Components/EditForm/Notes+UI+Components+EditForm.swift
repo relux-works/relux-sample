@@ -1,4 +1,4 @@
-
+import SwiftUI
 
 extension Notes.UI.Component {
     struct EditForm: View {
