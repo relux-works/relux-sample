@@ -1,3 +1,5 @@
+import Algorithms
+
 extension Notes.Data.Api {
     protocol IFetcher: Sendable {
         typealias Err = Notes.Business.Err

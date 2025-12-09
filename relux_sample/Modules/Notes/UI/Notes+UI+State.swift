@@ -1,3 +1,4 @@
+import Algorithms
 
 extension Notes.UI {
     final class State: ObservableObject, Relux.UIState {
