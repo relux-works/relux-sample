@@ -1,4 +1,4 @@
-import AuthAPI
+import Auth
 import ReluxRouter
 
 extension Navigation.UI.Model {

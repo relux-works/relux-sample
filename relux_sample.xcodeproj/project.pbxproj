@@ -17,8 +17,8 @@
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
 		70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BD2DA9569E003ADE2C /* Algorithms */; };
-		70E0BEEF2E00000100000021 /* AuthAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000011 /* AuthAPI */; };
-		70E0BEEF2E00000100000022 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000012 /* Auth */; };
+		70E0BEEF2E00000100000021 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000011 /* Auth */; };
+		70E0BEEF2E00000100000022 /* AuthImplementation in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000012 /* AuthImplementation */; };
 		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
 /* End PBXBuildFile section */
@@ -79,8 +79,8 @@
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
 				70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */,
-				70E0BEEF2E00000100000021 /* AuthAPI in Frameworks */,
-				70E0BEEF2E00000100000022 /* Auth in Frameworks */,
+				70E0BEEF2E00000100000021 /* Auth in Frameworks */,
+				70E0BEEF2E00000100000022 /* AuthImplementation in Frameworks */,
 				70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */,
 				70E0BEEF2E00000100000024 /* AuthUI in Frameworks */,
 			);
@@ -161,8 +161,8 @@
 				70992D3E2DDDFE8E007767C7 /* Logging */,
 				704F5C332E168CBD00FCAE62 /* Relux */,
 				704F5C362E168D3500FCAE62 /* SwiftUIRelux */,
-				70E0BEEF2E00000100000011 /* AuthAPI */,
-				70E0BEEF2E00000100000012 /* Auth */,
+				70E0BEEF2E00000100000011 /* Auth */,
+				70E0BEEF2E00000100000012 /* AuthImplementation */,
 				70E0BEEF2E00000100000013 /* AuthUIAPI */,
 				70E0BEEF2E00000100000014 /* AuthUI */,
 			);
@@ -748,15 +748,15 @@
 			package = 70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */;
 			productName = Algorithms;
 		};
-		70E0BEEF2E00000100000011 /* AuthAPI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70E0BEEF2E00000100000001 /* XCLocalSwiftPackageReference "Packages/Auth" */;
-			productName = AuthAPI;
-		};
-		70E0BEEF2E00000100000012 /* Auth */ = {
+		70E0BEEF2E00000100000011 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 70E0BEEF2E00000100000001 /* XCLocalSwiftPackageReference "Packages/Auth" */;
 			productName = Auth;
+		};
+		70E0BEEF2E00000100000012 /* AuthImplementation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 70E0BEEF2E00000100000001 /* XCLocalSwiftPackageReference "Packages/Auth" */;
+			productName = AuthImplementation;
 		};
 		70E0BEEF2E00000100000013 /* AuthUIAPI */ = {
 			isa = XCSwiftPackageProductDependency;

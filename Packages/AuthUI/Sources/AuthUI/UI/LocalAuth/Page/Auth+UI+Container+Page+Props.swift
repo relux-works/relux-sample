@@ -1,4 +1,4 @@
-import AuthAPI
+import Auth
 import SwiftUIRelux
 
 extension Auth.UI.LocalAuth.Container.Page {

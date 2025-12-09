@@ -1,4 +1,4 @@
-import AuthAPI
+import Auth
 
 extension Auth.Business.State {
     func internalReduce(with action: Auth.Business.Action) {

@@ -19,14 +19,14 @@ let package = Package(
         .target(
             name: "AuthUIAPI",
             dependencies: [
-                .product(name: "AuthAPI", package: "Auth")
+                .product(name: "Auth", package: "Auth")
             ]
         ),
         .target(
             name: "AuthUI",
             dependencies: [
                 "AuthUIAPI",
-                .product(name: "AuthAPI", package: "Auth"),
+                .product(name: "Auth", package: "Auth"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux")
             ]
         )

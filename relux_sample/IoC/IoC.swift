@@ -1,5 +1,5 @@
 import Auth
-import AuthAPI
+import AuthImplementation
 import AuthUI
 import AuthUIAPI
 import SwiftIoC

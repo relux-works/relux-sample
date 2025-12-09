@@ -8,8 +8,8 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .library(name: "AuthAPI", targets: ["AuthAPI"]),
-        .library(name: "Auth", targets: ["Auth"])
+        .library(name: "Auth", targets: ["Auth"]),
+        .library(name: "AuthImplementation", targets: ["AuthImplementation"])
     ],
     dependencies: [
         .package(url: "https://github.com/ivalx1s/swift-ioc.git", from: "1.0.1"),
@@ -17,15 +17,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "AuthAPI",
+            name: "Auth",
             dependencies: [
                 .product(name: "Relux", package: "darwin-relux"),
             ]
         ),
         .target(
-            name: "Auth",
+            name: "AuthImplementation",
             dependencies: [
-                "AuthAPI",
+                "Auth",
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "darwin-relux"),
             ]
