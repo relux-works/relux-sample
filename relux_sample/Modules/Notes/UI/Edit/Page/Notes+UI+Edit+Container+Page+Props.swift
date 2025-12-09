@@ -1,10 +1,13 @@
+import SwiftUIRelux
+
 extension Notes.UI.Edit.Container.Page {
+
     struct Props: ViewProps {
         let note: Note
     }
 
-    struct Actions: ViewActions {
-        let onSave: @Sendable (Note) async -> ()
-        let onRemove: @Sendable () async -> ()
+    struct Actions: ViewCallbacks, Equatable {
+        let onSave: ViewInputCallback<Note>
+        let onRemove: ViewCallback
     }
 }

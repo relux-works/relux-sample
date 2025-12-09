@@ -15,7 +15,7 @@ extension Notes.UI.List.Container {
                 .navigationBarItems(trailing: createBtn)
                 .animation(.easeInOut, value: props.notes.asAnimatableValue)
                 .animation(.easeInOut, value: props.notes.value?.flatCount)
-                .refreshable(action: actions.onReload)
+                .refreshable(action: actions.onReload.callAsFunction)
         }
     }
 }

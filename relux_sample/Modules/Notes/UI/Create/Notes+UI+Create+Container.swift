@@ -18,7 +18,7 @@ extension Notes.UI.Create {
             Page(
                 props: .init(),
                 actions: .init(
-                    onCreate: { await create($0) }
+                    onCreate: ViewInputCallback(create)
                 )
             )
         }

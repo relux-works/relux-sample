@@ -11,7 +11,7 @@ public struct TabViewItemButtonStyle: ButtonStyle {
 
 @MainActor
 public struct AsyncButton<Label: View>: View {
-    public typealias Action = () async -> Void
+    public typealias Action = @Sendable () async -> Void
 
     private let actionPriority: TaskPriority?
     private let actionOptions: Set<ActionOption>
@@ -71,6 +71,22 @@ public struct AsyncButton<Label: View>: View {
             isDisabled = false
             showProgress = false
         }
+    }
+}
+
+public extension AsyncButton {
+    init(
+        actionPriority: TaskPriority? = nil,
+        actionOptions: Set<ActionOption> = [ActionOption.disableButton],
+        role: ButtonRole? = .none,
+        action: Relux.UI.ViewCallback,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.actionPriority = actionPriority
+        self.actionOptions = actionOptions
+        self.role = role
+        self.action = { await action() }
+        self.label = label()
     }
 }
 

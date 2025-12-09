@@ -1,9 +1,12 @@
+import SwiftUIRelux
+
 extension Notes.UI.Create.Container.Page {
+
     struct Props: ViewProps {
 
     }
 
-    struct Actions: ViewActions {
-        let onCreate: @Sendable (Note) async -> Void
+    struct Actions: ViewCallbacks, Equatable {
+        let onCreate: ViewInputCallback<Note>
     }
 }

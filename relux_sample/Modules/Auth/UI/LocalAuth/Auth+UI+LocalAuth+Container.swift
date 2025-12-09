@@ -12,9 +12,9 @@ extension Auth.UI.LocalAuth {
 
         private var content: some View {
             Page(
-                props: .init(),
-                actions: .init(
-                    onTryLocalAuth: { await tryLocalAuth() }
+                props: Page.Props(),
+                actions: Page.Actions(
+                    onTryLocalAuth: ViewCallback(tryLocalAuth)
                 )
             )
         }

@@ -31,7 +31,7 @@ extension Notes.UI.Edit.Container.Page {
     private var removeBtn: some View {
         NavBarBtn.iconBtn(
             systemName: "trash",
-            action: actions.onRemove
+            action: actions.onRemove.callAsFunction
         )
     }
 }

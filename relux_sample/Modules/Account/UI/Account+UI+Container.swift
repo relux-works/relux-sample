@@ -12,10 +12,10 @@ extension Account.UI {
 
         private var content: some View {
             Page(
-                props: .init(),
-                actions: .init(
-                    onLogout: { await logout() },
-                    onOpenDebug: { await openDebug() }
+                props: Page.Props(),
+                actions: Page.Actions(
+                    onLogout: ViewCallback(logout),
+                    onOpenDebug: ViewCallback(openDebug)
                 )
             )
         }

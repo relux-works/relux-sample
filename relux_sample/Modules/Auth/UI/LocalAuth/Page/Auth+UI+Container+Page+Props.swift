@@ -1,9 +1,11 @@
+import SwiftUIRelux
+
 extension Auth.UI.LocalAuth.Container.Page {
     struct Props: ViewProps {
 
     }
 
-    struct Actions: ViewActions {
-        let onTryLocalAuth: @Sendable () async -> ()
+    struct Actions: ViewCallbacks, Equatable {
+        let onTryLocalAuth: ViewCallback
     }
 }

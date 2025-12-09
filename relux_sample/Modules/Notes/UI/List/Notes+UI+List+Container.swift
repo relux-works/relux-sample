@@ -20,9 +20,9 @@ extension Notes.UI.List {
                     notes: notesState.notesGroupedByDay
                 ),
                 actions: .init(
-                    onReload: { await reloadNotes() },
-                    onCreate: { await openCreateNote() },
-                    onRemove: { await remove($0) }
+                    onReload: ViewCallback(reloadNotes),
+                    onCreate: ViewCallback(openCreateNote),
+                    onRemove: ViewInputCallback(remove)
                 )
             )
         }

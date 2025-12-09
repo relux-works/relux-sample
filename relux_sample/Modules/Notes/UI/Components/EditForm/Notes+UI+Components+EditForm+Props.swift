@@ -6,7 +6,7 @@ extension Notes.UI.Component.EditForm {
         @Binding var note: Note
     }
 
-    struct Actions: ViewActions {
+    struct Actions: ViewCallbacks {
         
     }
 }

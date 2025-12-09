@@ -23,8 +23,8 @@ extension Notes.UI.Edit {
                     note: props.note
                 ),
                 actions: .init(
-                    onSave: { await upsert($0) },
-                    onRemove: { await remove(props.note) }
+                    onSave: ViewInputCallback(upsert),
+                    onRemove: ViewCallback { await remove(props.note) }
                 )
             )
         }

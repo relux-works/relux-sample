@@ -29,7 +29,7 @@ extension Notes.UI.Details {
                     note: notesState.note(by: props.id)
                 ),
                 actions: .init(
-                    onEdit: { await openEdit(note: $0) }
+                    onEdit: ViewInputCallback(openEdit)
                 )
             )
         }
