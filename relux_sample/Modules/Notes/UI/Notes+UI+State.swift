@@ -57,7 +57,7 @@ extension Notes.UI.State {
                     .chunked { prev, next in
                         prev.createdAt.startOfDay == next.createdAt.startOfDay
                     }
-                    .map { $0.asArray }
+                    .map { Array($0) }
             )
         }
     }
