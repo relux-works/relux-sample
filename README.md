@@ -1,43 +1,87 @@
 # Relux SwiftUI Sample
 
 [![Swift 6.0+](https://img.shields.io/badge/Swift-6.0+-red?logo=swift)](https://swift.org/download/)
+[![Platform](https://img.shields.io/badge/platform-iOS%2017%2B%20%7C%20macOS%2014%2B-blue)]()
 
-This repository demonstrates a modular, async-first Relux architecture for SwiftUI. It is intentionally split into small domain packages (Auth, AuthUI, TestInfrastructure, HttpClient, etc.) to show how to scale from MVP to large apps while keeping builds fast and boundaries clear.
+Modular, async-first [Relux architecture for SwiftUI](https://github.com/ivalx1s/darwin-relux). Split into small domain packages (Auth, Notes) to demonstrate scaling from MVP to large apps while keeping builds fast and boundaries clear.
 
-**Must read:** start with `PROJECT_GUIDE.md` for workspace layout, schemes, and how to build/test.
+Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for workspace layout, patterns, and conventions.
 
-## What’s inside
-- **Unidirectional, async-first state** with Relux (Redux-inspired, Swift Concurrency-native).
-- **Strict modularization:** models, interfaces (Int), implementations (Impl), UI, and test-support are separate products; DI wires them at runtime.
-- **Dynamic-link strategy:** interface products stay dynamic; implementations are swappable via IoC without leaking imports.
-- **Shared testing:** `TestInfrastructure` plus domain `*TestSupport` targets provide mocks/stubs/helpers.
+---
 
-## Architecture snapshot
-- `*Models`: pure data.
-- `*ReluxInt`: actions/effects/state/router contracts (no concretes).
-- `*ServiceInt` / `*ServiceImpl`: service protocols and concrete implementations.
-- `*ReluxImpl`: state, reducer, saga, module wiring; depends only on interfaces and DI.
-- UI packages (e.g., AuthUI) import interfaces, not impls.
-- IoC: SwiftIoC registers routers, services, and modules; swapping impls = change registration only.
+## What's Inside
 
-## Testing
-- **Shared:** `Packages/TestInfrastructure` (Relux logger helpers, timeout helper, JSON fixtures, conditional HttpClient mocks).
-- **Domain:** `AuthTestSupport` (mocks/stubs for Auth). Import these in tests instead of concrete impls.
+| Concept | Description |
+|---------|-------------|
+| **Unidirectional data flow** | Relux — Redux/Flux-inspired, Swift Concurrency-native, no functional purism |
+| **Strict modularization** | Models, interfaces, implementations, UI, test-support as separate products within domain boundaries |
+| **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; optimizaed isolated recompilation (fast incremental builds) |
+| **Domain side effects** | Sagas and Flows handle async operations within a domain (API calls, persistence, etc.) |
+| **Cross-domain coordination** | Orchestrator sagas handle domain-to-domain communication |
+| **Service-oriented architecture** | Services encapsulated within domain modules; manage API, networking, persistence behind protocols |
+| **Layered testing** | Saga, reducer, service tested in isolation; shared test infrastructure |
+| **Swift 6 concurrency** | Actor-isolation, strict sendability, structured async throughout |
+| **Simpe Async-first DI** | [SwiftIoC]([url](https://github.com/ivalx1s/swift-ioc)) provides async module resolution, async app entry points; implementations swappable at registration |
+
+---
+
+## Architecture Snapshot
+```
+<Domain>Models        Pure data types, no dependencies
+<Domain>ReluxInt      Actions, effects, state/router protocols
+<Domain>ServiceInt    Service protocols
+<Domain>ServiceImpl   Concrete service implementations
+<Domain>ReluxImpl     State, reducer, saga, module wiring
+<Domain>TestSupport   Mocks, stubs for testing
+<Domain>UI            SwiftUI views (imports interfaces only)
+```
+
+**IoC wiring:** SwiftIoC registers routers, services, modules. Swap implementations by changing registration only.
+
+---
+
+## Quick Start
+```bash
+# Clone
+git clone <repo-url>
+cd relux-sample
+
+# Open in Xcode
+open relux_sample.xcodeproj
+
+# Build & run
+# Select relux_sample scheme → Run (Cmd+R)
+
+# Run tests
+# Product → Test (Cmd+U)
+```
+
+---
 
 ## Documentation
-- Core guide: `PROJECT_GUIDE.md`.
-- Patterns (docs/Patterns):
-  - `RELUX_MODULAR.md`
-  - `RELUX_FLOW_VS_SAGA.md`
-  - `RELUX_ORCHESTRATION.md`
-  - `DOMAIN_TEST_SUPPORT.md`
-  - `TEST_INFRASTRUCTURE.md`
-  - `TESTING_STRATEGY.md`
 
-## License
-MIT
+| Document | Purpose |
+|----------|---------|
+| [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) | Entry point — layout, conventions, setup |
+| [`MODULAR_ARCHITECTURE.md`](Docs/Patterns/MODULAR_ARCHITECTURE.md) | Domain decomposition pattern |
+| [`ORCHESTRATION.md`](Docs/Patterns/ORCHESTRATION.md) | Cross-domain coordination |
+| [`FLOW_VS_SAGA.md`](Docs/Patterns/FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
+| [`TESTING_STRATEGY.md`](Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+| [`TEST_INFRASTRUCTURE.md`](Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+| [`DOMAIN_TEST_SUPPORT.md`](Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+
+---
+
+## Testing
+
+- **Shared infrastructure:** `Packages/TestInfrastructure` — Relux logger extensions, async helpers, common mocks
+- **Domain support:** `<Domain>TestSupport` — domain-specific mocks/stubs
+- **Strategy:** Test saga, reducer, service in isolation; optional smoke tests for wiring
+
+---
 
 ## Maintainers
+
 - Alexis Grigorev
-- Artem Grishchenko
 - Ivan Oparin
+- Artem Grishchenko
