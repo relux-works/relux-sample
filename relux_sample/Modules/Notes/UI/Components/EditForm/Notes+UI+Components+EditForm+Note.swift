@@ -1,5 +1,5 @@
 extension Notes.UI.Component.EditForm {
-    struct Note {
+    struct Note: Equatable, Hashable {
         var title: String
         var content: String
         var createdAt: Date

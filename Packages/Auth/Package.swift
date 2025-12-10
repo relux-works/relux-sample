@@ -51,7 +51,6 @@ let package = Package(
                 .product(name: "AuthModels", package: "Auth-Self"),
                 .product(name: "AuthReluxInt", package: "Auth-Self"),
                 .product(name: "AuthServiceInt", package: "Auth-Self"),
-                .product(name: "AuthServiceImpl", package: "Auth-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "darwin-relux"),
             ]

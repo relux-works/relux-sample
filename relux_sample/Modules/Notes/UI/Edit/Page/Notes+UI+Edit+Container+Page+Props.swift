@@ -6,7 +6,7 @@ extension Notes.UI.Edit.Container.Page {
         let note: Note
     }
 
-    struct Actions: ViewCallbacks, Equatable {
+    struct Actions: Relux.UI.ViewCallbacks {
         let onSave: ViewInputCallback<Note>
         let onRemove: ViewCallback<Void>
     }

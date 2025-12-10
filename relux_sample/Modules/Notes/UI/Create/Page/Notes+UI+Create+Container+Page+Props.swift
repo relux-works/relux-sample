@@ -6,7 +6,8 @@ extension Notes.UI.Create.Container.Page {
 
     }
 
-    struct Actions: ViewCallbacks, Equatable {
+    struct Actions: Relux.UI.ViewCallbacks {
         let onCreate: ViewInputCallback<Note>
     }
+
 }

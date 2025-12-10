@@ -1,7 +1,9 @@
 import SwiftUI
 
-public struct SwipeButton: View {
-    private let props: Props
+public struct SwipeButton: Relux.UI.View {
+    
+    public let props: Props
+    
     private let actions: Actions
 
     public init(props: Props, actions: Actions) {

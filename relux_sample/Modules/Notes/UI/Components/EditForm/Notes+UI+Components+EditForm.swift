@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Notes.UI.Component {
-    struct EditForm: View {
+    struct EditForm: Relux.UI.View {
         let props: Props
         let actions: Actions
 
@@ -16,9 +16,9 @@ extension Notes.UI.Component {
 extension Notes.UI.Component.EditForm {
     private var content: some View {
         Form {
-            TextField("Title", text: props.$note.title)
+            TextField("Title", text: props.note.title)
 
-            TextEditor(text: props.$note.content)
+            TextEditor(text: props.note.content)
                 .frame(minHeight: 150)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -27,7 +27,7 @@ extension Notes.UI.Component.EditForm {
 
             DatePicker(
                 "Created At",
-                selection: props.$note.createdAt,
+                selection: props.note.createdAt,
                 displayedComponents: [.date]
             )
             .datePickerStyle(.compact)

@@ -6,7 +6,7 @@ extension Notes.UI.Widget.Container.Page {
         let notes: MaybeData<[[Note]], Err>
     }
 
-    struct Actions: ViewCallbacks, Equatable {
+    struct Actions: Relux.UI.ViewCallbacks {
         
     }
 }

@@ -1,12 +1,12 @@
 import SwiftUI
 
 extension Notes.UI.Edit.Container {
-    struct Page: View {
+    struct Page: Relux.UI.View {
         typealias Note = Notes.Business.Model.Note
 
         @StateObject private var ls: LocalState
 
-        private let props: Props
+        let props: Props
         private let actions: Actions
 
         init(

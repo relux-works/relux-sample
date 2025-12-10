@@ -1,7 +1,6 @@
 import AuthModels
 import AuthReluxInt
 import AuthServiceInt
-import AuthServiceImpl
 import Relux
 import SwiftIoC
 
@@ -14,12 +13,17 @@ extension Auth {
     @MainActor
     public struct Module: IModule {
         private let ioc: IoC
+        private let serviceFactory: () -> Auth.Business.IService
 
         public let states: [any Relux.AnyState]
         public let sagas: [any Relux.Saga]
 
-        public init(router: Auth.Business.IRouter) {
-            let container = Self.buildIoC(router: router)
+        public init(
+            router: Auth.Business.IRouter,
+            serviceFactory: @escaping () -> Auth.Business.IService
+        ) {
+            self.serviceFactory = serviceFactory
+            let container = Self.buildIoC(router: router, serviceFactory: serviceFactory)
             self.ioc = container
 
             self.states = [
@@ -33,12 +37,15 @@ extension Auth {
 }
 
 extension Auth.Module {
-    private static func buildIoC(router: Auth.Business.IRouter) -> IoC {
+    private static func buildIoC(
+        router: Auth.Business.IRouter,
+        serviceFactory: @escaping () -> Auth.Business.IService
+    ) -> IoC {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: { router })
         ioc.register(Auth.Business.IState.self, lifecycle: .container, resolver: { buildState() })
-        ioc.register(Auth.Business.IService.self, lifecycle: .container, resolver: { buildSvc() })
+        ioc.register(Auth.Business.IService.self, lifecycle: .container, resolver: { buildSvc(factory: serviceFactory) })
         ioc.register(Auth.Business.ISaga.self, lifecycle: .container, resolver: { buildSaga(ioc: ioc) })
 
         return ioc
@@ -48,8 +55,8 @@ extension Auth.Module {
         Auth.Business.State()
     }
 
-    private static func buildSvc() -> Auth.Business.IService {
-        Auth.Business.Service()
+    private static func buildSvc(factory: () -> Auth.Business.IService) -> Auth.Business.IService {
+        factory()
     }
 
     private static func buildSaga(ioc: IoC) -> Auth.Business.ISaga {

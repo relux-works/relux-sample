@@ -1,7 +1,16 @@
 import SwiftUI
 
 extension SampleApp.UI.Main.Container {
-    struct Page: View {
+    struct Page: Relux.UI.View {
+        struct Props: Relux.UI.ViewProps {
+            
+        }
+        let props: Props
+        
+        init(props: Props) {
+            self.props = props
+        }
+        
         var body: some View {
             content
         }

@@ -3,7 +3,7 @@ import SwiftUI
 import SwiftUIRelux
 
 extension Auth.UI.LocalAuth.Container {
-    struct Page: View {
+    struct Page: Relux.UI.View {
         let props: Props
         let actions: Actions
 

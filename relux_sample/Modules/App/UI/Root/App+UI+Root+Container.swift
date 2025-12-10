@@ -22,18 +22,18 @@ extension SampleApp.UI.Root {
             VStack {
                 switch appRouter.path.isEmpty {
                     case true:
-                        Splash()
+                        Splash(props: SampleApp.UI.Root.Splash.Props())
                             .transition(.opacity)
                     case false:
                         NavigationStack(path: $appRouter.path, root: rootView)
                             .transition(.opacity)
                 }
             }
-            .animation(.easeInOut(duration: 1), value: appRouter.path.isEmpty)
+            .animation(.easeInOut(duration: 0.1), value: appRouter.path.isEmpty)
         }
 
         private func rootView() -> some View {
-            Splash()
+            Splash(props: SampleApp.UI.Root.Splash.Props())
                 .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
         }
     }

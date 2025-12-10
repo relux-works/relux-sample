@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Notes.UI.Widget.Container {
-    struct Page: View {
+    struct Page: Relux.UI.View {
         typealias Note = Notes.Business.Model.Note
         typealias Err = Notes.Business.Err
 

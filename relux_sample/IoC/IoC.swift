@@ -83,7 +83,8 @@ extension SampleApp.Registry {
 
     private static func buildAuthModule() -> Auth.Module {
         Auth.Module(
-            router: resolve(Auth.Business.IRouter.self)
+            router: resolve(Auth.Business.IRouter.self),
+            serviceFactory: { Auth.Business.Service() }
         )
     }
 

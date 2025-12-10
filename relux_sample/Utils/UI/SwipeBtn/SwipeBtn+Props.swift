@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 extension SwipeButton {
-    public struct Props {
+    public struct Props: Relux.UI.ViewProps {
         let icon: Image
         let tint: Color
 
@@ -12,6 +12,10 @@ extension SwipeButton {
         ) {
             self.icon = icon
             self.tint = tint
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(tint)
         }
     }
 

@@ -10,7 +10,7 @@ extension SampleApp.UI.Main {
         }
 
         private var content: some View {
-            Page()
+            Page(props: Page.Props())
         }
 
         private var accountBtn: some View {

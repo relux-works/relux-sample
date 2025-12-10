@@ -1,9 +1,10 @@
 import SwiftUI
 
 extension Notes.UI.Create.Container {
-    struct Page: View {
-        typealias Note = Notes.Business.Model.Note
 
+    struct Page: Relux.UI.View {
+        typealias Note = Notes.Business.Model.Note
+        
         @StateObject private var ls: LocalState = .init()
 
         let props: Props
@@ -37,11 +38,11 @@ extension Notes.UI.Create.Container.Page {
 
     private var form: some View {
         Notes.UI.Component.EditForm(
-            props: .init(
+            props: Notes.UI.Component.EditForm.Props(
                 title: "New Note",
                 note: $ls.note
             ),
-            actions: .init()
+            actions: Notes.UI.Component.EditForm.Actions()
         )
     }
 }

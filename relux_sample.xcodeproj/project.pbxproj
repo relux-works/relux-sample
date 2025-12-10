@@ -19,12 +19,16 @@
 		70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BD2DA9569E003ADE2C /* Algorithms */; };
 		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
+		AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; };
 		AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; };
 		AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; };
 		AA5CB2C52EE8E0FC0077BFF8 /* AuthServiceInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; };
 		AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; };
-		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2C92EE8E11D0077BFF8 /* AuthModels in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CA2EE8E1220077BFF8 /* AuthReluxInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -63,6 +67,7 @@
 /* Begin PBXFileReference section */
 		70A603AB2D8ECD6900BE2349 /* relux_sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = relux_sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = relux_sampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA5A934E2EE8FB650049F50D /* swiftui-relux */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swiftui-relux"; path = "../swiftui-relux"; sourceTree = SOURCE_ROOT; };
 		AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = relux_sample.xctestplan; path = ../../../../Downloads/relux_sample.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,11 +113,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks (Tests) */,
-				AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */,
-				AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */,
-				AA5CB2C52EE8E0FC0077BFF8 /* AuthServiceInt in Frameworks */,
-				AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */,
+				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */,
+				AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */,
+				AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */,
+				AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */,
+				AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +132,7 @@
 				70A603BF2D8ECD6D00BE2349 /* relux_sampleTests */,
 				70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */,
 				70A603AC2D8ECD6900BE2349 /* Products */,
+				AA5A934E2EE8FB650049F50D /* swiftui-relux */,
 			);
 			sourceTree = "<group>";
 		};

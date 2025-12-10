@@ -25,10 +25,10 @@ extension Notes.UI.Details {
 
         private var content: some View {
             Page(
-                props: .init(
+                props: Notes.UI.Details.Container.Page.Props(
                     note: notesState.note(by: props.id)
                 ),
-                actions: .init(
+                actions: Notes.UI.Details.Container.Page.Actions(
                     onEdit: ViewInputCallback(openEdit)
                 )
             )

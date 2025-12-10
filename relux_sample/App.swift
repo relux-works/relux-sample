@@ -35,7 +35,7 @@ struct SampleApp: App {
     }
 
     private func splash() -> some View {
-        SampleApp.UI.Root.Splash()
+        SampleApp.UI.Root.Splash(props: UI.Root.Splash.Props())
     }
 
     private func appContent(relux: Relux) -> some View {

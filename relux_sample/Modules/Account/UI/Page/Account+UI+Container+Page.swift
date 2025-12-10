@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Account.UI.Container {
-    struct Page: View {
+    struct Page: Relux.UI.View {
         let props: Props
         let actions: Actions
 
