@@ -46,12 +46,12 @@ Detailed documentation in `docs/Patterns/`:
 
 | Pattern | Document | Purpose |
 |---------|----------|---------|
-| Modular Architecture | [MODULAR_ARCHITECTURE.md](docs/Patterns/MODULAR_ARCHITECTURE.md) | Domain decomposition into 6 dynamic products |
-| Orchestration | [ORCHESTRATION.md](docs/Patterns/ORCHESTRATION.md) | Cross-domain coordination without coupling |
-| Flow vs Saga | [FLOW_VS_SAGA.md](docs/Patterns/FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
-| Testing Strategy | [TESTING_STRATEGY.md](docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
-| Test Infrastructure | [TEST_INFRASTRUCTURE.md](docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
-| Domain Test Support | [DOMAIN_TEST_SUPPORT.md](docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+| Modular Architecture | [MODULAR_ARCHITECTURE.md](./docs/Patterns/MODULAR_ARCHITECTURE.md) | Domain decomposition into 6 dynamic products |
+| Orchestration | [ORCHESTRATION.md](./docs/Patterns/ORCHESTRATION.md) | Cross-domain coordination without coupling |
+| Flow vs Saga | [FLOW_VS_SAGA.md](./docs/Patterns/FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
+| Testing Strategy | [TESTING_STRATEGY.md](./docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+| Test Infrastructure | [TEST_INFRASTRUCTURE.md](./docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+| Domain Test Support | [DOMAIN_TEST_SUPPORT.md](./docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
 
 ---
 
@@ -284,7 +284,7 @@ Framework: **Swift Testing** (`@Suite`, `@Test`, `#expect`, `#require`). Prefer 
 
 ### Strategy
 
-Test each layer in isolation — see [TESTING_STRATEGY.md](docs/Patterns/TESTING_STRATEGY.md):
+Test each layer in isolation — see [TESTING_STRATEGY.md](./docs/Patterns/TESTING_STRATEGY.md):
 
 | Layer | Mock | Asserts |
 |-------|------|---------|
