@@ -46,6 +46,6 @@ extension Notes.UI.Widget.Container {
     }
 
     private func openList() async {
-        await actions { nav.set(.list) }
+        await actions { nav.push(.list) }
     }
 }

@@ -1,5 +1,6 @@
 import AuthReluxInt
 import Relux
+import NavigationReluxImpl
 
 struct AuthRouterAdapter: Auth.Business.IRouter {
     func setAuth(page: Auth.UI.Model.Page) -> any Relux.Action {

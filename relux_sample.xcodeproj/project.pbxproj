@@ -41,6 +41,10 @@
 		AA109AE72EE95A1A00199C81 /* NotesServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA109AC82EE9584700199C81 /* NotesServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA109AE82EE95A1B00199C81 /* NotesUI in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA109ACD2EE9585A00199C81 /* NotesUI */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA109AE92EE95A1C00199C81 /* NotesUIAPI in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA109AE12EE959B200199C81 /* NotesUIAPI */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AA4C49512EE9DCF200CCC121 /* NavigationModels in Frameworks */ = {isa = PBXBuildFile; productRef = BB000002000000010000AAAA /* NavigationModels */; };
+		AA4C49522EE9DCF200CCC121 /* NavigationReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = BB000003000000010000AAAA /* NavigationReluxInt */; };
+		AA4C49532EE9DCF200CCC121 /* NavigationReluxImpl in Frameworks */ = {isa = PBXBuildFile; productRef = BB000004000000010000AAAA /* NavigationReluxImpl */; };
+		AA4C49542EE9DCF200CCC121 /* NavigationUI in Frameworks */ = {isa = PBXBuildFile; productRef = BB000005000000010000AAAA /* NavigationUI */; };
 		AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
@@ -120,6 +124,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA4C49542EE9DCF200CCC121 /* NavigationUI in Frameworks */,
+				AA4C49532EE9DCF200CCC121 /* NavigationReluxImpl in Frameworks */,
+				AA4C49522EE9DCF200CCC121 /* NavigationReluxInt in Frameworks */,
+				AA4C49512EE9DCF200CCC121 /* NavigationModels in Frameworks */,
 				70992C1F2DDDFDA6007767C7 /* Relux in Frameworks */,
 				70992C1E2DDDFDA6007767C7 /* Relux in Frameworks */,
 				70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */,
@@ -251,6 +259,10 @@
 				AA109AD82EE9595200199C81 /* NotesServiceImpl */,
 				AA109ADA2EE9595200199C81 /* NotesServiceInt */,
 				AA109ADC2EE9595200199C81 /* NotesTestSupport */,
+				BB000002000000010000AAAA /* NavigationModels */,
+				BB000003000000010000AAAA /* NavigationReluxInt */,
+				BB000004000000010000AAAA /* NavigationReluxImpl */,
+				BB000005000000010000AAAA /* NavigationUI */,
 				AA109ADF2EE959B200199C81 /* NotesUI */,
 				AA109AE12EE959B200199C81 /* NotesUIAPI */,
 			);
@@ -317,6 +329,7 @@
 				AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */,
 				AA109AD12EE9595200199C81 /* XCLocalSwiftPackageReference "Packages/Notes" */,
 				AA109ADE2EE959B200199C81 /* XCLocalSwiftPackageReference "Packages/NotesUI" */,
+				BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70A603AC2D8ECD6900BE2349 /* Products */;
@@ -673,6 +686,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Auth;
 		};
+		BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Navigation;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -826,6 +843,26 @@
 		AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthServiceImpl;
+		};
+		BB000002000000010000AAAA /* NavigationModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */;
+			productName = NavigationModels;
+		};
+		BB000003000000010000AAAA /* NavigationReluxInt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */;
+			productName = NavigationReluxInt;
+		};
+		BB000004000000010000AAAA /* NavigationReluxImpl */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */;
+			productName = NavigationReluxImpl;
+		};
+		BB000005000000010000AAAA /* NavigationUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */;
+			productName = NavigationUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

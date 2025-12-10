@@ -1,5 +1,6 @@
 import AuthReluxInt
 import Relux
+import NavigationReluxImpl
 
 extension SampleApp.Business {
     protocol ISaga: Relux.Saga {}
@@ -20,13 +21,13 @@ extension SampleApp.Business {
 extension SampleApp.Business.Saga: SampleApp.Business.ISaga {
     func apply(_ effect: any Relux.Effect) async {
         switch effect as? SampleApp.Business.Effect {
-            case .none: break
-            case .setAppContext: await setAppContext()
+        case .none: break
+        case .setAppContext: await setAppContext()
         }
 
         switch effect as? Auth.Business.Effect {
-            case .runLogoutFlow: await cleanupAppCache()
-            default: break
+        case .runLogoutFlow: await cleanupAppCache()
+        default: break
         }
     }
 }

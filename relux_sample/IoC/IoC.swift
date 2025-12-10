@@ -5,6 +5,7 @@ import AuthServiceInt
 import AuthServiceImpl
 import AuthUI
 import AuthUIAPI
+import NavigationReluxImpl
 import NotesModels
 import NotesReluxInt
 import NotesReluxImpl
@@ -19,6 +20,9 @@ extension SampleApp {
     @MainActor
     enum Registry {
         static let ioc = IoC(logger: IoC.Logger(enabled: false))
+
+        /// Navigation module reference - exposed for NavigationStack/sheet bindings.
+        static var navigationModule: Navigation.Module!
     }
 }
 
@@ -85,7 +89,9 @@ extension SampleApp.Registry {
     }
 
     private static func buildNavigationModule() -> Navigation.Module {
-        Navigation.Module()
+        let module = Navigation.Module()
+        navigationModule = module
+        return module
     }
 
     private static func buildAuthModule() -> Auth.Module {

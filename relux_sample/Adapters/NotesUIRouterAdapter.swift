@@ -1,6 +1,7 @@
 import NotesUIAPI
 import NotesReluxInt
 import Relux
+import NavigationReluxImpl
 
 struct NotesUIRouterAdapter: NotesUIRouting {
     func push(_ page: Notes.UI.Model.Page) -> any Relux.Action {

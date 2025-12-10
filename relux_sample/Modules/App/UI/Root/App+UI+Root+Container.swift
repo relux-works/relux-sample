@@ -1,13 +1,14 @@
 import SwiftUI
+import NavigationReluxImpl
 
 extension SampleApp.UI.Root {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
         // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
-        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
-        // If it’s declared using the @Observable macro, it’s available via @Environment.
+        // If a state conforms to ObservableObject, it's accessible via @EnvironmentObject.
+        // If it's declared using the @Observable macro, it's available via @Environment.
         @EnvironmentObject var appRouter: AppRouter
-        @Environment(ModalRouter.self) private var modalRouter
+        @Environment(Navigation.Business.ModalRouter.self) private var modalRouter
 
         let relux: Relux
 
@@ -34,7 +35,7 @@ extension SampleApp.UI.Root {
 
         private func rootView() -> some View {
             Splash(props: SampleApp.UI.Root.Splash.Props())
-                .navigationDestination(for: AppPage.self) {
+                .navigationDestination(for: InternalPage.self) {
                     SampleApp.UI.Root.RouterView(page: $0)
                 }
         }

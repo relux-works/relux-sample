@@ -1,6 +1,7 @@
 import AuthReluxInt
 import Relux
 import SwiftUI
+import NavigationReluxImpl
 
 extension Account.UI {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
@@ -26,7 +27,7 @@ extension Account.UI {
 extension Account.UI.Container {
     private func openDebug() async {
         await actions {
-            ModalRouter.Action.present(page: .debug)
+            Navigation.Business.ModalRouter.Action.present(page: .debug)
         }
     }
 
