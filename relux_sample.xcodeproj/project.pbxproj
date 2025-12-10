@@ -16,7 +16,6 @@
 		70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 70992D3E2DDDFE8E007767C7 /* Logging */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
-		70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 70B138BD2DA9569E003ADE2C /* Algorithms */; };
 		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
 		AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
@@ -103,7 +102,6 @@
 				AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */,
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
-				70B138BE2DA9569E003ADE2C /* Algorithms in Frameworks */,
 				70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */,
 				70E0BEEF2E00000100000024 /* AuthUI in Frameworks */,
 			);
@@ -178,7 +176,6 @@
 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
 				701F04CA2D93062700BC99C2 /* Relux */,
-				70B138BD2DA9569E003ADE2C /* Algorithms */,
 				70A39F1E2DBAB02600112F5E /* Relux */,
 				70992D3E2DDDFE8E007767C7 /* Logging */,
 				704F5C332E168CBD00FCAE62 /* Relux */,
@@ -249,7 +246,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */,
-				70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */,
 				70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */,
 				70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */,
 				AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */,
@@ -620,14 +616,6 @@
 				minimumVersion = 1.0.1;
 			};
 		};
-		70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-algorithms.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.1;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -668,11 +656,6 @@
 		70A604CB2D9169E300BE2349 /* SwiftUIRelux */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftUIRelux;
-		};
-		70B138BD2DA9569E003ADE2C /* Algorithms */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70B138BC2DA9569E003ADE2C /* XCRemoteSwiftPackageReference "swift-algorithms" */;
-			productName = Algorithms;
 		};
 		70E0BEEF2E00000100000013 /* AuthUIAPI */ = {
 			isa = XCSwiftPackageProductDependency;
