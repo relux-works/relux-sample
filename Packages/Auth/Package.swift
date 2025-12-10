@@ -13,6 +13,8 @@ let package = Package(
         .library(name: "AuthReluxImpl", type: .dynamic, targets: ["AuthReluxImpl"]),
         .library(name: "AuthServiceInt", type: .dynamic, targets: ["AuthServiceInt"]),
         .library(name: "AuthServiceImpl", type: .dynamic, targets: ["AuthServiceImpl"]),
+        // Test-only helpers (static is fine)
+        .library(name: "AuthTestSupport", targets: ["AuthTestSupport"]),
     ],
     dependencies: [
         // Dev note: self-reference forces dynamic linkage across products.
@@ -52,6 +54,15 @@ let package = Package(
                 .product(name: "AuthReluxInt", package: "Auth-Self"),
                 .product(name: "AuthServiceInt", package: "Auth-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
+                .product(name: "Relux", package: "darwin-relux"),
+            ]
+        ),
+        .target(
+            name: "AuthTestSupport",
+            dependencies: [
+                .product(name: "AuthModels", package: "Auth-Self"),
+                .product(name: "AuthServiceInt", package: "Auth-Self"),
+                .product(name: "AuthReluxInt", package: "Auth-Self"),
                 .product(name: "Relux", package: "darwin-relux"),
             ]
         ),
