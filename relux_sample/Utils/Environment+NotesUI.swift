@@ -1,5 +1,6 @@
 import SwiftUI
 import NotesUIAPI
+import NotesModels
 
 // Provider (view factory) environment key
 private struct NotesUIProviderKey: EnvironmentKey {

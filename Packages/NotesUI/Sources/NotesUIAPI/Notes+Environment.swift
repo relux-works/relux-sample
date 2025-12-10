@@ -1,4 +1,5 @@
 import SwiftUI
+import NotesModels
 import Relux
 
 // Navigation factory injected from the host application.

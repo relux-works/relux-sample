@@ -7,6 +7,7 @@ import AuthReluxInt
 import SwiftUI
 import SwiftUIRelux
 import Logging
+import NotesUIAPI
 
 @main
 struct SampleApp: App {

@@ -15,9 +15,12 @@ extension SampleApp.UI.Main {
         @ViewBuilder
         private var content: some View {
             switch page {
-                case .main: Container()
-                case .account: Account.UI.Container()
-                case let .notes(page): notesProvider.view(for: page)
+                case .main:
+                    Container()
+                case .account:
+                    Account.UI.Container()
+                case let .notes(page):
+                    notesProvider.view(for: page)
             }
         }
     }
