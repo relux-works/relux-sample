@@ -34,7 +34,7 @@ extension SampleApp.UI.Root {
 
         private func rootView() -> some View {
             Splash(props: SampleApp.UI.Root.Splash.Props())
-                .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
+                .navigationDestination(for: AppPage.self) { SampleApp.UI.Root.RouterView(page: $0) }
         }
     }
 }

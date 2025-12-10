@@ -13,6 +13,7 @@ extension Notes.UI.List {
         // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
         // If it’s declared using the @Observable macro, it’s available via @Environment.
         @EnvironmentObject private var notesState: Notes.UI.State
+        @Environment(\.notesNavigation) private var nav
 
         var body: some View {
             content
@@ -43,8 +44,7 @@ extension Notes.UI.List.Container {
     }
 
     private func openCreateNote() async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
-        await actions { router.push(.create) }
+        await actions { nav.push(.create) }
     }
 
     private func remove(_ note: Note) async {
@@ -54,7 +54,6 @@ extension Notes.UI.List.Container {
     }
 
     private func openDetails(_ note: Note) async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
-        await actions { router.push(.details(id: note.id)) }
+        await actions { nav.push(.details(id: note.id)) }
     }
 }

@@ -19,6 +19,7 @@ extension Notes.UI.Details {
         // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
         // If it’s declared using the @Observable macro, it’s available via @Environment.
         @EnvironmentObject private var notesState: Notes.UI.State
+        @Environment(\.notesNavigation) private var nav
 
         let props: Props
 
@@ -50,7 +51,6 @@ extension Notes.UI.Details.Container {
     }
 
     private func openEdit(note: Note) async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
-        await actions { router.push(.edit(note: note)) }
+        await actions { nav.push(.edit(note: note)) }
     }
 }

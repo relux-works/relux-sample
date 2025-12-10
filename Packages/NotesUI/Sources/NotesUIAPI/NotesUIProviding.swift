@@ -13,8 +13,3 @@ public protocol NotesUIRouting: Sendable {
     func set(_ page: Notes.UI.Model.Page) -> any Relux.Action
     func pop() -> any Relux.Action
 }
-
-@MainActor
-public enum NotesUIRoutingRegistry {
-    public static var router: NotesUIRouting?
-}

@@ -14,9 +14,15 @@ struct SampleApp: App {
         get async { await Registry.ioc.waitForResolve(Relux.self) }
     }
 
+    private let notesUIProvider: any NotesUIProviding
+    private let notesNavigation: any NotesUIRouting
+
     init() {
         // configures the IoC container.
         Registry.configure()
+
+        self.notesUIProvider = Registry.resolve(NotesUIProviding.self)
+        self.notesNavigation = Registry.resolve(NotesUIRouting.self)
     }
 
     var body: some Scene {
@@ -41,6 +47,8 @@ struct SampleApp: App {
     private func appContent(relux: Relux) -> some View {
         // now relux is ready, we can use it strait forward
         SampleApp.UI.Root.Container(relux: relux)
+            .environment(\.notesUIProvider, notesUIProvider)
+            .environment(\.notesNavigation, notesNavigation)
             .task { await setupAppContext() }
     }
 

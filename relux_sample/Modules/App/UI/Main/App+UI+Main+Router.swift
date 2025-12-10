@@ -4,13 +4,21 @@ import NotesUIAPI
 
 @MainActor
 extension SampleApp.UI.Main {
-    @ViewBuilder
-    static func handleRoute(for page: SampleApp.UI.Main.Model.Page) -> some View {
-        let notesProvider = SampleApp.Registry.resolve(NotesUIProviding.self)
-        switch page {
-            case .main: Container()
-            case .account: Account.UI.Container()
-            case let .notes(page): notesProvider.view(for: page)
+    struct RouterView: View {
+        let page: SampleApp.UI.Main.Model.Page
+        @Environment(\.notesUIProvider) private var notesProvider
+
+        var body: some View {
+            content
+        }
+
+        @ViewBuilder
+        private var content: some View {
+            switch page {
+                case .main: Container()
+                case .account: Account.UI.Container()
+                case let .notes(page): notesProvider.view(for: page)
+            }
         }
     }
 }

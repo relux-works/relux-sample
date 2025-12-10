@@ -15,6 +15,7 @@ extension Notes.UI.Edit {
         typealias Note = Notes.Business.Model.Note
 
         let props: Props
+        @Environment(\.notesNavigation) private var nav
 
         var body: some View {
             content
@@ -37,18 +38,16 @@ extension Notes.UI.Edit {
 // reactions
 extension Notes.UI.Edit.Container {
     private func upsert(_ note: Note) async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
         await actions {
             Notes.Business.Effect.upsert(note: note)
-            router.pop()
+            nav.pop()
         }
     }
 
     private func remove(_ note: Note) async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
         await actions {
             Notes.Business.Effect.delete(note: note)
-            router.pop()
+            nav.pop()
         }
     }
 }
