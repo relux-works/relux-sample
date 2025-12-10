@@ -5,6 +5,9 @@ import AuthServiceInt
 import AuthServiceImpl
 import AuthUI
 import AuthUIAPI
+import NotesModels
+import NotesReluxInt
+import NotesReluxImpl
 import SwiftIoC
 
 extension SampleApp {

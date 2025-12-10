@@ -5,3 +5,4 @@ extension SampleApp.UI.Main.Model {
         case notes(_ page: Notes.UI.Model.Page)
     }
 }
+import NotesReluxInt

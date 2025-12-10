@@ -1,4 +1,6 @@
 import SwiftUI
+import NotesReluxInt
+import SwiftUIRelux
 
 extension Notes.UI.Edit.Container {
     struct Page: Relux.UI.View {

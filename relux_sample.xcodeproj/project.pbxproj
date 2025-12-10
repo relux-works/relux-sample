@@ -33,6 +33,16 @@
 		AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4CC73B5BDFDB420B9D8A23DF /* NotesModels in Frameworks */ = {isa = PBXBuildFile; productRef = 15270A54E01E47E9926BF996 /* NotesModels */; };
+		70CD1977B3054D83BCC08C42 /* NotesReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = 30CCA4A2D9FF43E799E27676 /* NotesReluxInt */; };
+		A5E61E546B90474591BAFF09 /* NotesReluxImpl in Frameworks */ = {isa = PBXBuildFile; productRef = D526582DBB6B4519B71A5671 /* NotesReluxImpl */; };
+		7E02C8CFBEA44696AE2E31BC /* NotesServiceInt in Frameworks */ = {isa = PBXBuildFile; productRef = 71F010621C6447CF8275D72E /* NotesServiceInt */; };
+		6A11CC43E7FB4FDD97FE8EEC /* NotesServiceImpl in Frameworks */ = {isa = PBXBuildFile; productRef = 029C5FF3A7654426B747737C /* NotesServiceImpl */; };
+		826EA4D44EA4402AAF671161 /* NotesModels in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 15270A54E01E47E9926BF996 /* NotesModels */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		22233720364542DA8663E2B8 /* NotesReluxInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 30CCA4A2D9FF43E799E27676 /* NotesReluxInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C493CDD949404630A479ECE1 /* NotesReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = D526582DBB6B4519B71A5671 /* NotesReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		0FADD67EFE8343A5B62DDD66 /* NotesServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 71F010621C6447CF8275D72E /* NotesServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F960AFFE6C1A4016BBBFF7E4 /* NotesServiceImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 029C5FF3A7654426B747737C /* NotesServiceImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +67,11 @@
 				AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */,
 				AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */,
 				AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */,
+				826EA4D44EA4402AAF671161 /* NotesModels in Embed Frameworks */,
+				22233720364542DA8663E2B8 /* NotesReluxInt in Embed Frameworks */,
+				C493CDD949404630A479ECE1 /* NotesReluxImpl in Embed Frameworks */,
+				0FADD67EFE8343A5B62DDD66 /* NotesServiceInt in Embed Frameworks */,
+				F960AFFE6C1A4016BBBFF7E4 /* NotesServiceImpl in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,6 +115,11 @@
 				AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */,
 				AA5CB2C52EE8E0FC0077BFF8 /* AuthServiceInt in Frameworks */,
 				AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */,
+				4CC73B5BDFDB420B9D8A23DF /* NotesModels in Frameworks */,
+				70CD1977B3054D83BCC08C42 /* NotesReluxInt in Frameworks */,
+				A5E61E546B90474591BAFF09 /* NotesReluxImpl in Frameworks */,
+				7E02C8CFBEA44696AE2E31BC /* NotesServiceInt in Frameworks */,
+				6A11CC43E7FB4FDD97FE8EEC /* NotesServiceImpl in Frameworks */,
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
 				70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */,
@@ -187,6 +207,11 @@
 				AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */,
 				AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */,
 				AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */,
+				15270A54E01E47E9926BF996 /* NotesModels */,
+				30CCA4A2D9FF43E799E27676 /* NotesReluxInt */,
+				D526582DBB6B4519B71A5671 /* NotesReluxImpl */,
+				71F010621C6447CF8275D72E /* NotesServiceInt */,
+				029C5FF3A7654426B747737C /* NotesServiceImpl */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -248,6 +273,7 @@
 				70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */,
 				70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */,
 				70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */,
+				D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */,
 				AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -593,6 +619,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/AuthUI;
 		};
+		D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Notes;
+		};
 		AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Auth;
@@ -686,6 +716,31 @@
 		AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthServiceImpl;
+		};
+		15270A54E01E47E9926BF996 /* NotesModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */;
+			productName = NotesModels;
+		};
+		30CCA4A2D9FF43E799E27676 /* NotesReluxInt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */;
+			productName = NotesReluxInt;
+		};
+		D526582DBB6B4519B71A5671 /* NotesReluxImpl */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */;
+			productName = NotesReluxImpl;
+		};
+		71F010621C6447CF8275D72E /* NotesServiceInt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */;
+			productName = NotesServiceInt;
+		};
+		029C5FF3A7654426B747737C /* NotesServiceImpl */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5DC21A3994541339EA74D2A /* XCLocalSwiftPackageReference "Packages/Notes" */;
+			productName = NotesServiceImpl;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

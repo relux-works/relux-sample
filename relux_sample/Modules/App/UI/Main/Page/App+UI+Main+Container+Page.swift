@@ -1,4 +1,5 @@
 import SwiftUI
+import NotesReluxInt
 
 extension SampleApp.UI.Main.Container {
     struct Page: Relux.UI.View {

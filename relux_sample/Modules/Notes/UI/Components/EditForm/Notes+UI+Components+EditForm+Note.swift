@@ -1,3 +1,5 @@
+import NotesReluxInt
+import SwiftUIRelux
 extension Notes.UI.Component.EditForm {
     struct Note: Equatable, Hashable {
         var title: String

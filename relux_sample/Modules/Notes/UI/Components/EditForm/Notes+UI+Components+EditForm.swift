@@ -1,4 +1,6 @@
 import SwiftUI
+import NotesReluxInt
+import SwiftUIRelux
 
 extension Notes.UI.Component {
     struct EditForm: Relux.UI.View {

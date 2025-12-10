@@ -1,4 +1,6 @@
 import SwiftUI
+import NotesReluxInt
+import SwiftUIRelux
 
 extension Notes.UI.Details.Container {
     struct Page: Relux.UI.View {
@@ -86,4 +88,3 @@ extension Notes.UI.Details.Container.Page {
         }.padding()
     }
 }
-

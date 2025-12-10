@@ -1,4 +1,5 @@
 import SwiftUIRelux
+import NotesReluxInt
 
 extension Notes.UI.Details.Container.Page {
 

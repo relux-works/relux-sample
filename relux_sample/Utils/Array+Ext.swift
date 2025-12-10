@@ -57,16 +57,6 @@ public extension Array {
         }
     }
 
-    mutating func upsertByIdentity(_ elem: Element) where Element: Identifiable {
-        if let index = self.firstIndex(where: { $0.id == elem.id }) {
-            self.append(elem)
-            self.swapAt(index, self.count - 1)
-            self.removeLast()
-        } else {
-            self.append(elem)
-        }
-    }
-
     mutating func remove(_ elem: Element) where Element: Equatable {
         if let index = self.firstIndex(of: elem),
            index < self.count {
@@ -74,10 +64,6 @@ public extension Array {
             self.removeLast()
         }
     }
-    mutating func removeById(_ elem: Element) where Element: Identifiable {
-        self = self.filter { $0.id != elem.id }
-    }
-
     func take(_ take: Int, skip: Int = 0) -> Array<Element> {
         Array(self[skip..<skip+Swift.min(take, self.count-skip)])
     }
