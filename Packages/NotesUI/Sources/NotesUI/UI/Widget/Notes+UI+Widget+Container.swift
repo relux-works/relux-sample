@@ -4,15 +4,19 @@ import NotesReluxImpl
 import NotesUIAPI
 import SwiftUIRelux
 
-extension Notes.UI.Widget {
+public extension Notes.UI.Widget {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
         // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
         // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
         // If it’s declared using the @Observable macro, it’s available via @Environment.
         @EnvironmentObject private var notesState: Notes.UI.State
+        
+        public init() {
 
-        var body: some View {
+        }
+
+        public var body: some View {
             content
                 .task { loadData() }
         }
@@ -41,7 +45,6 @@ extension Notes.UI.Widget.Container {
     }
 
     private func openList() async {
-        guard let router = NotesUIRoutingRegistry.router else { return }
-        await actions { router.set(.list) }
+        // Relux.NavigationLink handles push; this callback stays for parity with Actions type.
     }
 }

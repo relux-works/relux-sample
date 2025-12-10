@@ -1,6 +1,7 @@
 import SwiftUI
 import NotesReluxInt
 import SwiftUIRelux
+import Relux
 
 extension Notes.UI.Widget.Container {
     struct Page: Relux.UI.View {
@@ -54,7 +55,7 @@ extension Notes.UI.Widget.Container.Page {
 // notes content
 extension Notes.UI.Widget.Container.Page {
     private func notesView(count: Int) -> some View {
-        AsyncButton(action: actions.onOpenList) {
+        Relux.NavigationLink(page: .app(page: .notes(.list))) {
             notesContent(count: count)
         }
         .extendingContent()
