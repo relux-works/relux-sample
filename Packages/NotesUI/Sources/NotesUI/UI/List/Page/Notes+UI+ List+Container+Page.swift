@@ -1,7 +1,6 @@
 import SwiftUI
 import NotesReluxInt
 import SwiftUIRelux
-import Relux
 
 extension Notes.UI.List.Container {
     struct Page: Relux.UI.View {
@@ -115,7 +114,7 @@ extension Notes.UI.List.Container.Page {
     }
 
     private func noteRow(for note: Note) -> some View {
-        Relux.NavigationLink(page: .app(page: .notes(.details(id: note.id)))) {
+        AsyncButton(action: { await actions.onOpenDetails(note) }) {
             noteRowContent(for: note)
         }
     }

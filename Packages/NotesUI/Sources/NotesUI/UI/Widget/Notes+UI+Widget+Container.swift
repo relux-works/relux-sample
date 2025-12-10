@@ -45,6 +45,7 @@ extension Notes.UI.Widget.Container {
     }
 
     private func openList() async {
-        // Relux.NavigationLink handles push; this callback stays for parity with Actions type.
+        guard let router = NotesUIRoutingRegistry.router else { return }
+        await actions { router.push(.list) }
     }
 }
