@@ -31,7 +31,7 @@ extension Notes.UI.Widget.Container.Page {
         .padding()
         .frame(height: 100)
         .background(.gray.opacity(0.3))
-        .cornerRadius(28, corners: .allCorners)
+        .cornerRadius(28)
     }
 }
 
@@ -54,10 +54,8 @@ extension Notes.UI.Widget.Container.Page {
 // notes content
 extension Notes.UI.Widget.Container.Page {
     private func notesView(count: Int) -> some View {
-        VStack {
-            Relux.NavigationLink(page: .app(page: .notes(.list))) {
-                notesContent(count: count)
-            }
+        AsyncButton(action: actions.onOpenList) {
+            notesContent(count: count)
         }
         .extendingContent()
     }

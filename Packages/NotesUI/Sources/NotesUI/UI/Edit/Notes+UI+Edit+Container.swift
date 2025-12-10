@@ -1,5 +1,6 @@
 import SwiftUI
 import NotesReluxInt
+import NotesUIAPI
 import SwiftUIRelux
 
 extension Notes.UI.Edit.Container {
@@ -36,16 +37,18 @@ extension Notes.UI.Edit {
 // reactions
 extension Notes.UI.Edit.Container {
     private func upsert(_ note: Note) async {
+        guard let router = NotesUIRoutingRegistry.router else { return }
         await actions {
             Notes.Business.Effect.upsert(note: note)
-            AppRouter.Action.removeLast()
+            router.pop()
         }
     }
 
     private func remove(_ note: Note) async {
+        guard let router = NotesUIRoutingRegistry.router else { return }
         await actions {
             Notes.Business.Effect.delete(note: note)
-            AppRouter.Action.removeLast(2)
+            router.pop()
         }
     }
 }

@@ -1,5 +1,7 @@
 import SwiftUI
 import NotesReluxInt
+import NotesReluxImpl
+import NotesUIAPI
 import SwiftUIRelux
 
 extension Notes.UI.Details.Container {
@@ -48,8 +50,7 @@ extension Notes.UI.Details.Container {
     }
 
     private func openEdit(note: Note) async {
-        await actions {
-            AppRouter.Action.push(.app(page: .notes(.edit(note: note))))
-        }
+        guard let router = NotesUIRoutingRegistry.router else { return }
+        await actions { router.push(.edit(note: note)) }
     }
 }

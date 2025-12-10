@@ -8,6 +8,8 @@ import AuthUIAPI
 import NotesModels
 import NotesReluxInt
 import NotesReluxImpl
+import NotesUI
+import NotesUIAPI
 import SwiftIoC
 
 extension SampleApp {
@@ -31,6 +33,9 @@ extension SampleApp.Registry {
 
         ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: Self.buildAuthRouter)
         ioc.register(AuthUIProviding.self, lifecycle: .container, resolver: Self.buildAuthUIRouter)
+        ioc.register(NotesUIProviding.self, lifecycle: .container, resolver: Self.buildNotesUIRouter)
+        ioc.register(NotesUIRouting.self, lifecycle: .container, resolver: Self.buildNotesUIRouting)
+        _ = resolve(NotesUIRouting.self)
 
         ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
         ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
@@ -101,6 +106,16 @@ extension SampleApp.Registry {
 
     private static func buildAuthUIRouter() -> any AuthUIProviding {
         AuthUIRouter()
+    }
+
+    private static func buildNotesUIRouter() -> any NotesUIProviding {
+        NotesUIRouter()
+    }
+
+    private static func buildNotesUIRouting() -> any NotesUIRouting {
+        let router = NotesUIRouterAdapter()
+        NotesUIRoutingRegistry.router = router
+        return router
     }
 }
 

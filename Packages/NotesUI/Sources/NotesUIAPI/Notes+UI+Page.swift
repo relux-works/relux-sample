@@ -1,7 +1,8 @@
 import NotesReluxInt
-import SwiftUIRelux
+import Relux
+
 extension Notes.UI.Model {
-    enum Page: NavPathComponent {
+    public enum Page: Relux.Navigation.PathComponent {
         case list
         case details(id: Notes.Business.Model.Note.Id)
         case create

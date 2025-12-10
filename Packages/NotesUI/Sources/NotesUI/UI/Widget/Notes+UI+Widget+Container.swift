@@ -1,12 +1,12 @@
 import SwiftUI
 import NotesReluxInt
+import NotesReluxImpl
+import NotesUIAPI
 import SwiftUIRelux
 
-extension Notes.UI.Create {
+extension Notes.UI.Widget {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
-        typealias Note = Notes.Business.Model.Note
-        
         // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
         // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
         // If it’s declared using the @Observable macro, it’s available via @Environment.
@@ -14,13 +14,16 @@ extension Notes.UI.Create {
 
         var body: some View {
             content
+                .task { loadData() }
         }
 
         private var content: some View {
             Page(
-                props: .init(),
+                props: .init(
+                    notes: notesState.notesGroupedByDay
+                ),
                 actions: .init(
-                    onCreate: ViewInputCallback(create)
+                    onOpenList: ViewCallback(openList)
                 )
             )
         }
@@ -28,17 +31,17 @@ extension Notes.UI.Create {
 }
 
 // reactions
-extension Notes.UI.Create.Container {
-    private func create(_ note: Note) async {
-        switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
-            case .success: await close()
-            case .failure: break
+extension Notes.UI.Widget.Container {
+    private func loadData() {
+        if notesState.notesGroupedByDay.value.isNil {
+            performAsync(delay: 0.5) {
+                Notes.Business.Effect.obtainNotes
+            }
         }
     }
 
-    private func close() async {
-        await action {
-            AppRouter.Action.removeLast()
-        }
+    private func openList() async {
+        guard let router = NotesUIRoutingRegistry.router else { return }
+        await actions { router.set(.list) }
     }
 }

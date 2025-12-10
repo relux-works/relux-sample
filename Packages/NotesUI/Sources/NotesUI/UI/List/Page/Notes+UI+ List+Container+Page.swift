@@ -114,7 +114,7 @@ extension Notes.UI.List.Container.Page {
     }
 
     private func noteRow(for note: Note) -> some View {
-        Relux.NavigationLink(page: .app(page: .notes(.details(id: note.id)))) {
+        AsyncButton(action: { await actions.onOpenDetails(note) }) {
             noteRowContent(for: note)
         }
     }

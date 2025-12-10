@@ -1,0 +1,116 @@
+import SwiftUI
+import Relux
+
+@MainActor
+struct AsyncButton<Label: View>: View {
+    typealias Action = @Sendable () async -> Void
+
+    private let actionPriority: TaskPriority?
+    private let actionOptions: Set<ActionOption>
+    private let role: ButtonRole?
+    private let action: Action
+
+    @State private var isDisabled = false
+    @State private var showProgress = false
+    private let label: Label
+
+    init(
+        actionPriority: TaskPriority? = nil,
+        actionOptions: Set<ActionOption> = [ActionOption.disableButton],
+        role: ButtonRole? = .none,
+        action: @escaping Action,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.actionPriority = actionPriority
+        self.actionOptions = actionOptions
+        self.role = role
+        self.action = action
+        self.label = label()
+    }
+
+    init(
+        actionPriority: TaskPriority? = nil,
+        actionOptions: Set<ActionOption> = [ActionOption.disableButton],
+        role: ButtonRole? = .none,
+        action: Relux.UI.ViewCallback<Void>,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.actionPriority = actionPriority
+        self.actionOptions = actionOptions
+        self.role = role
+        self.action = { await action() }
+        self.label = label()
+    }
+
+    var body: some View {
+        Button(role: role, action: customizedAction) {
+            label
+                .opacity(showProgress ? 0 : 1)
+                .overlay(progressView)
+        }
+        .disabled(isDisabled)
+    }
+
+    @ViewBuilder
+    private var progressView: some View {
+        if showProgress {
+            ProgressView()
+        } else {
+            EmptyView()
+        }
+    }
+
+    private func customizedAction() {
+        if actionOptions.contains(.disableButton) {
+            isDisabled = true
+        }
+
+        Task(priority: actionPriority) { @MainActor in
+            var progressViewTask: Task<Void, Never>?
+
+            if actionOptions.contains(.showProgressView) {
+                progressViewTask = Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 150_000_000)
+                    showProgress = true
+                }
+            }
+
+            await action()
+            progressViewTask?.cancel()
+
+            isDisabled = false
+            showProgress = false
+        }
+    }
+}
+
+extension AsyncButton {
+    enum ActionOption: CaseIterable {
+        case disableButton
+        case showProgressView
+    }
+}
+
+extension AsyncButton where Label == Text {
+    init(
+        _ label: String,
+        actionOptions: Set<ActionOption> = Set(ActionOption.allCases),
+        action: @escaping Action
+    ) {
+        self.init(actionOptions: actionOptions, action: action) {
+            Text(label)
+        }
+    }
+}
+
+extension AsyncButton where Label == Image {
+    init(
+        systemImageName: String,
+        actionOptions: Set<ActionOption> = Set(ActionOption.allCases),
+        action: @escaping Action
+    ) {
+        self.init(actionOptions: actionOptions, action: action) {
+            Image(systemName: systemImageName)
+        }
+    }
+}

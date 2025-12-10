@@ -1,15 +1,13 @@
 import SwiftUIRelux
 import NotesReluxInt
 
-extension Notes.UI.List.Container.Page {
+extension Notes.UI.Widget.Container.Page {
 
     struct Props: ViewProps {
         let notes: MaybeData<[[Note]], Err>
     }
 
     struct Actions: Relux.UI.ViewCallbacks {
-        let onReload: ViewCallback<Void>
-        let onCreate: ViewCallback<Void>
-        let onRemove: ViewInputCallback<Note>
+        let onOpenList: ViewCallback<Void>
     }
 }

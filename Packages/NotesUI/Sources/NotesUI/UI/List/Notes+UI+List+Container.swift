@@ -1,5 +1,7 @@
 import SwiftUI
 import NotesReluxInt
+import NotesReluxImpl
+import NotesUIAPI
 import SwiftUIRelux
 
 extension Notes.UI.List {
@@ -24,7 +26,8 @@ extension Notes.UI.List {
                 actions: .init(
                     onReload: ViewCallback(reloadNotes),
                     onCreate: ViewCallback(openCreateNote),
-                    onRemove: ViewInputCallback(remove)
+                    onRemove: ViewInputCallback(remove),
+                    onOpenDetails: ViewInputCallback(openDetails)
                 )
             )
         }
@@ -40,14 +43,18 @@ extension Notes.UI.List.Container {
     }
 
     private func openCreateNote() async {
-        await actions{
-            AppRouter.Action.push(.app(page: .notes(.create)))
-        }
+        guard let router = NotesUIRoutingRegistry.router else { return }
+        await actions { router.push(.create) }
     }
 
     private func remove(_ note: Note) async {
         await actions {
             Notes.Business.Effect.delete(note: note)
         }
+    }
+
+    private func openDetails(_ note: Note) async {
+        guard let router = NotesUIRoutingRegistry.router else { return }
+        await actions { router.push(.details(id: note.id)) }
     }
 }
