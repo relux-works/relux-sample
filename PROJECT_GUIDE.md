@@ -7,7 +7,7 @@ Entry point for developers and AI agents working with this codebase.
 ## Quick Start
 
 1. Read this file for project overview and conventions
-2. Read pattern docs in `docs/Patterns/` for architecture decisions
+2. Read pattern docs in `Docs/Patterns/` for architecture decisions
 3. Check `README.md` for setup and running instructions
 
 ---
@@ -42,16 +42,16 @@ The ultimate test demonstrating separation: CLI for key user scenarios tied to t
 
 ## Architecture Patterns
 
-Detailed documentation in `docs/Patterns/`:
+Detailed documentation in `Docs/Patterns/`:
 
 | Pattern | Document | Purpose |
 |---------|----------|---------|
-| Modular Architecture | [MODULAR_ARCHITECTURE.md](./docs/Patterns/MODULAR_ARCHITECTURE.md) | Domain decomposition into 6 dynamic products |
-| Orchestration | [ORCHESTRATION.md](./docs/Patterns/ORCHESTRATION.md) | Cross-domain coordination without coupling |
-| Flow vs Saga | [FLOW_VS_SAGA.md](./docs/Patterns/FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
-| Testing Strategy | [TESTING_STRATEGY.md](./docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
-| Test Infrastructure | [TEST_INFRASTRUCTURE.md](./docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
-| Domain Test Support | [DOMAIN_TEST_SUPPORT.md](./docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 dynamic products |
+| Orchestration | [RELUX_ORCHESTRATION.md](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination without coupling |
+| Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
+| Testing Strategy | [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+| Test Infrastructure | [TEST_INFRASTRUCTURE.md](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+| Domain Test Support | [DOMAIN_TEST_SUPPORT.md](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
 
 ---
 
@@ -284,7 +284,7 @@ Framework: **Swift Testing** (`@Suite`, `@Test`, `#expect`, `#require`). Prefer 
 
 ### Strategy
 
-Test each layer in isolation — see [TESTING_STRATEGY.md](./docs/Patterns/TESTING_STRATEGY.md):
+Test each layer in isolation — see [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md):
 
 | Layer | Mock | Asserts |
 |-------|------|---------|
@@ -395,4 +395,4 @@ Subject line must complete: "If applied, this commit will **[subject]**"
 | `relux_sample/IoC/IoC.swift` | Dependency registration |
 | `relux_sample/Adapters/` | Domain router adapters |
 | `Packages/Auth/` | Extracted Auth domain (reference implementation) |
-| `docs/Patterns/` | Architecture pattern documentation |
+| `Docs/Patterns/` | Architecture pattern documentation |

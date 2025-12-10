@@ -63,12 +63,12 @@ open relux_sample.xcodeproj
 | Document | Purpose |
 |----------|---------|
 | [`PROJECT_GUIDE.md`](./PROJECT_GUIDE.md) | Entry point — layout, conventions, setup |
-| [`MODULAR_ARCHITECTURE.md`](./docs/Patterns/MODULAR_ARCHITECTURE.md) | Domain decomposition pattern |
-| [`ORCHESTRATION.md`](./docs/Patterns/ORCHESTRATION.md) | Cross-domain coordination |
-| [`FLOW_VS_SAGA.md`](./docs/Patterns/FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
-| [`TESTING_STRATEGY.md`](./docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
-| [`TEST_INFRASTRUCTURE.md`](./docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
-| [`DOMAIN_TEST_SUPPORT.md`](./docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+| [`RELUX_MODULAR.md`](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition pattern |
+| [`RELUX_ORCHESTRATION.md`](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination |
+| [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
+| [`TESTING_STRATEGY.md`](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+| [`TEST_INFRASTRUCTURE.md`](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+| [`DOMAIN_TEST_SUPPORT.md`](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
 
 ---
 
