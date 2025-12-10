@@ -21,6 +21,7 @@ let package = Package(
         .package(name: "Auth-Self", path: "."),
         .package(url: "https://github.com/ivalx1s/swift-ioc.git", from: "1.0.1"),
         .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
+        .package(path: "../TestInfrastructure"),
     ],
     targets: [
         .target(
@@ -64,6 +65,7 @@ let package = Package(
                 .product(name: "AuthServiceInt", package: "Auth-Self"),
                 .product(name: "AuthReluxInt", package: "Auth-Self"),
                 .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "TestInfrastructure", package: "TestInfrastructure"),
             ]
         ),
         .testTarget(
