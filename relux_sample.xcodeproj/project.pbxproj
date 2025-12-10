@@ -98,6 +98,8 @@
 		70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = relux_sampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA5A934E2EE8FB650049F50D /* swiftui-relux */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swiftui-relux"; path = "../swiftui-relux"; sourceTree = SOURCE_ROOT; };
 		AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = relux_sample.xctestplan; path = ../../../../Downloads/relux_sample.xctestplan; sourceTree = "<group>"; };
+		AAA1BFFD2EE98CA300F2C526 /* darwin-relux */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "darwin-relux"; path = "../darwin-relux"; sourceTree = SOURCE_ROOT; };
+		AAA1BFFE2EE98CAF00F2C526 /* swiftui-reluxrouter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swiftui-reluxrouter"; path = "../swiftui-reluxrouter"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -177,6 +179,8 @@
 				70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */,
 				70A603AC2D8ECD6900BE2349 /* Products */,
 				AA5A934E2EE8FB650049F50D /* swiftui-relux */,
+				AAA1BFFD2EE98CA300F2C526 /* darwin-relux */,
+				AAA1BFFE2EE98CAF00F2C526 /* swiftui-reluxrouter */,
 			);
 			sourceTree = "<group>";
 		};
