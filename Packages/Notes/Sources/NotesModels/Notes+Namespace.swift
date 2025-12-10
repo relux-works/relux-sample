@@ -1,4 +1,5 @@
 // Module structure namespace for Notes domain.
+
 public enum Notes {
     public enum Data {
         public enum Api {

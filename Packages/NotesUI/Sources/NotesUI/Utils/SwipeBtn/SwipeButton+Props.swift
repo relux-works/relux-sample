@@ -15,12 +15,8 @@ extension SwipeButton {
             hasher.combine(tint)
         }
     }
-
-    struct Actions {
-        let action: @Sendable () async -> Void
-
-        init(action: @escaping @Sendable () async -> Void) {
-            self.action = action
-        }
+    
+    struct Callbacks: Relux.UI.ViewCallbacks {
+        let action: Relux.UI.ViewCallback<Void>
     }
 }

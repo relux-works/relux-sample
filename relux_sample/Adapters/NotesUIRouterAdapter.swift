@@ -1,4 +1,5 @@
 import NotesUIAPI
+import NotesReluxInt
 import Relux
 
 struct NotesUIRouterAdapter: NotesUIRouting {
