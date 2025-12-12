@@ -1,30 +1,27 @@
 import Relux
-import ReluxRouter
 import NavigationReluxInt
+import SwiftUIRelux
 
-/// Creates router action from Destination.
-/// These are non-isolated so they can be called from @Sendable closures.  <- todo: think about this
-public func makeRouterAction(for destination: Navigation.UI.Model.Destination) -> AppRouter.Action {
-    switch destination {
-    case .back:
-        return .removeLast()
-    case .root:
-        return .set([])
-    case .splash, .main, .account, .auth, .notes:
-        guard let page = destination.asInternalPage else {
-            fatalError("Destination \(destination) should have internal page mapping")
+extension AppRouter {
+    /// Creates router action from Destination.
+    /// Commands (back, root) return pop actions; pages are pushed directly.
+    nonisolated public static func action(for destination: Navigation.UI.Model.Destination) -> Action {
+        switch destination {
+        case .back:
+            return .removeLast()
+        case .root:
+            return .set([])
+        default:
+            return .push(destination)
         }
-        return .push(page)
     }
-}
 
-/// Creates replace action from Destination.
-public func makeRouterReplaceAction(for destination: Navigation.UI.Model.Destination) -> AppRouter.Action {
-    guard !destination.isCommand else {
-        fatalError("Cannot replace with navigation command: \(destination)")
+    /// Creates replace action from Destination.
+    /// Only valid for pushable pages, not commands.
+    nonisolated public static func replaceAction(for destination: Navigation.UI.Model.Destination) -> Action {
+        guard !destination.isCommand else {
+            fatalError("Cannot replace with navigation command: \(destination)")
+        }
+        return .set([destination])
     }
-    guard let page = destination.asInternalPage else {
-        fatalError("Destination \(destination) should have internal page mapping")
-    }
-    return .set([page])
 }

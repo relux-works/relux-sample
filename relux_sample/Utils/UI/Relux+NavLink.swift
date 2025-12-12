@@ -1,20 +1,21 @@
 import SwiftUI
+import NavigationReluxInt
 import NavigationReluxImpl
-
-/// Adds a navigation link to the view that pushes the given `InternalPage`.
+/*
+/// Adds a navigation link to the view that pushes the given destination.
 ///
 /// Usage:
 /// ```swift
 /// Text("Profile")
-///     .navigate(to: .app(page: .account))
+///     .navigate(to: .account)
 /// ```
 extension View {
-    func navigate(to page: InternalPage) -> some View {
+    func navigate(to page: Navigation.UI.Model.Destination) -> some View {
         Relux.NavigationLink(page: page) { self }
     }
 }
 
-/// `NavigationLink` bound to an `InternalPage`.
+/// `NavigationLink` bound to a destination.
 ///
 /// Internally built on top of `AsyncButton`, so a tap is accepted only once
 /// while the push animation is in progress. Attach it using `navigate(to:)`
@@ -22,12 +23,12 @@ extension View {
 
 extension Relux {
     struct NavigationLink<Content: View>: View {
-        private let page: InternalPage
+        private let page: Navigation.UI.Model.Destination
         private let onNavigated: (@Sendable () async -> ())?
         @ViewBuilder private let content: () -> Content
 
         init(
-            page: InternalPage,
+            page: Navigation.UI.Model.Destination,
             onNavigated: (@Sendable () async -> ())? = nil,
             @ViewBuilder content: @escaping () -> Content
         ) {
@@ -46,7 +47,7 @@ extension Relux {
         /// view's generic type to silence strict-concurrency checks
         /// about capturing `Content.Type` in an isolated closure.
         private static func buildAction(
-            page: InternalPage,
+            page: Navigation.UI.Model.Destination,
             onNavigated: (@Sendable () async -> ())?
         ) -> @Sendable () async -> Void {
             { @Sendable in
@@ -58,3 +59,4 @@ extension Relux {
         }
     }
 }
+*/

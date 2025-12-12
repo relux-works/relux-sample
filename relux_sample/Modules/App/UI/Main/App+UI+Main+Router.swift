@@ -1,12 +1,12 @@
 import SwiftUI
 import NotesReluxInt
 import NotesUIAPI
-import NavigationReluxImpl
+import NavigationReluxInt
 
 @MainActor
 extension SampleApp.UI.Main {
     struct RouterView: View {
-        let page: InternalPage.AppPage
+        let destination: Navigation.UI.Model.Destination
         @Environment(\.notesUIProvider) private var notesProvider
 
         var body: some View {
@@ -15,13 +15,15 @@ extension SampleApp.UI.Main {
 
         @ViewBuilder
         private var content: some View {
-            switch page {
+            switch destination {
             case .main:
                 Container()
             case .account:
                 Account.UI.Container()
             case let .notes(page):
                 notesProvider.view(for: page)
+            default:
+                EmptyView()
             }
         }
     }

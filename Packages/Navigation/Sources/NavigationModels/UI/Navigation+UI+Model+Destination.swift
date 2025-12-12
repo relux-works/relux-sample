@@ -13,7 +13,7 @@ extension Navigation.UI.Model {
     /// nav.actions.go(.auth(.localAuth))
     /// nav.actions.go(.back)
     /// ```
-    public enum Destination: Sendable, Hashable {
+    public enum Destination: Relux.Navigation.PathComponent, Sendable, Hashable {
         // MARK: - Navigation Commands
         /// Pop to previous screen
         case back
@@ -30,8 +30,20 @@ extension Navigation.UI.Model {
 
         // MARK: - Domain Entry Points
         /// Authentication flow
-        case auth(Auth.UI.Model.Page)
+        case auth(Auth.UI.Model.Page = .logoutFlow)
         /// Notes domain
-        case notes(Notes.UI.Model.Page)
+        case notes(Notes.UI.Model.Page = .list)
+    }
+}
+
+extension Navigation.UI.Model.Destination {
+    /// Whether this destination is a navigation command vs pushable page.
+    public var isCommand: Bool {
+        switch self {
+        case .back, .root:
+            return true
+        default:
+            return false
+        }
     }
 }

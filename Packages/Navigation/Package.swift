@@ -23,9 +23,9 @@ let package = Package(
     dependencies: [
         // Self-reference forces dynamic linkage across products
         .package(name: "Navigation-Self", path: "."),
-        .package(name: "darwin-relux", path: "../../darwin-relux"),
-        .package(name: "swiftui-relux", path: "../../swiftui-relux"),
-        .package(name: "swiftui-reluxrouter", path: "../../swiftui-reluxrouter"),
+        .package(name: "darwin-relux", path: "../../../darwin-relux"),
+        .package(name: "swiftui-relux", path: "../../../swiftui-relux"),
+        .package(name: "swiftui-reluxrouter", path: "../../../swiftui-reluxrouter"),
 
         // Domain packages — for Page enums in Destination
         .package(path: "../Auth"),
@@ -63,7 +63,7 @@ let package = Package(
                 .product(name: "Relux", package: "darwin-relux"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
                 .product(name: "ReluxRouter", package: "swiftui-reluxrouter"),
-                // Domain page types for InternalPage
+                // Domain page types referenced by Destination
                 .product(name: "AuthReluxInt", package: "Auth"),
                 .product(name: "NotesModels", package: "Notes"),
                 .product(name: "NotesReluxInt", package: "Notes"),

@@ -1,5 +1,6 @@
 import AuthReluxInt
 import Relux
+import NavigationReluxInt
 import NavigationReluxImpl
 
 extension SampleApp.Business {
@@ -35,7 +36,7 @@ extension SampleApp.Business.Saga: SampleApp.Business.ISaga {
 extension SampleApp.Business.Saga {
     private func setAppContext() async {
         await actions {
-            AppRouter.Action.set([.auth(page: .localAuth)])
+            AppRouter.Action.set([.auth(.localAuth)])
         }
     }
 

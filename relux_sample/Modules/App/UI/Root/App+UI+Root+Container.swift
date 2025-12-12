@@ -1,5 +1,6 @@
 import SwiftUI
 import NavigationReluxInt
+import NavigationReluxImpl
 
 extension SampleApp.UI.Root {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
@@ -35,8 +36,8 @@ extension SampleApp.UI.Root {
 
         private func rootView() -> some View {
             Splash(props: SampleApp.UI.Root.Splash.Props())
-                .navigationDestination(for: InternalPage.self) {
-                    SampleApp.UI.Root.RouterView(page: $0)
+                .navigationDestination(for: Navigation.UI.Model.Destination.self) {
+                    SampleApp.UI.Root.RouterView(destination: $0)
                 }
         }
     }

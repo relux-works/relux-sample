@@ -9,18 +9,26 @@ extension Navigation {
         public let sagas: [any Relux.Saga] = []
         public let actionRelays: [any Relux.ActionRelaying]
 
+        /// The main router instance — exposed for NavigationStack binding in App.
+        public let router: AppRouter
+
+        /// The modal router instance — exposed for sheet binding in App.
+        public let modalRouter: Navigation.Business.ModalRouter
+
         public init() {
             let router = AppRouter(pages: [.splash])
             let modalRouter = Navigation.Business.ModalRouter()
 
+            self.router = router
+            self.modalRouter = modalRouter
             self.states = [router, modalRouter]
 
             let appNavigation = AppNavigation(
                 go: { destination in
-                    makeRouterAction(for: destination)
+                    AppRouter.action(for: destination)
                 },
                 replace: { destination in
-                    makeRouterReplaceAction(for: destination)
+                    AppRouter.replaceAction(for: destination)
                 },
                 present: { page in
                     Navigation.Business.ModalRouter.Action.present(page: page)

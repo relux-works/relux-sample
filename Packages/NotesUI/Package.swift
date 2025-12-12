@@ -22,8 +22,8 @@ let package = Package(
         .package(name: "NotesUI-Self", path: "."),
         .package(path: "../Notes"),
         .package(path: "../Navigation"),
-        .package(name: "swiftui-relux", path: "../../swiftui-relux"),
-        .package(name: "darwin-relux", path: "../../darwin-relux")
+        .package(name: "swiftui-relux", path: "../../../swiftui-relux"),
+        .package(name: "darwin-relux", path: "../../../darwin-relux")
     ],
     targets: [
         .target(

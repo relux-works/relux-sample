@@ -1,11 +1,11 @@
 import AuthUIAPI
 import SwiftUI
-import NavigationReluxImpl
+import NavigationReluxInt
 
 @MainActor
 extension SampleApp.UI.Root {
     struct RouterView: View {
-        let page: InternalPage
+        let destination: Navigation.UI.Model.Destination
         @Environment(\.notesUIProvider) private var notesProvider
 
         var body: some View {
@@ -14,7 +14,9 @@ extension SampleApp.UI.Root {
 
         @ViewBuilder
         private var content: some View {
-            switch page {
+            switch destination {
+            case .back, .root:
+                EmptyView()
             case .splash:
                 SampleApp.UI.Root.Splash(props: Splash.Props())
             case let .auth(page):
@@ -23,8 +25,8 @@ extension SampleApp.UI.Root {
                 } else {
                     AnyView(EmptyView())
                 }
-            case let .app(page):
-                SampleApp.UI.Main.RouterView(page: page)
+            case .main, .account, .notes:
+                SampleApp.UI.Main.RouterView(destination: destination)
                     .environment(\.notesUIProvider, notesProvider)
             }
         }
