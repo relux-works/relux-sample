@@ -1,7 +1,7 @@
 import AuthReluxInt
 import Relux
 import SwiftUI
-import NavigationReluxImpl
+import NavigationReluxInt
 
 extension Account.UI {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.

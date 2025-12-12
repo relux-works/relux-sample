@@ -1,4 +1,5 @@
 import SwiftUI
+import NavigationReluxInt
 
 /// Protocol for @Observable states that need SwiftUI Bindings.
 public protocol BindableState: AnyObject, Observable {

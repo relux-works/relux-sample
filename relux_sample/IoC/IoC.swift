@@ -12,6 +12,7 @@ import NotesReluxImpl
 import NotesUI
 import NotesUIAPI
 import SwiftIoC
+import NavigationReluxInt
 
 extension SampleApp {
     // the Registry entity is created for the app purposes
@@ -38,7 +39,6 @@ extension SampleApp.Registry {
         ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: Self.buildAuthRouter)
         ioc.register(AuthUIProviding.self, lifecycle: .container, resolver: Self.buildAuthUIRouter)
         ioc.register(NotesUIProviding.self, lifecycle: .container, resolver: Self.buildNotesUIRouter)
-        ioc.register(NotesUIRouting.self, lifecycle: .container, resolver: Self.buildNotesUIRouting)
 
         ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
         ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
@@ -115,10 +115,6 @@ extension SampleApp.Registry {
 
     private static func buildNotesUIRouter() -> any NotesUIProviding {
         NotesUIRouter()
-    }
-
-    private static func buildNotesUIRouting() -> any NotesUIRouting {
-        NotesUIRouterAdapter()
     }
 }
 

@@ -21,8 +21,9 @@ let package = Package(
     dependencies: [
         .package(name: "NotesUI-Self", path: "."),
         .package(path: "../Notes"),
-        .package(url: "https://github.com/ivalx1s/swiftui-relux.git", from: "7.1.0"),
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0")
+        .package(path: "../Navigation"),
+        .package(name: "swiftui-relux", path: "../../swiftui-relux"),
+        .package(name: "darwin-relux", path: "../../darwin-relux")
     ],
     targets: [
         .target(
@@ -30,7 +31,7 @@ let package = Package(
             dependencies: [
                 .product(name: "NotesModels", package: "Notes"),
                 .product(name: "NotesReluxInt", package: "Notes"),
-                .product(name: "Relux", package: "darwin-relux")
+                .product(name: "Relux", package: "darwin-relux"),
             ]
         ),
         .target(
@@ -40,6 +41,9 @@ let package = Package(
                 .product(name: "NotesModels", package: "Notes"),
                 .product(name: "NotesReluxInt", package: "Notes"),
                 .product(name: "NotesReluxImpl", package: "Notes"),
+                .product(name: "NavigationModels", package: "Navigation"),
+                .product(name: "NavigationReluxInt", package: "Navigation"),
+                .product(name: "NavigationUI", package: "Navigation"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
                 .product(name: "Relux", package: "darwin-relux")
             ],

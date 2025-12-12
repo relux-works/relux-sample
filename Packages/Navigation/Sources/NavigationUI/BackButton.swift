@@ -1,6 +1,6 @@
 import SwiftUI
+import NavigationModels
 import Relux
-import SwiftUIRelux
 import NavigationReluxInt
 
 extension Navigation.UI {

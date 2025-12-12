@@ -2,18 +2,17 @@ import SwiftUI
 import NotesReluxInt
 import NotesReluxImpl
 import NotesUIAPI
+import NavigationUI
+import NavigationReluxInt
 import SwiftUIRelux
 
+
 extension Notes.UI.List {
-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
         typealias Note = Notes.Business.Model.Note
 
-        // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
-        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
-        // If it’s declared using the @Observable macro, it’s available via @Environment.
         @EnvironmentObject private var notesState: Notes.UI.State
-        @Environment(\.notesNavigation) private var nav
+        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
 
         var body: some View {
             content
@@ -35,7 +34,6 @@ extension Notes.UI.List {
     }
 }
 
-// reactions
 extension Notes.UI.List.Container {
     private func reloadNotes() async {
         performAsync {
@@ -44,7 +42,7 @@ extension Notes.UI.List.Container {
     }
 
     private func openCreateNote() async {
-        await actions { nav.push(.create) }
+        await actions { nav.actions.go(.notes(.create)) }
     }
 
     private func remove(_ note: Note) async {
@@ -54,6 +52,6 @@ extension Notes.UI.List.Container {
     }
 
     private func openDetails(_ note: Note) async {
-        await actions { nav.push(.details(id: note.id)) }
+        await actions { nav.actions.go(.notes(.details(id: note.id))) }
     }
 }

@@ -1,5 +1,5 @@
 import SwiftUI
-import NavigationReluxImpl
+import NavigationReluxInt
 
 extension SampleApp.UI.Root {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.

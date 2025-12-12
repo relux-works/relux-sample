@@ -1,3 +1,5 @@
+import NavigationReluxInt
+
 extension Navigation.Business.ModalRouter {
     func internalReduce(with action: Action) async {
         switch action {
@@ -9,3 +11,4 @@ extension Navigation.Business.ModalRouter {
         }
     }
 }
+

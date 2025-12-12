@@ -30,8 +30,8 @@ extension Navigation.UI.Model {
 
         // MARK: - Domain Entry Points
         /// Authentication flow
-        case auth(Auth.UI.Model.Page = .logoutFlow)
+        case auth(Auth.UI.Model.Page)
         /// Notes domain
-        case notes(Notes.UI.Model.Page = .list)
+        case notes(Notes.UI.Model.Page)
     }
 }

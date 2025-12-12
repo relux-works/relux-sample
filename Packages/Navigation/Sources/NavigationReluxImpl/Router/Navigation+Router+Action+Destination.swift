@@ -3,7 +3,7 @@ import ReluxRouter
 import NavigationReluxInt
 
 /// Creates router action from Destination.
-/// These are non-isolated so they can be called from @Sendable closures.
+/// These are non-isolated so they can be called from @Sendable closures.  <- todo: think about this
 public func makeRouterAction(for destination: Navigation.UI.Model.Destination) -> AppRouter.Action {
     switch destination {
     case .back:

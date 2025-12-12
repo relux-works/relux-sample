@@ -1,6 +1,9 @@
 import SwiftUI
 import NotesReluxInt
 import NotesUIAPI
+import NavigationUI
+import Relux
+import NavigationReluxInt
 import SwiftUIRelux
 
 extension Notes.UI.Edit.Container {
@@ -10,12 +13,11 @@ extension Notes.UI.Edit.Container {
 }
 
 extension Notes.UI.Edit {
-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
     struct Container: Relux.UI.Container {
         typealias Note = Notes.Business.Model.Note
 
         let props: Props
-        @Environment(\.notesNavigation) private var nav
+        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
 
         var body: some View {
             content
@@ -35,19 +37,18 @@ extension Notes.UI.Edit {
     }
 }
 
-// reactions
 extension Notes.UI.Edit.Container {
     private func upsert(_ note: Note) async {
         await actions {
             Notes.Business.Effect.upsert(note: note)
-            nav.pop()
+            nav.actions.go(.back)
         }
     }
 
     private func remove(_ note: Note) async {
         await actions {
             Notes.Business.Effect.delete(note: note)
-            nav.pop()
+            nav.actions.go(.back)
         }
     }
 }
