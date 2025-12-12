@@ -79,3 +79,61 @@ let package = Package(
         )
     ]
 )
+
+// MARK: - Manifest-time API/Impl boundary guardrails
+
+func depName(_ dep: Target.Dependency) -> String {
+    // PackageDescription.Dependency signatures change across SwiftPM versions.
+    // Reflection keeps this guardrail resilient.
+    let mirror = Mirror(reflecting: dep)
+    if let firstString = mirror.children.compactMap({ $0.value as? String }).first {
+        return firstString
+    }
+    return String(describing: dep)
+}
+
+func isImpl(_ name: String) -> Bool {
+    name.hasSuffix("Impl") || name.hasSuffix("Implementation")
+}
+
+func isAPI(_ name: String) -> Bool {
+    name.hasSuffix("Int") || name.hasSuffix("API")
+}
+
+func isUI(_ name: String) -> Bool {
+    name.hasSuffix("UI") || (name.contains("UI") && !isAPI(name))
+}
+
+// Tests may depend on Impl targets.
+let implAllowedTargets: Set<String> = [
+    "NotesTests",
+]
+
+for t in package.targets {
+    // Skip plugins/binaries themselves
+    guard t.type != .plugin && t.type != .binary else { continue }
+
+    let tName = t.name
+    let deps = t.dependencies.map(depName)
+
+    // 1) API may never depend on Impl (prevents vertical dependency chains)
+    if isAPI(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) is an API target and must not depend on Impl targets. Found: \(deps.filter(isImpl))"
+        )
+    }
+
+    // 2) UI may never depend on Impl (UI depends on API only)
+    if isUI(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) is a UI target and must not depend on Impl targets. Found: \(deps.filter(isImpl))"
+        )
+    }
+
+    // 3) Only composition-root targets (or tests) can depend on Impl at all
+    if !implAllowedTargets.contains(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) depends on Impl targets, but only composition-root targets may do that. Found: \(deps.filter(isImpl))"
+        )
+    }
+}

@@ -86,3 +86,53 @@ let package = Package(
         ),
     ]
 )
+
+// MARK: - Manifest-time API/Impl boundary guardrails
+
+func depName(_ dep: Target.Dependency) -> String {
+    let mirror = Mirror(reflecting: dep)
+    if let firstString = mirror.children.compactMap({ $0.value as? String }).first {
+        return firstString
+    }
+    return String(describing: dep)
+}
+
+func isImpl(_ name: String) -> Bool {
+    name.hasSuffix("Impl") || name.hasSuffix("Implementation")
+}
+
+func isAPI(_ name: String) -> Bool {
+    name.hasSuffix("Int") || name.hasSuffix("API")
+}
+
+func isUI(_ name: String) -> Bool {
+    name.hasSuffix("UI") || (name.contains("UI") && !isAPI(name))
+}
+
+// Navigation package has no composition-root targets; tests (if added) can be listed here.
+let implAllowedTargets: Set<String> = []
+
+for t in package.targets {
+    guard t.type != .plugin && t.type != .binary else { continue }
+
+    let tName = t.name
+    let deps = t.dependencies.map(depName)
+
+    if isAPI(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) is an API target and must not depend on Impl targets. Found: \(deps.filter(isImpl))"
+        )
+    }
+
+    if isUI(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) is a UI target and must not depend on Impl targets. Found: \(deps.filter(isImpl))"
+        )
+    }
+
+    if !implAllowedTargets.contains(tName), deps.contains(where: isImpl) {
+        preconditionFailure(
+            "❌ \(tName) depends on Impl targets, but only composition-root targets may do that. Found: \(deps.filter(isImpl))"
+        )
+    }
+}
