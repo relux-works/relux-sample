@@ -82,9 +82,26 @@ let package = Package(
 
 // MARK: - Manifest-time API/Impl boundary guardrails
 
+private func findDepName(in value: Any, depth: Int = 0) -> String? {
+    if depth > 4 { return nil }
+    let mirror = Mirror(reflecting: value)
+    for child in mirror.children {
+        if child.label == "name", let s = child.value as? String {
+            return s
+        }
+        if let s = findDepName(in: child.value, depth: depth + 1) {
+            return s
+        }
+    }
+    return nil
+}
+
 func depName(_ dep: Target.Dependency) -> String {
     // PackageDescription.Dependency signatures change across SwiftPM versions.
-    // Reflection keeps this guardrail resilient.
+    // Reflection keeps this guardrail resilient and prefers the "name" field.
+    if let s = findDepName(in: dep) {
+        return s
+    }
     let mirror = Mirror(reflecting: dep)
     if let firstString = mirror.children.compactMap({ $0.value as? String }).first {
         return firstString
