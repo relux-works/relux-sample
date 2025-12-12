@@ -6,6 +6,7 @@ import AuthServiceImpl
 import AuthUI
 import AuthUIAPI
 import NavigationReluxImpl
+import SampleAppRoutes
 import NotesModels
 import NotesReluxInt
 import NotesReluxImpl
@@ -40,7 +41,7 @@ extension SampleApp.Registry {
 
         ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
         ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
-        ioc.register(Navigation.Module.self, lifecycle: .container, resolver: Self.buildNavigationModule)
+        ioc.register(AppNavigationModule.self, lifecycle: .container, resolver: Self.buildNavigationModule)
         ioc.register(Auth.Module.self, lifecycle: .container, resolver: Self.buildAuthModule)
         ioc.register(Notes.Module.self, lifecycle: .container, resolver: Self.buildNotesModule)
     }
@@ -56,7 +57,7 @@ extension SampleApp.Registry {
         )
         .register { @MainActor in
             resolve(ErrorHandling.Module.self)
-            resolve(Navigation.Module.self)
+            resolve(AppNavigationModule.self)
             resolve(SampleApp.Module.self)
             resolve(Auth.Module.self)
             await resolveAsync(Notes.Module.self)
@@ -86,9 +87,8 @@ extension SampleApp.Registry {
         ErrorHandling.Module()
     }
 
-    private static func buildNavigationModule() -> Navigation.Module {
-        let module = Navigation.Module()
-        return module
+    private static func buildNavigationModule() -> AppNavigationModule {
+        AppNavigationModule(initialPath: [.splash])
     }
 
     private static func buildAuthModule() -> Auth.Module {

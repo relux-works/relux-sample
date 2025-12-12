@@ -1,5 +1,6 @@
 import SwiftUI
 import NavigationUI
+import SampleAppRoutes
 
 extension SampleApp.UI.Main {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
@@ -15,7 +16,7 @@ extension SampleApp.UI.Main {
         }
 
         private var accountBtn: some View {
-            Navigation.UI.Link(.account) {
+            Navigation.UI.NavLink<AppRoute, AppModal, Text>(.account) {
                 Text("Account")
             }
             .padding(.horizontal)

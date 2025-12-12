@@ -1,7 +1,7 @@
 import AuthReluxInt
 import Relux
 import NavigationReluxInt
-import NavigationReluxImpl
+import SampleAppRoutes
 
 extension SampleApp.Business {
     protocol ISaga: Relux.Saga {}

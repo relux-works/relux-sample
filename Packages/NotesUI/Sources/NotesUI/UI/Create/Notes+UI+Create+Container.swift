@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftUIRelux
 import NotesReluxInt
 import NavigationReluxInt
+import SampleAppRoutes
 
 extension Notes.UI.Create {
     struct Container: Relux.UI.Container {
@@ -35,7 +36,7 @@ extension Notes.UI.Create.Container {
 
     private func close() async {
         await action {
-            nav.actions.go(.back)
+            nav.actions.back()
         }
     }
 }

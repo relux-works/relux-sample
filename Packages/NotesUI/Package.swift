@@ -22,6 +22,7 @@ let package = Package(
         .package(name: "NotesUI-Self", path: "."),
         .package(path: "../Notes"),
         .package(path: "../Navigation"),
+        .package(path: "../SampleAppRoutes"),
         .package(name: "swiftui-relux", path: "../../../swiftui-relux"),
         .package(name: "darwin-relux", path: "../../../darwin-relux")
     ],
@@ -44,6 +45,7 @@ let package = Package(
                 .product(name: "NavigationModels", package: "Navigation"),
                 .product(name: "NavigationReluxInt", package: "Navigation"),
                 .product(name: "NavigationUI", package: "Navigation"),
+                .product(name: "SampleAppRoutes", package: "SampleAppRoutes"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
                 .product(name: "Relux", package: "darwin-relux")
             ],

@@ -1,9 +1,9 @@
 import Relux
-import NavigationModels
 
 extension Navigation.Business {
     /// Protocol for modal presentation state.
     public protocol IModalRouter: Relux.Navigation.RouterProtocol {
-        var modalSheet: Navigation.Business.Model.ModalPage? { get }
+        associatedtype Modal: Relux.Navigation.ModalComponent & Hashable & Sendable
+        var modalSheet: Modal? { get }
     }
 }

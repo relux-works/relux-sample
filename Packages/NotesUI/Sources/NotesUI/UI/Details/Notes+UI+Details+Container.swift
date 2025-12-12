@@ -4,6 +4,7 @@ import NotesReluxImpl
 import NotesUIAPI
 import NavigationUI
 import NavigationReluxInt
+import SampleAppRoutes
 import SwiftUIRelux
 
 extension Notes.UI.Details.Container {
@@ -48,6 +49,6 @@ extension Notes.UI.Details.Container {
     }
 
     private func openEdit(note: Note) async {
-        await actions { nav.actions.go(.notes(.edit(note: note))) }
+        await actions { nav.actions.go(.notes(Notes.UI.Model.Page.edit(note: note))) }
     }
 }

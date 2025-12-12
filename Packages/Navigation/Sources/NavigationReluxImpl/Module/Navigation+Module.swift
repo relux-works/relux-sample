@@ -1,45 +1,54 @@
 import Relux
 import SwiftUIRelux
+import ReluxRouter
 import NavigationReluxInt
 
 extension Navigation {
+    /// Generic navigation module. Host app provides Route/Modal types.
     @MainActor
-    public struct Module: Relux.Module {
+    public struct Module<
+        Route: Relux.Navigation.PathComponent & Hashable & Sendable,
+        Modal: Relux.Navigation.ModalComponent & Hashable & Sendable
+    >: Relux.Module {
+
         public let states: [any Relux.AnyState]
         public let sagas: [any Relux.Saga] = []
         public let actionRelays: [any Relux.ActionRelaying]
 
-        /// The main router instance — exposed for NavigationStack binding in App.
-        public let router: AppRouter
+        public let router: Relux.Navigation.ProjectingRouter<Route>
+        public let modalRouter: Navigation.Business.ModalRouter<Modal>
 
-        /// The modal router instance — exposed for sheet binding in App.
-        public let modalRouter: Navigation.Business.ModalRouter
-
-        public init() {
-            let router = AppRouter(pages: [.splash])
-            let modalRouter = Navigation.Business.ModalRouter()
+        public init(initialPath: [Route]) {
+            let router = Relux.Navigation.ProjectingRouter<Route>(pages: initialPath)
+            let modalRouter = Navigation.Business.ModalRouter<Modal>()
 
             self.router = router
             self.modalRouter = modalRouter
             self.states = [router, modalRouter]
 
-            let appNavigation = AppNavigation(
-                go: { destination in
-                    AppRouter.action(for: destination)
+            let actions = NavigationActions<Route, Modal>(
+                go: { route in
+                    Relux.Navigation.ProjectingRouter<Route>.Action.push(route)
                 },
-                replace: { destination in
-                    AppRouter.replaceAction(for: destination)
+                replace: { route in
+                    Relux.Navigation.ProjectingRouter<Route>.Action.set([route])
                 },
-                present: { page in
-                    Navigation.Business.ModalRouter.Action.present(page: page)
+                back: {
+                    Relux.Navigation.ProjectingRouter<Route>.Action.removeLast()
+                },
+                root: {
+                    Relux.Navigation.ProjectingRouter<Route>.Action.set([])
+                },
+                present: { modal in
+                    Navigation.Business.ModalRouter<Modal>.Action.present(page: modal)
                 },
                 dismiss: {
-                    Navigation.Business.ModalRouter.Action.dismiss
+                    Navigation.Business.ModalRouter<Modal>.Action.dismiss
                 }
             )
 
             self.actionRelays = [
-                Relux.UI.ActionRelay(appNavigation)
+                Relux.UI.ActionRelay(actions)
             ]
         }
     }

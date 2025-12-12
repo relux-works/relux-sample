@@ -1,12 +1,12 @@
 import SwiftUI
 import NotesReluxInt
 import NotesUIAPI
-import NavigationReluxInt
+import SampleAppRoutes
 
 @MainActor
 extension SampleApp.UI.Main {
     struct RouterView: View {
-        let destination: Navigation.UI.Model.Destination
+        let route: AppRoute
         @Environment(\.notesUIProvider) private var notesProvider
 
         var body: some View {
@@ -15,7 +15,7 @@ extension SampleApp.UI.Main {
 
         @ViewBuilder
         private var content: some View {
-            switch destination {
+            switch route {
             case .main:
                 Container()
             case .account:

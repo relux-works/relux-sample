@@ -1,35 +1,36 @@
 import SwiftUI
 import Relux
-import SwiftUIRelux
 import NavigationReluxInt
 
 extension Navigation.UI {
     /// Navigation link that dispatches to the central router.
-    /// Works from any domain UI without coupling to App target.
     ///
-    /// Usage:
+    /// Host app should define:
     /// ```swift
-    /// Navigation.UI.Link(.notes(.create)) {
-    ///     Text("Create Note")
-    /// }
+    /// typealias AppNavLink<Label: View> = Navigation.UI.NavLink<AppRoute, AppModal, Label>
     /// ```
-    public struct Link<Label: View>: View {
-        private let destination: Navigation.UI.Model.Destination
+    public struct NavLink<
+        Route: Relux.Navigation.PathComponent & Hashable & Sendable,
+        Modal: Relux.Navigation.ModalComponent & Hashable & Sendable,
+        Label: View
+    >: View {
+
+        private let route: Route
         private let label: Label
 
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+        @EnvironmentObject private var nav: Relux.UI.ActionRelay<NavigationActions<Route, Modal>>
 
         public init(
-            _ destination: Navigation.UI.Model.Destination,
+            _ route: Route,
             @ViewBuilder label: () -> Label
         ) {
-            self.destination = destination
+            self.route = route
             self.label = label()
         }
 
         public var body: some View {
             AsyncButton {
-                await actions { nav.actions.go(destination) }
+                await actions { nav.actions.go(route) }
             } label: {
                 label
             }
@@ -39,18 +40,16 @@ extension Navigation.UI {
 
 // MARK: - Convenience Initializers
 
-extension Navigation.UI.Link where Label == Text {
-    /// Creates a navigation link with a text label.
-    public init(_ title: String, destination: Navigation.UI.Model.Destination) {
-        self.destination = destination
+extension Navigation.UI.NavLink where Label == Text {
+    public init(_ title: String, route: Route) {
+        self.route = route
         self.label = Text(title)
     }
 }
 
-extension Navigation.UI.Link where Label == Image {
-    /// Creates a navigation link with a system image.
-    public init(systemImage: String, destination: Navigation.UI.Model.Destination) {
-        self.destination = destination
+extension Navigation.UI.NavLink where Label == Image {
+    public init(systemImage: String, route: Route) {
+        self.route = route
         self.label = Image(systemName: systemImage)
     }
 }

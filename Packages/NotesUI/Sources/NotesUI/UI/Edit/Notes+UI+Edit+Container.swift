@@ -4,6 +4,7 @@ import NotesUIAPI
 import NavigationUI
 import Relux
 import NavigationReluxInt
+import SampleAppRoutes
 import SwiftUIRelux
 
 extension Notes.UI.Edit.Container {
@@ -41,14 +42,14 @@ extension Notes.UI.Edit.Container {
     private func upsert(_ note: Note) async {
         await actions {
             Notes.Business.Effect.upsert(note: note)
-            nav.actions.go(.back)
+            nav.actions.back()
         }
     }
 
     private func remove(_ note: Note) async {
         await actions {
             Notes.Business.Effect.delete(note: note)
-            nav.actions.go(.back)
+            nav.actions.back()
         }
     }
 }

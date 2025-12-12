@@ -2,6 +2,7 @@
 @_exported import ReluxRouter
 @_exported import SwiftUIRelux
 @_exported import NavigationReluxImpl
+@_exported import SampleAppRoutes
 
 import AuthModels
 import AuthReluxInt

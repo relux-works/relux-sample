@@ -8,16 +8,16 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        // Lightweight — Destination enum, ModalPage, namespace
+        // Lightweight — namespace only
         .library(name: "NavigationModels", type: .dynamic, targets: ["NavigationModels"]),
 
-        // Interface — AppNavigation ActionProviding, protocols
+        // Interface — generic NavigationActions and protocols
         .library(name: "NavigationReluxInt", type: .dynamic, targets: ["NavigationReluxInt"]),
 
-        // Implementation — Router, ModalRouter, Module (App target only)
+        // Implementation — generic Module and ModalRouter
         .library(name: "NavigationReluxImpl", type: .dynamic, targets: ["NavigationReluxImpl"]),
 
-        // UI — NavigationLink, modifiers (Domain UI imports this)
+        // UI — generic NavLink, BackButton, ModalPresenter
         .library(name: "NavigationUI", type: .dynamic, targets: ["NavigationUI"]),
     ],
     dependencies: [
@@ -26,23 +26,11 @@ let package = Package(
         .package(name: "darwin-relux", path: "../../../darwin-relux"),
         .package(name: "swiftui-relux", path: "../../../swiftui-relux"),
         .package(name: "swiftui-reluxrouter", path: "../../../swiftui-reluxrouter"),
-
-        // Domain packages — for Page enums in Destination
-        .package(path: "../Auth"),
-        .package(path: "../Notes"),
-        .package(path: "../NotesUI"),
     ],
     targets: [
         .target(
             name: "NavigationModels",
-            dependencies: [
-                .product(name: "Relux", package: "darwin-relux"),
-                // Domain UI page enums
-                .product(name: "AuthReluxInt", package: "Auth"),
-                .product(name: "NotesModels", package: "Notes"),
-                .product(name: "NotesReluxInt", package: "Notes"),
-                .product(name: "NotesUIAPI", package: "NotesUI"),
-            ],
+            dependencies: [],
             linkerSettings: [.linkedFramework("Foundation")]
         ),
 
@@ -63,11 +51,6 @@ let package = Package(
                 .product(name: "Relux", package: "darwin-relux"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
                 .product(name: "ReluxRouter", package: "swiftui-reluxrouter"),
-                // Domain page types referenced by Destination
-                .product(name: "AuthReluxInt", package: "Auth"),
-                .product(name: "NotesModels", package: "Notes"),
-                .product(name: "NotesReluxInt", package: "Notes"),
-                .product(name: "NotesUIAPI", package: "NotesUI"),
             ],
             linkerSettings: [.linkedFramework("Foundation")]
         ),
@@ -77,10 +60,9 @@ let package = Package(
             dependencies: [
                 .product(name: "NavigationModels", package: "Navigation-Self"),
                 .product(name: "NavigationReluxInt", package: "Navigation-Self"),
+                .product(name: "NavigationReluxImpl", package: "Navigation-Self"),
                 .product(name: "Relux", package: "darwin-relux"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
-                .product(name: "NotesModels", package: "Notes"),
-                .product(name: "NotesUIAPI", package: "NotesUI"),
             ],
             linkerSettings: [.linkedFramework("Foundation")]
         ),
@@ -126,8 +108,15 @@ func isUI(_ name: String) -> Bool {
     name.hasSuffix("UI") || (name.contains("UI") && !isAPI(name))
 }
 
-// Navigation package has no composition-root targets; tests (if added) can be listed here.
-let implAllowedTargets: Set<String> = []
+// NavigationUI is part of infra and may depend on impl for router state.
+let uiAllowedImplTargets: Set<String> = [
+    "NavigationUI",
+]
+
+// Navigation package has no app-level composition targets; allow infra UI as exception.
+let implAllowedTargets: Set<String> = [
+    "NavigationUI",
+]
 
 for t in package.targets {
     guard t.type != .plugin && t.type != .binary else { continue }
@@ -141,7 +130,7 @@ for t in package.targets {
         )
     }
 
-    if isUI(tName), deps.contains(where: isImpl) {
+    if isUI(tName), deps.contains(where: isImpl), !uiAllowedImplTargets.contains(tName) {
         preconditionFailure(
             "❌ \(tName) is a UI target and must not depend on Impl targets. Found: \(deps.filter(isImpl))"
         )

@@ -1,6 +1,7 @@
 import SwiftUI
 import NavigationReluxInt
 import NavigationReluxImpl
+import SampleAppRoutes
 
 extension SampleApp.UI.Root {
     // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
@@ -9,7 +10,7 @@ extension SampleApp.UI.Root {
         // If a state conforms to ObservableObject, it's accessible via @EnvironmentObject.
         // If it's declared using the @Observable macro, it's available via @Environment.
         @EnvironmentObject var appRouter: AppRouter
-        @Environment(Navigation.Business.ModalRouter.self) private var modalRouter
+        @Environment(Navigation.Business.ModalRouter<AppModal>.self) private var modalRouter
 
         let relux: Relux
 
@@ -36,8 +37,8 @@ extension SampleApp.UI.Root {
 
         private func rootView() -> some View {
             Splash(props: SampleApp.UI.Root.Splash.Props())
-                .navigationDestination(for: Navigation.UI.Model.Destination.self) {
-                    SampleApp.UI.Root.RouterView(destination: $0)
+                .navigationDestination(for: AppRoute.self) {
+                    SampleApp.UI.Root.RouterView(route: $0)
                 }
         }
     }
@@ -45,7 +46,7 @@ extension SampleApp.UI.Root {
 
 // modal pages
 extension SampleApp.UI.Root.Container {
-    private func modalPage(for item: Navigation.Business.Model.ModalPage) -> some View {
+    private func modalPage(for item: AppModal) -> some View {
         Group {
             switch item {
                 case .debug: debugModal

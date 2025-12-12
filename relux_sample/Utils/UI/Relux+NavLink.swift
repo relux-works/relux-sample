@@ -1,6 +1,5 @@
 import SwiftUI
-import NavigationReluxInt
-import NavigationReluxImpl
+import SampleAppRoutes
 /*
 /// Adds a navigation link to the view that pushes the given destination.
 ///
@@ -10,7 +9,7 @@ import NavigationReluxImpl
 ///     .navigate(to: .account)
 /// ```
 extension View {
-    func navigate(to page: Navigation.UI.Model.Destination) -> some View {
+    func navigate(to page: AppRoute) -> some View {
         Relux.NavigationLink(page: page) { self }
     }
 }
@@ -23,12 +22,12 @@ extension View {
 
 extension Relux {
     struct NavigationLink<Content: View>: View {
-        private let page: Navigation.UI.Model.Destination
+        private let page: AppRoute
         private let onNavigated: (@Sendable () async -> ())?
         @ViewBuilder private let content: () -> Content
 
         init(
-            page: Navigation.UI.Model.Destination,
+            page: AppRoute,
             onNavigated: (@Sendable () async -> ())? = nil,
             @ViewBuilder content: @escaping () -> Content
         ) {
@@ -47,7 +46,7 @@ extension Relux {
         /// view's generic type to silence strict-concurrency checks
         /// about capturing `Content.Type` in an isolated closure.
         private static func buildAction(
-            page: Navigation.UI.Model.Destination,
+            page: AppRoute,
             onNavigated: (@Sendable () async -> ())?
         ) -> @Sendable () async -> Void {
             { @Sendable in

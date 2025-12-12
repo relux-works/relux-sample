@@ -1,22 +1,27 @@
 import SwiftUI
 import Relux
-import SwiftUIRelux
 import NavigationReluxInt
+import NavigationReluxImpl
 
 extension Navigation.UI {
-    /// View modifier that handles modal presentation from ModalRouter state.
-    public struct ModalPresenter<ModalContent: View>: ViewModifier {
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+    /// View modifier that handles modal presentation from a generic ModalRouter.
+    public struct ModalPresenter<
+        Route: Relux.Navigation.PathComponent & Hashable & Sendable,
+        Modal: Relux.Navigation.ModalComponent & Hashable & Sendable,
+        ModalContent: View
+    >: ViewModifier {
 
-        let modalRouter: Navigation.Business.IModalRouter
-        let content: (Navigation.Business.Model.ModalPage) -> ModalContent
+        @EnvironmentObject private var nav: Relux.UI.ActionRelay<NavigationActions<Route, Modal>>
+
+        let modalRouter: Navigation.Business.ModalRouter<Modal>
+        let modalContent: (Modal) -> ModalContent
 
         public init(
-            modalRouter: Navigation.Business.IModalRouter,
-            @ViewBuilder content: @escaping (Navigation.Business.Model.ModalPage) -> ModalContent
+            modalRouter: Navigation.Business.ModalRouter<Modal>,
+            @ViewBuilder content: @escaping (Modal) -> ModalContent
         ) {
             self.modalRouter = modalRouter
-            self.content = content
+            self.modalContent = content
         }
 
         public func body(content: Content) -> some View {
@@ -29,7 +34,7 @@ extension Navigation.UI {
                         }
                     )
                 ) { page in
-                    self.content(page)
+                    modalContent(page)
                 }
         }
     }
@@ -37,10 +42,15 @@ extension Navigation.UI {
 
 extension View {
     /// Attaches modal presentation handling to a view.
-    public func modalPresenter<ModalContent: View>(
-        router: Navigation.Business.IModalRouter,
-        @ViewBuilder content: @escaping (Navigation.Business.Model.ModalPage) -> ModalContent
+    public func modalPresenter<
+        Route: Relux.Navigation.PathComponent & Hashable & Sendable,
+        Modal: Relux.Navigation.ModalComponent & Hashable & Sendable,
+        ModalContent: View
+    >(
+        router: Navigation.Business.ModalRouter<Modal>,
+        @ViewBuilder content: @escaping (Modal) -> ModalContent
     ) -> some View {
-        modifier(Navigation.UI.ModalPresenter(modalRouter: router, content: content))
+        modifier(Navigation.UI.ModalPresenter<Route, Modal, ModalContent>(modalRouter: router, content: content))
     }
 }
+
