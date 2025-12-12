@@ -1,6 +1,5 @@
 import NotesReluxInt
 import NotesServiceInt
-import NotesServiceImpl
 import Relux
 import SwiftIoC
 
@@ -12,9 +11,13 @@ extension Notes {
         public let sagas: [any Relux.Saga]
 
         public init(
+            serviceFactory: @Sendable @escaping () -> Notes.Business.IService,
             onError: (@Sendable (Notes.Business.Err) async -> Void)? = nil
         ) async {
-            self.ioc = Self.buildIoC(onError: onError)
+            self.ioc = Self.buildIoC(
+                serviceFactory: serviceFactory,
+                onError: onError
+            )
 
             self.states = [
                 ioc.get(by: Notes.Business.IState.self)!,
@@ -29,14 +32,16 @@ extension Notes {
 }
 
 private extension Notes.Module {
-    static func buildIoC(onError: (@Sendable (Notes.Business.Err) async -> Void)?) -> IoC {
+    static func buildIoC(
+        serviceFactory: @escaping () -> Notes.Business.IService,
+        onError: (@Sendable (Notes.Business.Err) async -> Void)?
+    ) -> IoC {
         let ioc = IoC(logger: IoC.Logger(enabled: false))
 
         ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
         ioc.register(Notes.Business.IState.self, lifecycle: .container, resolver: { ioc.get(by: Notes.Business.State.self)! })
         ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
-        ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { buildService(ioc: ioc) })
-        ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { buildFetcher() })
+        ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { serviceFactory() })
         ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { await buildFlow(ioc: ioc, onError: onError) })
 
         return ioc
@@ -50,16 +55,6 @@ private extension Notes.Module {
         await Notes.UI.State(
             state: ioc.get(by: Notes.Business.State.self)!
         )
-    }
-
-    static func buildService(ioc: IoC) -> Notes.Business.IService {
-        Notes.Business.Service(
-            fetcher: ioc.get(by: Notes.Data.Api.IFetcher.self)!
-        )
-    }
-
-    static func buildFetcher() -> Notes.Data.Api.IFetcher {
-        Notes.Data.Api.Fetcher()
     }
 
     static func buildFlow(

@@ -9,6 +9,7 @@ import NavigationReluxImpl
 import NotesModels
 import NotesReluxInt
 import NotesReluxImpl
+import NotesServiceImpl
 import NotesUI
 import NotesUIAPI
 import SwiftIoC
@@ -98,7 +99,13 @@ extension SampleApp.Registry {
     }
 
     private static func buildNotesModule() async -> Notes.Module {
-        await Notes.Module()
+        await Notes.Module(
+            serviceFactory: {
+                Notes.Business.Service(
+                    fetcher: Notes.Data.Api.Fetcher()
+                )
+            }
+        )
     }
 
     private static func buildAuthRouter() -> Auth.Business.IRouter {

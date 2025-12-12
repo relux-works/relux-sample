@@ -55,7 +55,6 @@ let package = Package(
                 .product(name: "NotesModels", package: "Notes-Self"),
                 .product(name: "NotesReluxInt", package: "Notes-Self"),
                 .product(name: "NotesServiceInt", package: "Notes-Self"),
-                .product(name: "NotesServiceImpl", package: "Notes-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "darwin-relux"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
