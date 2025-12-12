@@ -1,10 +1,7 @@
 import SwiftUI
 import NotesReluxInt
 import NotesUIAPI
-import NavigationUI
 import Relux
-import NavigationReluxInt
-import SampleAppRoutes
 import SwiftUIRelux
 
 extension Notes.UI.Edit.Container {
@@ -18,7 +15,7 @@ extension Notes.UI.Edit {
         typealias Note = Notes.Business.Model.Note
 
         let props: Props
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
 
         var body: some View {
             content
@@ -42,14 +39,14 @@ extension Notes.UI.Edit.Container {
     private func upsert(_ note: Note) async {
         await actions {
             Notes.Business.Effect.upsert(note: note)
-            nav.actions.back()
+            router.actions.back()
         }
     }
 
     private func remove(_ note: Note) async {
         await actions {
             Notes.Business.Effect.delete(note: note)
-            nav.actions.back()
+            router.actions.back()
         }
     }
 }

@@ -2,9 +2,6 @@ import SwiftUI
 import NotesReluxInt
 import NotesReluxImpl
 import NotesUIAPI
-import NavigationUI
-import NavigationReluxInt
-import SampleAppRoutes
 import SwiftUIRelux
 
 
@@ -13,7 +10,7 @@ extension Notes.UI.List {
         typealias Note = Notes.Business.Model.Note
 
         @EnvironmentObject private var notesState: Notes.UI.State
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
 
         var body: some View {
             content
@@ -43,7 +40,7 @@ extension Notes.UI.List.Container {
     }
 
     private func openCreateNote() async {
-        await actions { nav.actions.go(.notes(.create)) }
+        await actions { router.actions.pushCreate() }
     }
 
     private func remove(_ note: Note) async {
@@ -53,6 +50,6 @@ extension Notes.UI.List.Container {
     }
 
     private func openDetails(_ note: Note) async {
-        await actions { nav.actions.go(.notes(.details(id: note.id))) }
+        await actions { router.actions.pushDetails(id: note.id) }
     }
 }

@@ -63,6 +63,7 @@ let package = Package(
                 .product(name: "NavigationReluxImpl", package: "Navigation-Self"),
                 .product(name: "Relux", package: "darwin-relux"),
                 .product(name: "SwiftUIRelux", package: "swiftui-relux"),
+                .product(name: "ReluxRouter", package: "swiftui-reluxrouter"),
             ],
             linkerSettings: [.linkedFramework("Foundation")]
         ),

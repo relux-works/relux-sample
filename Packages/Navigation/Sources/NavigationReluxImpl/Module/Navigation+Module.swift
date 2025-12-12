@@ -7,8 +7,8 @@ extension Navigation {
     /// Generic navigation module. Host app provides Route/Modal types.
     @MainActor
     public struct Module<
-        Route: Relux.Navigation.PathComponent & Hashable & Sendable,
-        Modal: Relux.Navigation.ModalComponent & Hashable & Sendable
+        Route: Relux.Navigation.PathComponent,
+        Modal: Relux.Navigation.ModalComponent
     >: Relux.Module {
 
         public let states: [any Relux.AnyState]

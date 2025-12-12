@@ -2,15 +2,12 @@ import SwiftUI
 import NotesReluxInt
 import NotesReluxImpl
 import NotesUIAPI
-import NavigationUI
-import NavigationReluxInt
-import SampleAppRoutes
 import SwiftUIRelux
 
 public extension Notes.UI.Widget {
     struct Container: Relux.UI.Container {
         @EnvironmentObject private var notesState: Notes.UI.State
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
 
         public init() {}
 
@@ -42,6 +39,6 @@ extension Notes.UI.Widget.Container {
     }
 
     private func openList() async {
-        await actions { nav.actions.go(.notes(.list)) }
+        await actions { router.actions.pushList() }
     }
 }

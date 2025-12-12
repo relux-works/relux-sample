@@ -36,6 +36,7 @@ extension SampleApp.Registry {
         ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
 
         ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: Self.buildAuthRouter)
+        ioc.register(Notes.Business.IRouter.self, lifecycle: .container, resolver: Self.buildNotesRouter)
         ioc.register(AuthUIProviding.self, lifecycle: .container, resolver: Self.buildAuthUIRouter)
         ioc.register(NotesUIProviding.self, lifecycle: .container, resolver: Self.buildNotesUIRouter)
 
@@ -104,12 +105,17 @@ extension SampleApp.Registry {
                 Notes.Business.Service(
                     fetcher: Notes.Data.Api.Fetcher()
                 )
-            }
+            },
+            router: resolve(Notes.Business.IRouter.self)
         )
     }
 
     private static func buildAuthRouter() -> Auth.Business.IRouter {
         AuthRouterAdapter()
+    }
+
+    private static func buildNotesRouter() -> Notes.Business.IRouter {
+        NotesRouterAdapter()
     }
 
     private static func buildAuthUIRouter() -> any AuthUIProviding {

@@ -8,8 +8,8 @@ import Relux
 /// public typealias AppNavigation = NavigationActions<AppRoute, AppModal>
 /// ```
 public struct NavigationActions<
-    Route: Relux.Navigation.PathComponent & Hashable & Sendable,
-    Modal: Relux.Navigation.ModalComponent & Hashable & Sendable
+    Route: Relux.Navigation.PathComponent,
+    Modal: Relux.Navigation.ModalComponent
 >: Relux.ActionProviding {
 
     // MARK: - Stack Navigation

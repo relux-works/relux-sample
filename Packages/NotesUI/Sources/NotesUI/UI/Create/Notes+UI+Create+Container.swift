@@ -1,15 +1,14 @@
 import SwiftUI
 import SwiftUIRelux
 import NotesReluxInt
-import NavigationReluxInt
-import SampleAppRoutes
+import NotesReluxImpl
 
 extension Notes.UI.Create {
     struct Container: Relux.UI.Container {
         typealias Note = Notes.Business.Model.Note
 
         @EnvironmentObject private var notesState: Notes.UI.State
-        @EnvironmentObject private var nav: Relux.UI.ActionRelay<AppNavigation>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
 
         var body: some View {
             content
@@ -36,7 +35,7 @@ extension Notes.UI.Create.Container {
 
     private func close() async {
         await action {
-            nav.actions.back()
+            router.actions.back()
         }
     }
 }

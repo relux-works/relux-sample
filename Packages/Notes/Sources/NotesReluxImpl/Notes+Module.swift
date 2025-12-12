@@ -1,6 +1,7 @@
 import NotesReluxInt
 import NotesServiceInt
 import Relux
+import SwiftUIRelux
 import SwiftIoC
 
 extension Notes {
@@ -9,9 +10,11 @@ extension Notes {
 
         public let states: [any Relux.AnyState]
         public let sagas: [any Relux.Saga]
+        public let actionRelays: [any Relux.ActionRelaying]
 
         public init(
             serviceFactory: @Sendable @escaping () -> Notes.Business.IService,
+            router: Notes.Business.IRouter,
             onError: (@Sendable (Notes.Business.Err) async -> Void)? = nil
         ) async {
             self.ioc = Self.buildIoC(
@@ -26,6 +29,10 @@ extension Notes {
 
             self.sagas = [
                 await ioc.getAsync(by: Notes.Business.IFlow.self)!
+            ]
+
+            self.actionRelays = [
+                Relux.UI.ActionRelay<any Notes.Business.IRouter>(router)
             ]
         }
     }
