@@ -60,6 +60,7 @@
 		AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AABBEE222EEBED7C00B5D18D /* SampleAppRoutes in Frameworks */ = {isa = PBXBuildFile; productRef = AABBEE212EEBED7C00B5D18D /* SampleAppRoutes */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -138,6 +139,7 @@
 				AA109AC32EE9584700199C81 /* NotesReluxImpl in Frameworks */,
 				AA109ACE2EE9585A00199C81 /* NotesUI in Frameworks */,
 				70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */,
+				AABBEE222EEBED7C00B5D18D /* SampleAppRoutes in Frameworks */,
 				704F5C342E168CBD00FCAE62 /* Relux in Frameworks */,
 				AA109AE22EE959B200199C81 /* NotesUIAPI in Frameworks */,
 				AA109AD32EE9595200199C81 /* NotesModels in Frameworks */,
@@ -265,6 +267,7 @@
 				BB000005000000010000AAAA /* NavigationUI */,
 				AA109ADF2EE959B200199C81 /* NotesUI */,
 				AA109AE12EE959B200199C81 /* NotesUIAPI */,
+				AABBEE212EEBED7C00B5D18D /* SampleAppRoutes */,
 			);
 			productName = relux_sample;
 			productReference = 70A603AB2D8ECD6900BE2349 /* relux_sample.app */;
@@ -330,6 +333,7 @@
 				AA109AD12EE9595200199C81 /* XCLocalSwiftPackageReference "Packages/Notes" */,
 				AA109ADE2EE959B200199C81 /* XCLocalSwiftPackageReference "Packages/NotesUI" */,
 				BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */,
+				AABBEE202EEBED7C00B5D18D /* XCLocalSwiftPackageReference "Packages/SampleAppRoutes" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70A603AC2D8ECD6900BE2349 /* Products */;
@@ -686,6 +690,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Auth;
 		};
+		AABBEE202EEBED7C00B5D18D /* XCLocalSwiftPackageReference "Packages/SampleAppRoutes" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SampleAppRoutes;
+		};
 		BB000001000000010000AAAA /* XCLocalSwiftPackageReference "Packages/Navigation" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Navigation;
@@ -843,6 +851,10 @@
 		AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthServiceImpl;
+		};
+		AABBEE212EEBED7C00B5D18D /* SampleAppRoutes */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SampleAppRoutes;
 		};
 		BB000002000000010000AAAA /* NavigationModels */ = {
 			isa = XCSwiftPackageProductDependency;

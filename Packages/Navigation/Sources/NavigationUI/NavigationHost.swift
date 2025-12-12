@@ -1,6 +1,7 @@
 import SwiftUI
 import Relux
 import ReluxRouter
+import NavigationModels
 
 extension Navigation.UI {
     /// Convenience wrapper for a `NavigationStack` bound to a `ProjectingRouter`.
