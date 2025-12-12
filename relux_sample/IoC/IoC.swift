@@ -21,9 +21,6 @@ extension SampleApp {
     @MainActor
     enum Registry {
         static let ioc = IoC(logger: IoC.Logger(enabled: false))
-
-        /// Navigation module reference - exposed for NavigationStack/sheet bindings.
-        static var navigationModule: Navigation.Module!
     }
 }
 
@@ -90,7 +87,6 @@ extension SampleApp.Registry {
 
     private static func buildNavigationModule() -> Navigation.Module {
         let module = Navigation.Module()
-        navigationModule = module
         return module
     }
 

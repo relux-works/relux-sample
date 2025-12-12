@@ -37,16 +37,6 @@ extension Navigation.UI {
 
 extension View {
     /// Attaches modal presentation handling to a view.
-    ///
-    /// Usage:
-    /// ```swift
-    /// ContentView()
-    ///     .modalPresenter(router: navigationModule.modalRouter) { page in
-    ///         switch page {
-    ///         case .debug: DebugView()
-    ///         }
-    ///     }
-    /// ```
     public func modalPresenter<ModalContent: View>(
         router: Navigation.Business.IModalRouter,
         @ViewBuilder content: @escaping (Navigation.Business.Model.ModalPage) -> ModalContent
