@@ -33,7 +33,7 @@ extension Notes {
 
             let routerActions = Notes.Business.RouterActions(router: router)
             self.actionRelays = [
-                Relux.UI.ActionRelay(routerActions)
+                await Relux.UI.ActionRelay(routerActions)
             ]
         }
     }
