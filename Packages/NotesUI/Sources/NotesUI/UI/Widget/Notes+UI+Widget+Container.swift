@@ -7,7 +7,7 @@ import SwiftUIRelux
 public extension Notes.UI.Widget {
     struct Container: Relux.UI.Container {
         @EnvironmentObject private var notesState: Notes.UI.State
-        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<Notes.Business.RouterActions>
 
         public init() {}
 

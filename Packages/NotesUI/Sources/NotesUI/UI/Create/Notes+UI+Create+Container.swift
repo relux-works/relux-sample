@@ -8,7 +8,7 @@ extension Notes.UI.Create {
         typealias Note = Notes.Business.Model.Note
 
         @EnvironmentObject private var notesState: Notes.UI.State
-        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<Notes.Business.RouterActions>
 
         var body: some View {
             content

@@ -15,7 +15,7 @@ extension Notes.UI.Edit {
         typealias Note = Notes.Business.Model.Note
 
         let props: Props
-        @EnvironmentObject private var router: Relux.UI.ActionRelay<any Notes.Business.IRouter>
+        @EnvironmentObject private var router: Relux.UI.ActionRelay<Notes.Business.RouterActions>
 
         var body: some View {
             content

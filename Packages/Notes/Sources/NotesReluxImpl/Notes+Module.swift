@@ -14,7 +14,7 @@ extension Notes {
 
         public init(
             serviceFactory: @Sendable @escaping () -> Notes.Business.IService,
-            router: Notes.Business.IRouter,
+            router: any Notes.Business.IRouter,
             onError: (@Sendable (Notes.Business.Err) async -> Void)? = nil
         ) async {
             self.ioc = Self.buildIoC(
@@ -31,8 +31,9 @@ extension Notes {
                 await ioc.getAsync(by: Notes.Business.IFlow.self)!
             ]
 
+            let routerActions = Notes.Business.RouterActions(router: router)
             self.actionRelays = [
-                Relux.UI.ActionRelay<any Notes.Business.IRouter>(router)
+                Relux.UI.ActionRelay(routerActions)
             ]
         }
     }
