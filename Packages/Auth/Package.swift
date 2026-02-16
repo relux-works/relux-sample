@@ -20,7 +20,7 @@ let package = Package(
         // Dev note: self-reference forces dynamic linkage across products.
         .package(name: "Auth-Self", path: "."),
         .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", from: "9.0.0"),
         .package(path: "../TestInfrastructure"),
     ],
     targets: [
