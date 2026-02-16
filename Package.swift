@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "darwin-httpclient",
+    name: "swift-httpclient",
     platforms: [
         .iOS(.v15),
         .watchOS(.v8),

@@ -19,8 +19,8 @@ let package = Package(
     dependencies: [
         // Dev note: self-reference forces dynamic linkage across products.
         .package(name: "Auth-Self", path: "."),
-        .package(url: "https://github.com/ivalx1s/swift-ioc.git", from: "1.0.1"),
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
         .package(path: "../TestInfrastructure"),
     ],
     targets: [
@@ -32,7 +32,7 @@ let package = Package(
             name: "AuthReluxInt",
             dependencies: [
                 .product(name: "AuthModels", package: "Auth-Self"),
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(
@@ -55,7 +55,7 @@ let package = Package(
                 .product(name: "AuthReluxInt", package: "Auth-Self"),
                 .product(name: "AuthServiceInt", package: "Auth-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(
@@ -64,7 +64,7 @@ let package = Package(
                 .product(name: "AuthModels", package: "Auth-Self"),
                 .product(name: "AuthServiceInt", package: "Auth-Self"),
                 .product(name: "AuthReluxInt", package: "Auth-Self"),
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
                 .product(name: "TestInfrastructure", package: "TestInfrastructure"),
             ]
         ),

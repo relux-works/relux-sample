@@ -11,13 +11,13 @@ let package = Package(
         .library(name: "TestInfrastructure", targets: ["TestInfrastructure"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
     ],
     targets: [
         .target(
             name: "TestInfrastructure",
             dependencies: [
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ]
         )
     ]

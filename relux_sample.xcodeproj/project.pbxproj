@@ -456,7 +456,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ivalx1s.relux-sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -498,7 +498,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ivalx1s.relux-sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -521,7 +521,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ivalx1s.relux-sampleTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -544,7 +544,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ivalx1s.relux-sampleTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -610,7 +610,7 @@
 		};
 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ivalx1s/swift-ioc.git";
+			repositoryURL = "https://github.com/relux-works/swift-ioc.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.1;

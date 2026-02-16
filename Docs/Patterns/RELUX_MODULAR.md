@@ -77,8 +77,8 @@ let package = Package(
     dependencies: [
         // Self-reference forces dynamic linkage within package
         .package(name: "<Domain>-Self", path: "."),
-        .package(url: "https://github.com/ivalx1s/swift-ioc.git", from: "1.0.1"),
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
         .package(path: "../TestInfrastructure"),
     ],
     targets: [
@@ -90,7 +90,7 @@ let package = Package(
             name: "<Domain>ReluxInt",
             dependencies: [
                 .product(name: "<Domain>Models", package: "<Domain>-Self"),
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(
@@ -114,7 +114,7 @@ let package = Package(
                 .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
                 .product(name: "<Domain>ServiceImpl", package: "<Domain>-Self"),
                 .product(name: "SwiftIoC", package: "swift-ioc"),
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(

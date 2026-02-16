@@ -55,7 +55,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
         // Domain interfaces ONLY
         .package(path: "../Auth"),
         .package(path: "../Profile"),
@@ -65,7 +65,7 @@ let package = Package(
         .target(
             name: "SessionOrchestrationImpl",
             dependencies: [
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
                 .product(name: "AuthReluxInt", package: "Auth"),
                 .product(name: "ProfileReluxInt", package: "Profile"),
                 .product(name: "SettingsReluxInt", package: "Settings"),

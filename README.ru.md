@@ -143,7 +143,7 @@ Utils/                 — утилиты и экстеншены (GCD, Sequence
 
 🧩 Зависимости
 
-darwin-relux
+swift-relux
 
 swift-ioc
 

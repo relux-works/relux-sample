@@ -3,7 +3,7 @@
 [![Swift 6.0+](https://img.shields.io/badge/Swift-6.0+-red?logo=swift)](https://swift.org/download/)
 [![Platform](https://img.shields.io/badge/platform-iOS%2017%2B%20%7C%20macOS%2014%2B-blue)]()
 
-Modular, async-first [Relux architecture for SwiftUI](https://github.com/ivalx1s/darwin-relux). Split into small domain packages (Auth, Notes) to demonstrate scaling from MVP to large apps while keeping builds fast and boundaries clear.
+Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Split into small domain packages (Auth, Notes) to demonstrate scaling from MVP to large apps while keeping builds fast and boundaries clear.
 
 Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for workspace layout, patterns, and conventions.
 
@@ -21,7 +21,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 | **Service-oriented architecture** | Services encapsulated within domain modules; manage API, networking, persistence behind protocols |
 | **Layered testing** | Saga, reducer, service tested in isolation; shared test infrastructure |
 | **Swift 6 concurrency** | Actor-isolation, strict sendability, structured async throughout |
-| **Simpe Async-first DI** | [SwiftIoC]([url](https://github.com/ivalx1s/swift-ioc)) provides async module resolution, async app entry points; implementations swappable at registration |
+| **Simpe Async-first DI** | [SwiftIoC](https://github.com/relux-works/swift-ioc) provides async module resolution, async app entry points; implementations swappable at registration |
 
 ---
 
