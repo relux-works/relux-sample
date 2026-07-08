@@ -13,7 +13,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 
 | Concept | Description |
 |---------|-------------|
-| **Unidirectional data flow** | Relux — Redux/Flux-inspired, Swift Concurrency-native, no functional purism |
+| **Unidirectional data flow** | Relux: Redux/Flux-inspired, Swift Concurrency-native, no functional purism |
 | **Strict modularization** | Models, interfaces, implementations, UI, test-support as separate products within domain boundaries |
 | **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; optimizaed isolated recompilation (fast incremental builds) |
 | **Domain side effects** | Sagas and Flows handle async operations within a domain (API calls, persistence, etc.) |
@@ -62,7 +62,7 @@ open relux_sample.xcodeproj
 
 | Document | Purpose |
 |----------|---------|
-| [`PROJECT_GUIDE.md`](./PROJECT_GUIDE.md) | Entry point — layout, conventions, setup |
+| [`PROJECT_GUIDE.md`](./PROJECT_GUIDE.md) | Entry point: layout, conventions, setup |
 | [`RELUX_MODULAR.md`](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition pattern |
 | [`RELUX_ORCHESTRATION.md`](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination |
 | [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
@@ -74,8 +74,8 @@ open relux_sample.xcodeproj
 
 ## Testing
 
-- **Shared infrastructure:** `Packages/TestInfrastructure` — Relux logger extensions, async helpers, common mocks
-- **Domain support:** `<Domain>TestSupport` — domain-specific mocks/stubs
+- **Shared infrastructure:** `Packages/TestInfrastructure`: Relux logger extensions, async helpers, common mocks
+- **Domain support:** `<Domain>TestSupport`: domain-specific mocks/stubs
 - **Strategy:** Test saga, reducer, service in isolation; optional smoke tests for wiring
 
 ---
@@ -85,6 +85,16 @@ open relux_sample.xcodeproj
 - Alexis Grigorev
 - Ivan Oparin
 - Artem Grishchenko
+
+## The Relux stack
+
+This package is part of the Relux stack: the
+[Relux](https://github.com/relux-works/swift-relux) unidirectional data-flow
+architecture for Swift 6, a family of modules around it, and agent-ready testing
+tools. The stack is how we build MVPs fast on agentic rails and then scale them into
+enterprise-grade apps: Tuist workspaces, strict modularization, and a UDF architecture
+proven in production for years. Browse the full picture in the
+[Relux Works open-source catalog](https://relux.works/en/open-source/).
 
 <!-- relux-ecosystem:start -->
 
