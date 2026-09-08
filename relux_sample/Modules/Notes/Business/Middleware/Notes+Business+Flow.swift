@@ -33,6 +33,9 @@ extension Notes.Business.Flow: Notes.Business.IFlow {
     func apply(_ effect: any Relux.Effect) async -> Relux.Flow.Result {
         switch effect as? Notes.Business.Effect {
             case .none: .success
+            case let .setProtection(id, protected): await updateProtection(id, protected: protected)
+            case let .unlock(id): await unlock(id)
+            case let .relock(id): await relock(id)
             case .obtainNotes: await obtainNotes()
             case let .upsert(note): await upsert(note)
             case let .delete(note): await delete(note)
@@ -43,11 +46,11 @@ extension Notes.Business.Flow: Notes.Business.IFlow {
 extension Notes.Business.Flow {
     private func obtainNotes() async -> Relux.Flow.Result {
         // this flow returns it's result based on inner actions result
-        switch await svc.getNotes() {
-            case let .success(notes):
+        switch await svc.getSnapshot() {
+            case let .success(snapshot):
                 // await for result
                 await actions {
-                    Notes.Business.Action.obtainNotesSuccess(notes: notes)
+                    Notes.Business.Action.snapshot(snapshot)
                 }
                 return .success
             case let .failure(err):
@@ -64,10 +67,7 @@ extension Notes.Business.Flow {
     private func upsert(_ note: Model.Note) async -> Relux.Flow.Result {
         switch await svc.upsert(note: note) {
             case .success:
-                await actions {
-                    Notes.Business.Action.upsertNoteSuccess(note: note)
-                }
-                return .success
+                return await obtainNotes()
             case let .failure(err):
                 await actions(.concurrently) {
                     Notes.Business.Action.upsertNoteFail(err: err)
@@ -81,10 +81,7 @@ extension Notes.Business.Flow {
     private func delete(_ note: Model.Note) async -> Relux.Flow.Result {
         switch await svc.delete(noteId: note.id) {
             case .success:
-                await actions {
-                    Notes.Business.Action.deleteNoteSuccess(note: note)
-                }
-                return .success
+                return await obtainNotes()
             case let .failure(err):
                 await actions(.concurrently) {
                     Notes.Business.Action.deleteNoteFail(err: err)
@@ -92,6 +89,28 @@ extension Notes.Business.Flow {
                 }
                 // here we decided to fail flow with specific error
                 return .failure(err)
+        }
+    }
+}
+
+extension Notes.Business.Flow {
+    private func updateProtection(_ id: Model.Note.Id, protected: Bool) async -> Relux.Flow.Result {
+        let result = await svc.setProtection(noteId: id, protected: protected)
+        return await publishProtection(result)
+    }
+    private func unlock(_ id: Model.Note.Id) async -> Relux.Flow.Result {
+        let result = await svc.unlock(noteId: id)
+        return await publishProtection(result)
+    }
+    private func relock(_ id: Model.Note.Id?) async -> Relux.Flow.Result {
+        await svc.relock(noteId: id)
+        return await obtainNotes()
+    }
+    private func publishProtection(_ result: Swift.Result<Void, Notes.Business.Err>) async -> Relux.Flow.Result {
+        let refresh = await obtainNotes()
+        switch result {
+        case .success: return refresh
+        case .failure(let error): return .failure(error)
         }
     }
 }

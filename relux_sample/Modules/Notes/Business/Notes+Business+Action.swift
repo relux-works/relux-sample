@@ -1,5 +1,6 @@
 extension Notes.Business {
     enum Action: Relux.Action {
+        case snapshot(Snapshot)
         case obtainNotesSuccess(notes: [Model.Note])
         case obtainNotesFail(err: Err)
 

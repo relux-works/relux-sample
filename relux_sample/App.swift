@@ -2,8 +2,6 @@
 @_exported import ReluxRouter
 @_exported import SwiftUIRelux
 
-import AuthModels
-import AuthReluxInt
 import SwiftUI
 import SwiftUIRelux
 import Logging
@@ -41,20 +39,11 @@ struct SampleApp: App {
     private func appContent(relux: Relux) -> some View {
         // now relux is ready, we can use it strait forward
         SampleApp.UI.Root.Container(relux: relux)
-            .task { await setupAppContext() }
+
     }
 
     private func resolveModules() async -> Relux {
         await Registry.resolveAsync(Relux.self)
     }
 
-    // for now our Relux modules are successfully resolved
-    // we can start set our app context
-    // for instance, define is user authorised or not, what kind of flow we should present at first etz.
-    private func setupAppContext() async {
-        await actions(.concurrently) {
-            SampleApp.Business.Effect.setAppContext
-            Auth.Business.Effect.obtainAvailableBiometryType
-        }
-    }
 }

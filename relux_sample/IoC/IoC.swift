@@ -3,8 +3,6 @@ import AuthReluxInt
 import AuthReluxImpl
 import AuthServiceInt
 import AuthServiceImpl
-import AuthUI
-import AuthUIAPI
 import SwiftIoC
 
 extension SampleApp {
@@ -26,10 +24,7 @@ extension SampleApp.Registry {
         ioc.register(Relux.RootSaga.self, lifecycle: .container, resolver: Self.buildReluxRootSaga)
         ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
 
-        ioc.register(Auth.Business.IRouter.self, lifecycle: .container, resolver: Self.buildAuthRouter)
-        ioc.register(AuthUIProviding.self, lifecycle: .container, resolver: Self.buildAuthUIRouter)
 
-        ioc.register(SampleApp.Module.self, lifecycle: .container, resolver: Self.buildAppModule)
         ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
         ioc.register(Navigation.Module.self, lifecycle: .container, resolver: Self.buildNavigationModule)
         ioc.register(Auth.Module.self, lifecycle: .container, resolver: Self.buildAuthModule)
@@ -49,7 +44,6 @@ extension SampleApp.Registry {
         .register { @MainActor in
             resolve(ErrorHandling.Module.self)
             resolve(Navigation.Module.self)
-            resolve(SampleApp.Module.self)
             resolve(Auth.Module.self)
             await resolveAsync(Notes.Module.self)
         }
@@ -68,12 +62,6 @@ extension SampleApp.Registry {
         Logger()
     }
 
-    private static func buildAppModule() -> SampleApp.Module {
-        SampleApp.Module(
-            store: resolve(Relux.Store.self)
-        )
-    }
-
     private static func buildErrHandlingModule() -> ErrorHandling.Module {
         ErrorHandling.Module()
     }
@@ -83,23 +71,19 @@ extension SampleApp.Registry {
     }
 
     private static func buildAuthModule() -> Auth.Module {
-        Auth.Module(
-            router: resolve(Auth.Business.IRouter.self),
-            serviceFactory: { Auth.Business.Service() }
-        )
+        Auth.Module(service: Auth.Business.Service())
     }
 
     private static func buildNotesModule() async -> Notes.Module {
-        await Notes.Module()
+        let auth = resolve(Auth.Module.self).flow
+        return await Notes.Module(authenticate: {
+            switch await auth.authenticate() {
+            case .success: return true
+            case .failure: return false
+            }
+        })
     }
 
-    private static func buildAuthRouter() -> Auth.Business.IRouter {
-        AuthRouterAdapter()
-    }
-
-    private static func buildAuthUIRouter() -> any AuthUIProviding {
-        AuthUIRouter()
-    }
 }
 
 // resolvers

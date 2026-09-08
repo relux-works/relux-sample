@@ -1,7 +1,7 @@
 # Dependency and Architecture Audit
 
 Task: TASK-260909-3hzrc3 (`refresh-dependencies-and-patterns`), 2026-09-09.
-Audited dependency-repair baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`. This document records the pinned contracts; historical producer evidence is linked below.
+Audited dependency-repair baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`. This document records the historical dependency-repair baseline, before Notes-first launch and per-note Auth. AuthUI, HybridState and logout references below describe that baseline only. For current behavior see [note protection](Patterns/NOTE_PROTECTION.md) and [modular boundaries](Patterns/RELUX_MODULAR.md); historical producer evidence is linked below.
 
 ## Verified dependency graph
 
@@ -19,7 +19,7 @@ SwiftUIRelux 9.0.0 requires Relux >=9.2.0 and Router >=12.1.0 within their curre
 
 Direct requirements are now exact in the local manifests and Xcode project. Four checked-in lockfiles cover the app and each independently resolvable package. Router's transitive revision is fixed by those lockfiles. Re-resolution with Xcode's `-onlyUsePackageVersionsFromResolvedFile` and `-disableAutomaticPackageResolution` succeeded; all 4 of 4 lockfile SHA-256 values remained unchanged. SwiftPM validation uses `--force-resolved-versions`. This demonstrates resolution at the audited revisions; it does not promise continued network availability or immutable upstream tags without the locks.
 
-## Contracts verified from implementation
+## Contracts verified at the historical baseline
 
 - **Module ownership:** [Relux.swift](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux.swift) recursively retains dependencies and connects each module once by `moduleKey`. [Module](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Module/Relux+Module.swift) defaults the key to concrete type identity, not instance identity. Unregister releases owners and cleans up disconnected state. The app registers its actual modules; SessionOrchestration and DataOrchestration packages mentioned in the old guide do not exist.
 - **State isolation:** [State protocols](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Store/Relux+State.swift) make UIState and HybridState MainActor-isolated. BusinessState requires Sendable reference semantics and async reduction/cleanup; it does not itself require an actor. Auth uses an observable HybridState; Notes uses an actor BusinessState and a MainActor ObservableObject projection. The Auth registered-module test exercises dispatch, reduction, unregister, and cleanup together.

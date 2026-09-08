@@ -1,4 +1,3 @@
-import AuthReluxInt
 import Relux
 import SwiftUI
 
@@ -17,7 +16,6 @@ extension Account.UI {
             Page(
                 props: Page.Props(),
                 actions: Page.Actions(
-                    onLogout: ViewCallback(logout),
                     onOpenDebug: ViewCallback(openDebug)
                 )
             )
@@ -32,9 +30,4 @@ extension Account.UI.Container {
         }
     }
 
-    private func logout() async {
-        await actions {
-            Auth.Business.Effect.logout
-        }
-    }
 }

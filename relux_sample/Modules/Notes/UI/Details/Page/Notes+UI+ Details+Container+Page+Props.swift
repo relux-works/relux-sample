@@ -9,5 +9,9 @@ extension Notes.UI.Details.Container.Page {
         let onEdit: ViewInputCallback<Note>
         let onRemove: ViewInputCallback<Note>
         let onReload: ViewCallback<Void>
+        let onUnlock: ViewCallback<Void>
+        let onProtect: ViewCallback<Void>
+        let onRelock: ViewCallback<Void>
+        let onRemoveLock: ViewCallback<Void>
     }
 }

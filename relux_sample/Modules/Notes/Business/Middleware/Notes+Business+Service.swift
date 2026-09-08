@@ -3,6 +3,10 @@ extension Notes.Business {
         typealias Note = Notes.Business.Model.Note
         typealias Err = Notes.Business.Err
 
+        func getSnapshot() async -> Result<Snapshot, Err>
+        func setProtection(noteId: Note.Id, protected: Bool) async -> Result<Void, Err>
+        func unlock(noteId: Note.Id) async -> Result<Void, Err>
+        func relock(noteId: Note.Id?) async
         func getNotes() async -> Result<[Note], Err>
         func upsert(note: Note) async -> Result<Void, Err>
         func delete(noteId: Note.Id) async -> Result<Void, Err>
@@ -23,16 +27,21 @@ extension Notes.Business {
 
 extension Notes.Business.Service: Notes.Business.IService {
     func getNotes() async -> Result<[Note], Err> {
-        switch await self.fetcher.getNotes() {
-            case let .success(notes): .success(
-                notes
-                    .map { Note(from: $0) } 
-                    .sorted()
-            )
-            case let .failure(err): .failure(err)
-        }
+        await getSnapshot().map(\.notes)
     }
+
+    func getSnapshot() async -> Result<Notes.Business.Snapshot, Err> {
+        let snapshot = await fetcher.snapshot()
+        return .success(.init(revision: snapshot.revision, notes: snapshot.notes.map { Note(from: $0) }.sorted()))
+    }
+
+    func setProtection(noteId: Note.Id, protected: Bool) async -> Result<Void, Err> {
+        await fetcher.setProtection(noteId: noteId, protected: protected)
+    }
+    func unlock(noteId: Note.Id) async -> Result<Void, Err> { await fetcher.unlock(noteId: noteId) }
+    func relock(noteId: Note.Id?) async { await fetcher.relock(noteId: noteId) }
     
+
     func upsert(note: Notes.Business.Model.Note) async -> Result<Void, Notes.Business.Err> {
         guard Note.hasValidContent(title: note.title, content: note.content) else {
             return .failure(.invalidContent)

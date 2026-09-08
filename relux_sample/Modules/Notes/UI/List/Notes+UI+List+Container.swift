@@ -10,7 +10,8 @@ extension Notes.UI.List {
         var body: some View {
             Page(props: .init(notes: notesState.notesGroupedByDay, errorMessage: errorMessage),
                  actions: .init(onReload: ViewCallback(reloadNotes), onCreate: ViewCallback(openCreateNote),
-                                onOpen: ViewInputCallback(openNote), onRemove: ViewInputCallback(remove)))
+                                onOpen: ViewInputCallback(openNote), onRemove: ViewInputCallback(remove),
+                                onSettings: ViewCallback(openSettings)))
                 .task {
                     if case .initial = notesState.notes { await reloadNotes() }
                 }
@@ -24,10 +25,12 @@ extension Notes.UI.List {
             await actions { Notes.Business.Effect.obtainNotes }
         }
 
+        private func openSettings() async { await actions { AppRouter.Action.push(.settings) } }
+
         private func openCreateNote() async { showCreate = true }
 
         private func openNote(_ id: Note.Id) async {
-            await actions { AppRouter.Action.push(.app(page: .notes(.details(id: id)))) }
+            await actions { AppRouter.Action.push(.notes(.details(id: id))) }
         }
 
         private func remove(_ note: Note) async {

@@ -6,6 +6,8 @@ extension Notes.Business.Model {
         let createdAt: Date
         let title: String
         let content: String
+        var isProtected: Bool = false
+        var isLocked: Bool = false
     }
 }
 
@@ -23,6 +25,8 @@ extension Notes.Business.Model.Note {
         self.createdAt = apiModel.date
         self.title = apiModel.title
         self.content = apiModel.content
+        self.isProtected = apiModel.isProtected
+        self.isLocked = apiModel.isLocked
     }
 }
 
@@ -48,5 +52,16 @@ extension Notes.Business.Model.Note: Hashable {}
 extension Notes.Business.Model.Note: Comparable {
     static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.createdAt < rhs.createdAt
+    }
+}
+
+extension Notes.Business.Model.Note {
+    var editableNote: Self? { isLocked ? nil : self }
+}
+
+extension Notes.Business {
+    struct Snapshot: Sendable, Equatable {
+        let revision: UInt64
+        let notes: [Model.Note]
     }
 }

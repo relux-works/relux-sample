@@ -1,13 +1,3 @@
-// module structure
 extension SampleApp {
-    enum Data {}
-    enum Business {}
-
-     enum UI {
-        enum Root {}
-        enum Main {
-            enum Model {}
-        }
-        enum Account {}
-    }
+    enum UI { enum Root {} }
 }

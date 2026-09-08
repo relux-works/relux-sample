@@ -19,15 +19,17 @@ extension Notes.UI.List.Container {
                     Section {
                         ForEach(group) { note in
                             Button { Task { await actions.onOpen(note.id) } } label: {
-                                NoteRow(props: .init(title: note.title, content: note.content,
+                                NoteRow(props: .init(title: note.title, content: note.isLocked ? "Locked" : note.content,
                                                      date: note.createdAt))
                             }
                             .tint(.primary)
                             .swipeActions(allowsFullSwipe: false) {
                                 Button("Delete", systemImage: "trash", role: .destructive) { noteToDelete = note }
+                                    .disabled(note.isLocked)
                             }
                             .contextMenu {
                                 Button("Delete Note", systemImage: "trash", role: .destructive) { noteToDelete = note }
+                                    .disabled(note.isLocked)
                             }
                         }
                     } header: {
@@ -81,6 +83,9 @@ extension Notes.UI.List.Container {
             #endif
             .refreshable(action: actions.onReload.callAsFunction)
             .toolbar {
+                ToolbarItem(placement: .secondaryAction) {
+                    AsyncButton(action: actions.onSettings) { Label("Settings", systemImage: "gearshape") }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     AsyncButton(action: actions.onCreate) { Label("New Note", systemImage: "square.and.pencil") }
                         .keyboardShortcut("n", modifiers: .command)

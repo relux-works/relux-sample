@@ -5,114 +5,77 @@ import AuthReluxImpl
 import AuthServiceInt
 import Relux
 
-@Suite(.serialized)
-@MainActor
-struct AuthBehaviorTests {
-    @Test(arguments: [true, false])
-    func biometryReflectsAvailability(allowed: Bool) {
-        #expect(Auth.Business.Model.BiometryType.face(allowed: allowed).allowed == allowed)
-        #expect(Auth.Business.Model.BiometryType.touch(allowed: allowed).allowed == allowed)
-        #expect(Auth.Business.Model.BiometryType.other(allowed: allowed).allowed == allowed)
+@Suite struct AuthBehaviorTests {
+    @Test func authorizationTrueReturnsSuccess() async {
+        let flow = Auth.Business.Flow(svc: Service(result: .success(true)))
+        let result = await flow.authenticate()
+        guard case .success = result else { Issue.record("Expected authorization"); return }
     }
 
-    @Test
-    func authorizationTrueRoutesToMain() async {
-        let logger = await authorize(.success(true))
-        #expect(logger.actions.contains { ($0 as? Route) == .main })
-        #expect(logger.actions.contains { if case .authSucceed = $0 as? Auth.Business.Action { true } else { false } })
+    @Test func authorizationFalseReturnsFailure() async {
+        let flow = Auth.Business.Flow(svc: Service(result: .success(false)))
+        guard case .failure = await flow.authenticate() else { Issue.record("False must fail"); return }
     }
 
-    @Test
-    func authorizationFalseNeverRoutesToMain() async {
-        let logger = await authorize(.success(false))
-        #expect(!logger.actions.contains { ($0 as? Route) == .main })
-        #expect(!logger.actions.contains { if case .authSucceed = $0 as? Auth.Business.Action { true } else { false } })
-        #expect(logger.actions.contains { if case .authFailed = $0 as? Auth.Business.Action { true } else { false } })
+    @Test func unavailableAuthenticationReturnsFailure() async {
+        let flow = Auth.Business.Flow(svc: Service(result: .failure(.unavailable)))
+        guard case .failure = await flow.authenticate() else { Issue.record("Unavailable must fail"); return }
     }
 
-    @Test
-    func authorizationFailureNeverRoutesToMain() async {
-        let logger = await authorize(.failure(.failedToAuthWithBiometry_localAuthWithBiometryIsNotSupported))
-        #expect(!logger.actions.contains { ($0 as? Route) == .main })
-        #expect(logger.actions.contains { if case .authFailed = $0 as? Auth.Business.Action { true } else { false } })
+    @Test func cancelledAuthenticationReturnsFailure() async {
+        let flow = Auth.Business.Flow(svc: Service(result: .failure(.cancelled)))
+        guard case .failure = await flow.authenticate() else { Issue.record("Cancellation must fail"); return }
     }
 
-    @Test
-    func registeredModuleReducesBiometryAndCleansUp() async throws {
+    @Test func taskCancelledDuringAuthenticationCannotSucceed() async {
+        let service = SuspendedService()
+        let flow = Auth.Business.Flow(svc: service)
+        let pending = Task { await flow.authenticate() }
+        await service.waitUntilStarted()
+        pending.cancel()
+        await service.resolve()
+        guard case .failure = await pending.value else { Issue.record("Cancelled task must fail"); return }
+    }
+
+    @Test func alreadyCancelledTaskDoesNotStartAuthentication() async {
         let service = Service(result: .success(true))
-        let module = Auth.Module(router: Router(), serviceFactory: { service })
-        let relux = await Relux(logger: Relux.Testing.Logger())
-        defer { Relux.shared = nil }
-        relux.register(module)
-        await relux.dispatcher.actions { Auth.Business.Effect.obtainAvailableBiometryType }
-        let state = try #require(module.states.first as? Auth.Business.State)
-        #expect(state.availableBiometryType == .face(allowed: false))
-        await relux.unregister(module)
-        #expect(state.availableBiometryType == nil)
+        let flow = Auth.Business.Flow(svc: service)
+        let pending = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return await flow.authenticate()
+        }
+        guard case .failure = await pending.value else { Issue.record("Cancelled task must fail"); return }
+        #expect(await service.calls == 0)
     }
 
-    @Test
-    func logoutRecreatesContextBeforeRoutingToLocalAuth() async {
-        let service = Service(result: .success(true))
-        let logger = Relux.Testing.Logger()
-        let relux = await Relux(logger: logger)
-        defer { Relux.shared = nil }
-        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
-        await relux.dispatcher.actions { Auth.Business.Effect.runLogoutFlow }
-        #expect(await service.resetCount == 1)
-        #expect(logger.actions.contains { ($0 as? Route) == .localAuth })
-        #expect(logger.actions.contains { if case .logOutSucceed = $0 as? Auth.Business.Action { true } else { false } })
-    }
-
-    @Test
-    func authContextAndLogoutChooseTheirRoutes() async {
-        let service = Service(result: .success(true))
-        let logger = Relux.Testing.Logger()
-        let relux = await Relux(logger: logger)
-        defer { Relux.shared = nil }
-        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
-        await relux.dispatcher.actions { Auth.Business.Effect.checkAuthContext }
-        #expect(logger.actions.contains { ($0 as? Route) == .localAuth })
-        await relux.dispatcher.actions { Auth.Business.Effect.logout }
-        #expect(logger.actions.contains { ($0 as? Route) == .logout })
-        #expect(await service.authCount == 0)
-    }
-
-    private func authorize(_ result: Result<Bool, Auth.Business.Err>) async -> Relux.Testing.Logger {
-        let service = Service(result: result)
-        let logger = Relux.Testing.Logger()
-        let relux = await Relux(logger: logger)
-        defer { Relux.shared = nil }
-        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
-        await relux.dispatcher.actions { Auth.Business.Effect.authorizeWithBiometry }
-        #expect(await service.authCount == 1)
-        return logger
-    }
-}
-
-private enum Route: Relux.Action, Equatable {
-    case main, localAuth, logout
-}
-
-private struct Router: Auth.Business.IRouter {
-    func pushMain() -> any Relux.Action { Route.main }
-    func setAuth(page: Auth.UI.Model.Page) -> any Relux.Action {
-        switch page {
-        case .localAuth: Route.localAuth
-        case .logoutFlow: Route.logout
+    @Test func failedAuthenticationReturnsFailure() async {
+        let flow = Auth.Business.Flow(svc: Service(result: .failure(.authenticationRejected)))
+        guard case .failure = await flow.apply(Auth.Business.Effect.authenticate) else {
+            Issue.record("Failure through Relux entry must fail"); return
         }
     }
 }
 
 private actor Service: Auth.Business.IService {
     let result: Result<Bool, Auth.Business.Err>
-    var authCount = 0
-    var resetCount = 0
     init(result: Result<Bool, Auth.Business.Err>) { self.result = result }
-    var availableBiometry: Auth.Business.Model.BiometryType { .face(allowed: false) }
-    func runLocalAuth() -> Result<Bool, Auth.Business.Err> {
-        authCount += 1
-        return result
+    var calls = 0
+    func runLocalAuth() -> Result<Bool, Auth.Business.Err> { calls += 1; return result }
+}
+
+private actor SuspendedService: Auth.Business.IService {
+    private var continuation: CheckedContinuation<Result<Bool, Auth.Business.Err>, Never>?
+    private var started: CheckedContinuation<Void, Never>?
+    func runLocalAuth() async -> Result<Bool, Auth.Business.Err> {
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            started?.resume()
+            started = nil
+        }
     }
-    func recreateLAContext() { resetCount += 1 }
+    func waitUntilStarted() async {
+        if continuation != nil { return }
+        await withCheckedContinuation { started = $0 }
+    }
+    func resolve() { continuation?.resume(returning: .success(true)); continuation = nil }
 }

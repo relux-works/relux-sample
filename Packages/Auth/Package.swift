@@ -69,6 +69,7 @@ let package = Package(
         .testTarget(
             name: "AuthTests",
             dependencies: [
+                "AuthServiceImpl",
                 "AuthReluxImpl",
                 "AuthReluxInt",
                 "AuthModels",

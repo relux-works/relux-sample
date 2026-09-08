@@ -47,7 +47,7 @@ extension Navigation.Module {
     }
 
     private static func buildRouter() -> Navigation.Business.IRouter {
-        AppRouter(pages: [.splash])
+        AppRouter(pages: [])
     }
 
     private static func buildModalRouter() -> Navigation.Business.ModalRouter {

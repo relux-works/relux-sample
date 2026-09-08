@@ -8,8 +8,8 @@ extension Notes {
         var states: [any Relux.AnyState]
         var sagas: [any Relux.Saga]
 
-        init() async {
-            self.ioc = Self.buildIoC()
+        init(authenticate: @escaping @Sendable () async -> Bool) async {
+            self.ioc = Self.buildIoC(authenticate: authenticate)
 
             self.states = [
                 self.ioc.get(by: Notes.Business.State.self)!,
@@ -23,13 +23,13 @@ extension Notes {
 }
 
 extension Notes.Module {
-    static func buildIoC() -> IoC {
+    static func buildIoC(authenticate: @escaping @Sendable () async -> Bool) -> IoC {
         let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
 
         ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
         ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
         ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { buildSvc(ioc: ioc) })
-        ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { buildFetcher(ioc: ioc) })
+        ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { Notes.Data.Api.Fetcher(authenticate: authenticate) })
         ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { await buildFlow(ioc: ioc) })
 
         return ioc
@@ -49,10 +49,6 @@ extension Notes.Module {
         Notes.Business.Service(
             fetcher: ioc.get(by: Notes.Data.Api.IFetcher.self)!
         )
-    }
-
-    private static func buildFetcher(ioc: IoC) -> Notes.Data.Api.IFetcher {
-        Notes.Data.Api.Fetcher()
     }
 
     private static func buildFlow(ioc: IoC) async -> Notes.Business.IFlow {

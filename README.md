@@ -3,7 +3,7 @@
 [![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-red?logo=swift)](https://swift.org/download/)
 [![Platform](https://img.shields.io/badge/platform-iOS%2017%2B%20%7C%20macOS%2014%2B-blue)]()
 
-Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Auth is split into domain and UI packages; Notes remains an app module to demonstrate scaling from MVP to large apps while keeping boundaries clear.
+Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Auth supplies reusable device-owner authentication through six domain products; Notes remains an app module to demonstrate scaling from MVP to large apps while keeping boundaries clear.
 
 Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for workspace layout, patterns, and conventions.
 
@@ -17,7 +17,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 | **Strict modularization** | Models, interfaces, implementations, UI, test-support as separate products within domain boundaries |
 | **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; isolated recompilation boundaries |
 | **Domain side effects** | Sagas and Flows handle async domain operations; this demo uses LocalAuthentication and an in-memory Notes provider |
-| **Cross-domain coordination** | Orchestrator sagas handle domain-to-domain communication |
+| **Cross-domain coordination** | App composition supplies Auth’s result-bearing Flow to the Notes provider through an injected callback |
 | **Service-oriented architecture** | Services encapsulated within domain modules; manage API, networking, persistence behind protocols |
 | **Layered testing** | Saga, reducer, service tested in isolation; shared test infrastructure |
 | **Swift 6 concurrency** | Actor-isolation, strict sendability, structured async throughout |
@@ -36,7 +36,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 <Domain>UI            SwiftUI views (imports interfaces only)
 ```
 
-**IoC wiring:** SwiftIoC registers routers and modules; the app supplies Auth’s service factory. Notes constructs its service/provider in its module. See the [focused diagrams](diagrams/README.md) and [optional learning exercises](Docs/LearningExercises.md).
+**IoC wiring:** SwiftIoC registers routers and modules; the app supplies Auth’s device-owner service and passes its Flow to Notes. Notes constructs its service/provider in its module. See the [focused diagrams](diagrams/README.md) and [optional learning exercises](Docs/LearningExercises.md).
 
 ---
 
@@ -57,7 +57,6 @@ See [ArchitectureAudit.md](Docs/ArchitectureAudit.md) for pinned revisions, veri
 | xcodebuild | Existing Notes Swift Testing suite | `xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData/Logs/Test` |
 | SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
 | xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
-| SwiftPM | Standalone UI package compilation | `swift build --package-path Packages/AuthUI --force-resolved-versions` | `Packages/AuthUI/.build` |
 | PlantUML / Graphviz | Render focused architecture diagrams | `plantuml -failfast2 -tpng -o "$PWD/.temp/diagrams" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml` (create `.temp/diagrams` first; [setup](diagrams/README.md#render-locally)) | `.temp/diagrams`; published SVGs in `diagrams/rendered` |
 | Git | Patch whitespace validation | `git diff --check` | Terminal; no separate lint configuration is installed |
 | task-board | Task evidence and producer handoff | `task-board resource add TASK-ID /path/to/artifact --type outcome --name TASK-ID_results.md`; `task-board handoff TASK-ID --role developer` | Authoritative board resources |
@@ -68,7 +67,7 @@ Use a simulator name installed on your host. Dependency updates must update exac
 
 ## Documentation
 
-Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, session-safe provider reset, or CLI executable; those are proposed exercises.
+Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, timed access expiry, or CLI executable; those are proposed exercises.
 
 | Document | Purpose |
 |----------|---------|
@@ -81,6 +80,27 @@ Start with the [learning exercises](Docs/LearningExercises.md) and [diagram inde
 | [`DOMAIN_TEST_SUPPORT.md`](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
 
 ---
+
+## Notes and protection
+
+The app opens in Notes without sign-in or a system authentication prompt. Open
+Settings from the Notes toolbar to find Account and the architecture information.
+Open a note and choose Lock Note. Unlock Note uses device-owner authentication
+(`deviceOwnerAuthentication`: biometry with system device passcode or macOS password fallback). An unlocked protected note offers
+Relock and Remove Lock in its Protection menu. Titles remain visible; locked
+bodies are excluded from previews, body search, details and editing.
+
+Protection metadata remains in the in-memory provider across refresh and edits.
+Unlock grants belong to one note and are revoked on relock or app background;
+inactive transitions during authentication do not revoke them. The provider also
+rejects editing, deletion and removing protection while locked. Late authentication
+and older snapshots cannot restore revoked access. Ordinary notes need no auth.
+
+This is an in-memory sample access lock, **not encryption or persistent storage**.
+Plaintext exists in process memory; notes and protection reset on restart. Read
+[the protection pattern](Docs/Patterns/NOTE_PROTECTION.md) for boundaries and verification.
+The focused `NoteProtectionTests` and `AuthBehaviorTests` are Swift unit tests.
+System prompt behavior and visual appearance have not been UI-tested.
 
 ## Testing
 

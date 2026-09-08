@@ -19,9 +19,16 @@ extension NotesTests.Business {
 
             /// Mock implementation of IService.getNotes
             /// Increments the call counter and invokes the handler
+        func getSnapshot() async -> Result<Notes.Business.Snapshot, Err> {
+            await getNotes().map { .init(revision: 1, notes: $0) }
+        }
+        func setProtection(noteId: Note.Id, protected: Bool) async -> Result<Void, Err> { .failure(.notImplemented) }
+        func unlock(noteId: Note.Id) async -> Result<Void, Err> { .failure(.authenticationDenied) }
+        func relock(noteId: Note.Id?) async {}
+
         func getNotes() async -> Result<[Note], Err> {
             obtainNotesCallCount += 1
-            return obtainNotesHandler!()
+            return obtainNotesHandler?() ?? .success([])
         }
 
             /// Mock implementation of IService.upsert

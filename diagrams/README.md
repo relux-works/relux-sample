@@ -4,9 +4,9 @@ Each source covers one question, checked against the application composition and
 
 | Source | Question | Implementation anchors |
 | --- | --- | --- |
-| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift), [AuthUI manifest](../Packages/AuthUI/Package.swift) |
+| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift) |
 | [Notes upsert](plantuml/sequence/notes-upsert.puml) | How does a draft become domain state? | [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [UI projection](../relux_sample/Modules/Notes/UI/Notes+UI+State.swift) |
-| [Logout orchestration](plantuml/sequence/logout-orchestration.puml) | How do independent subscribers coordinate cleanup and routing? | [App saga](../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift), [Auth saga](../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift) |
+| [Note unlock](plantuml/sequence/note-unlock.puml) | Who owns authentication and per-note access? | [Protection pattern](../Docs/Patterns/NOTE_PROTECTION.md) |
 
 ## Render locally
 
@@ -25,6 +25,6 @@ The command exits nonzero on a source error. Open each PNG and check labels, arr
 
 ![Notes save flow](rendered/notes-upsert.svg)
 
-![Logout orchestration](rendered/logout-orchestration.svg)
+![Per-note unlock](rendered/note-unlock.svg)
 
 Start the learning path at [LearningExercises.md](../Docs/LearningExercises.md). Dependency arrows and runtime messages have different meanings; read each diagram's title and legend before combining them.

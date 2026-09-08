@@ -22,7 +22,7 @@ extension NotesTests.Business.Saga {
             }
 
                 // Assert
-            let successAction = logger.getAction(Action.obtainNotesSuccess(notes: notes))
+            let successAction = logger.getAction(Action.snapshot(.init(revision: 1, notes: notes)))
             #expect(successAction.isNotNil)
             #expect(service.obtainNotesCallCount == 1)
         }

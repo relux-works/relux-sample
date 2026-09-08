@@ -1,24 +1,13 @@
 # Relux orchestration
 
-Cross-domain coordination lives at the composition boundary. In this sample, [SampleApp.Business.Saga](../../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift) observes `Auth.Business.Effect.runLogoutFlow` and calls `store.cleanup(exclusions: [AppRouter.self])`. [SampleApp.Module](../../relux_sample/Modules/App/App+Module.swift) registers the saga and no states.
+Cross-domain coordination lives at the composition boundary. [App IoC](../../relux_sample/IoC/IoC.swift) registers ErrorHandling, Navigation, Auth and Notes with one Store and RootSaga. It supplies Auth's service and injects `flow.authenticate()` into Notes as an async Boolean callback. Notes does not import Auth implementations, and Auth knows nothing about note IDs or navigation.
 
-See the [logout sequence](../../diagrams/plantuml/sequence/logout-orchestration.puml).
+## Await the required outcome
 
-## Actual entry point
+Unlock Note dispatches a Notes effect from its container. The Notes Flow awaits service/provider work; the provider awaits the injected Auth callback before granting access to that note. There are no independent logout subscribers or global login route. See the [unlock sequence](../../diagrams/README.md) and [access lifetime](NOTE_PROTECTION.md).
 
-Account's container dispatches `Auth.Business.Effect.logout`. Auth routes to `.logoutFlow`; that screen's container dispatches `runLogoutFlow` from its task. Two sagas observe the effect:
-
-- Auth recreates its LocalAuthentication context, then dispatches the local-auth route and `logOutSucceed` action.
-- SampleApp cleans registered store states except AppRouter.
-
-Auth does not import Notes. The app coordinates cleanup through the store. Cleanup is not deletion of the in-memory Notes fetcher, and no late-request rejection is implemented. See the [session-safe cleanup exercise](../LearningExercises.md#3-make-logout-cleanup-session-safe).
-
-## Ordering and ownership
-
-Registration makes modules available; it does not establish a subscriber execution order. The actual IoC registration order is ErrorHandling, Navigation, SampleApp, Auth, then async Notes. Serial dispatch orders actions within that dispatch, not all saga subscribers of one effect. If an invariant requires cleanup before routing, make the awaited coordination explicit and test that order with a held request.
-
-A Saga returns Void but its async work can still be awaited. Avoid interpreting “fire-and-forget” as a detached task or proof that the operation succeeded. Store state belongs to domains; coordination should not create another copy of it.
+The root container handles background transitions by hiding protected content and awaiting Notes relock. The provider owns revocation, while the root temporarily removes presentation content so editor drafts cannot remain visible during revocation. Inactive transitions from the system prompt are not background transitions.
 
 ## Scaling beyond the demo
 
-SessionOrchestration, DataOrchestration, Profile and Settings packages do not exist here. A larger app may extract a focused concern into an orchestrator that imports domain interfaces and exposes no domain state. Start with an app-local saga until separate ownership or reuse warrants a package. Test through registered dispatch and assert real state/service/routing outcomes, not only the presence of logged effects.
+Use an app-local orchestrator when multiple domain outcomes must be coordinated. Await dependencies explicitly: registration order and serial action dispatch do not establish subscriber ordering. A Saga returns Void but its async work can still be awaited. Extract a package only when ownership or reuse warrants it; do not create another domain-state store in the coordinator.

@@ -23,7 +23,7 @@ extension NotesTests.Business.Saga {
             }
 
                 // Assert
-            let successAction = logger.getAction(Action.deleteNoteSuccess(note: note))
+            let successAction = logger.getAction(Action.snapshot(.init(revision: 1, notes: [])))
             #expect(successAction.isNotNil)
             #expect(service.deleteNotesCallCount == 1)
         }

@@ -6,6 +6,8 @@ extension Notes.Data.Api.DTO {
         let date: Date
         let title: String
         let content: String
+        var isProtected: Bool = false
+        var isLocked: Bool = false
     }
 }
 

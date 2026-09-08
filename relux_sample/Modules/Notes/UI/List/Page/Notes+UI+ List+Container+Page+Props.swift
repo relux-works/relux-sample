@@ -19,5 +19,6 @@ extension Notes.UI.List.Container.Page {
         let onCreate: ViewCallback<Void>
         let onOpen: ViewInputCallback<Note.Id>
         let onRemove: ViewInputCallback<Note>
+        let onSettings: ViewCallback<Void>
     }
 }

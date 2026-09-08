@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+hide footbox
+title Unlock one note: authentication outcome and access lifetime
+participant "Details.Container" as UI
+participant "Notes Flow / Service" as N
+participant "Notes Provider" as P
+participant "Injected Auth Flow" as A
+participant "Auth Service / OS" as OS
+UI -> N : Effect.unlock(noteId) via dispatcher
+N -> P : unlock(noteId)
+P -> P : revoke prior grant; capture generation
+P -> A : authenticate callback
+A -> OS : runLocalAuth()
+OS -> OS : fresh LAContext\nevaluate deviceOwnerAuthentication
+OS --> A : true / false / error
+A --> P : callback Boolean
+alt authorized, current generation, protected, not cancelled
+ P -> P : grant only this note
+ P --> N : success
+else denied or superseded
+ P --> N : authenticationDenied
+end
+N -> P : snapshot()
+P --> N : revision + notes; locked bodies empty
+N -> N : dispatch snapshot; reducer rejects older revisions
+N --> UI : operation result (UI projection is asynchronous)
+note over P,OS
+Relock/background advances generations and removes grants.
+A late authentication result cannot restore revoked access.
+Device passcode/macOS password fallback is system-owned.
+end note
+@enduml

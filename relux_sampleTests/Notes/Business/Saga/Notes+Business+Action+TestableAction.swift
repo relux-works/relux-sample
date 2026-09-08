@@ -6,6 +6,7 @@ extension Notes.Business.Action {
     enum TestableAction: Equatable {
         typealias Model = Notes.Business.Model
 
+        case snapshot(Notes.Business.Snapshot)
         case obtainNotesSuccess(notes: [Model.Note])
         case obtainNotesFail(err: String)
 
@@ -20,6 +21,7 @@ extension Notes.Business.Action {
 extension Notes.Business.Action {
     var asTestableAction: TestableAction {
         switch self {
+            case let .snapshot(snapshot): .snapshot(snapshot)
             case let .obtainNotesSuccess(notes): .obtainNotesSuccess(notes: notes)
             case let .obtainNotesFail(err): .obtainNotesFail(err: err.localizedDescription)
             case let .upsertNoteSuccess(note): .upsertNoteSuccess(note: note)

@@ -2,6 +2,7 @@ import Combine
 
 extension Notes.Business {
     actor State {
+        var revision: UInt64 = 0
         @Published var notes: MaybeData<[Model.Note], Err> = .initial()
     }
 }

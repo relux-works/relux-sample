@@ -12,8 +12,6 @@
 		70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 70992D3E2DDDFE8E007767C7 /* Logging */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
-		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
-		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
 		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; };
 		AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; };
@@ -78,8 +76,6 @@
 				AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */,
 				70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */,
 				70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */,
-				70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */,
-				70E0BEEF2E00000100000024 /* AuthUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,8 +142,6 @@
 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
 				70992D3E2DDDFE8E007767C7 /* Logging */,
-				70E0BEEF2E00000100000013 /* AuthUIAPI */,
-				70E0BEEF2E00000100000014 /* AuthUI */,
 				AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */,
 				AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */,
 				AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */,
@@ -211,9 +205,9 @@
 			mainGroup = 70A603A22D8ECD6900BE2349;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				F02609090000000000000001 /* XCRemoteSwiftPackageReference "swiftui-relux" */,
 				70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */,
 				70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */,
-				70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */,
 				AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -407,6 +401,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Unlock individual notes using Face ID.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -449,6 +444,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Unlock individual notes using Face ID.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -555,10 +551,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/AuthUI;
-		};
 		AA5CB2AD2EE8CB8B0077BFF8 /* XCLocalSwiftPackageReference "Packages/Auth" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Auth;
@@ -566,6 +558,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+        F02609090000000000000001 /* XCRemoteSwiftPackageReference "swiftui-relux" */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/relux-works/swiftui-relux.git";
+            requirement = {
+                kind = exactVersion;
+                version = 9.0.0;
+            };
+        };
 		70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log.git";
@@ -606,16 +606,6 @@
 		70A604CB2D9169E300BE2349 /* SwiftUIRelux */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftUIRelux;
-		};
-		70E0BEEF2E00000100000013 /* AuthUIAPI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */;
-			productName = AuthUIAPI;
-		};
-		70E0BEEF2E00000100000014 /* AuthUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 70E0BEEF2E00000100000002 /* XCLocalSwiftPackageReference "Packages/AuthUI" */;
-			productName = AuthUI;
 		};
 		AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */ = {
 			isa = XCSwiftPackageProductDependency;

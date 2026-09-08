@@ -1,5 +1,8 @@
 extension Notes.Business {
     enum Err: Error, Sendable {
+        case locked
+        case notFound
+        case authenticationDenied
         case notImplemented
         case invalidContent
         case obtainFailed(cause: Error)

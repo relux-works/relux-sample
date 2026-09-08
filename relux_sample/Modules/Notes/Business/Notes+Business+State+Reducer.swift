@@ -1,6 +1,10 @@
 extension Notes.Business.State {
     func internalReduce(with action: Notes.Business.Action) async {
         switch action {
+            case let .snapshot(snapshot):
+                guard snapshot.revision > revision else { return }
+                revision = snapshot.revision
+                notes = .success(snapshot.notes)
             case let .obtainNotesSuccess(notes):
                 self.notes = .success(notes)
             case let .obtainNotesFail(err):

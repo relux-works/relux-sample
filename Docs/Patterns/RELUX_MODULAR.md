@@ -5,23 +5,23 @@ Auth demonstrates six library products within [one package](../../Packages/Auth/
 | Auth product | Responsibility | Direct local target dependencies |
 | --- | --- | --- |
 | AuthModels | Namespace, data, errors | None |
-| AuthReluxInt | Actions, effects, state and router contracts | AuthModels |
+| AuthReluxInt | Authentication effect and Flow contract | AuthModels |
 | AuthServiceInt | Service contract | AuthModels |
 | AuthServiceImpl | LocalAuthentication implementation | AuthModels, AuthServiceInt |
-| AuthReluxImpl | State, reducer, saga and module | AuthModels, AuthReluxInt, AuthServiceInt |
+| AuthReluxImpl | Result-bearing Flow and module | AuthModels, AuthReluxInt, AuthServiceInt |
 | AuthTestSupport | Domain test helpers | AuthModels, AuthServiceInt, AuthReluxInt |
 
-External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. [AuthUI](../../Packages/AuthUI/Package.swift) has AuthUIAPI and AuthUI targets. UI imports interfaces, not service or Relux implementations. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
+External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. Auth has no UI package or login state. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
 
 ## Composition root
 
-[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(router:serviceFactory:)`. The module resolves an `IService`; it does not import AuthServiceImpl. Swap a service at this construction boundary without changing the saga or view. [AuthRouterAdapter](../../relux_sample/Adapters/AuthRouterAdapter.swift) maps domain navigation needs into app actions so Auth does not import app navigation.
+[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(service:)` and injects its `flow.authenticate()` through a callback into Notes. AuthReluxImpl does not import AuthServiceImpl or app navigation. Swap the service at this construction boundary.
 
 Use target names for dependencies within a package and product dependencies across packages. Use automatic library linkage. Do not add a self-package dependency or manually embed every product: duplicate static Relux ownership caused runtime duplicate-class warnings in the [architecture audit](../ArchitectureAudit.md). TestSupport belongs to testing consumers, not the app's production dependency graph. There is no installed import-lint gate; manifests, compilation and review enforce the current boundaries.
 
 ## State sizing
 
-Auth uses an observable MainActor HybridState for a small domain. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
+Auth returns an authentication outcome without maintaining global state. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
 
 [Notes.Module](../../relux_sample/Modules/Notes/Notes+Module.swift) constructs both states, a flow, a service and an in-memory fetcher. Its current wiring is not a headless package. Extract a business-only composition when undertaking the [CLI exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli).
 

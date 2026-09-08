@@ -17,8 +17,11 @@ D -> F : apply(effect) via RootSaga
 F -> S : upsert(note)
 alt accepted by service
  S --> F : success
- F -> D : Action.upsertNoteSuccess(note)
+ F -> S : getSnapshot()
+ S --> F : revisioned, body-redacted snapshot
+ F -> D : Action.snapshot(snapshot)
  D -> B : reduce(action)
+ B -> B : accept only newer revision
  B --> D : reduction returns
  par scheduled UI delivery
   B ->> U : Combine projection on main queue
@@ -29,7 +32,7 @@ alt accepted by service
   D --> C : success
   C -> Page : dismiss
  end
-else invalid content or service failure
+else invalid content, locked note or service failure
  S --> F : failure(err)
  F -> D : upsertNoteFail + track(error) concurrently
  D -> B : failure action (keeps existing notes)

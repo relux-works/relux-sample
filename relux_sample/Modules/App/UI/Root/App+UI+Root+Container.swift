@@ -9,33 +9,41 @@ extension SampleApp.UI.Root {
         @EnvironmentObject var appRouter: AppRouter
         @Environment(ModalRouter.self) private var modalRouter
 
+        @Environment(\.scenePhase) private var scenePhase
+        @EnvironmentObject private var notesState: Notes.UI.State
+        @State private var pendingRevocations = 0
         let relux: Relux
 
         var body: some View {
             content
                 // simple way to centralised control of app modals
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .background {
+                        pendingRevocations += 1
+                        notesState.hideProtectedContent()
+                        Task {
+                            await actions { Notes.Business.Effect.relock(noteId: nil) }
+                            notesState.hideProtectedContent()
+                            pendingRevocations -= 1
+                        }
+                    }
+                }
                 .sheet(item: modalRouter.binding.modalSheet, content: modalPage)
         }
 
         @ViewBuilder
         private var content: some View {
-            VStack {
-                switch appRouter.path.isEmpty {
-                    case true:
-                        Splash(props: SampleApp.UI.Root.Splash.Props())
-                            .transition(.opacity)
-                    case false:
-                        NavigationStack(path: $appRouter.path, root: rootView)
-                            .transition(.opacity)
+            // Destroy presentation drafts while background revocation is in flight.
+            if scenePhase == .background || pendingRevocations > 0 {
+                Color.clear
+            } else {
+                NavigationStack(path: $appRouter.path) {
+                    Notes.UI.List.Container()
+                        .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
                 }
             }
-            .animation(.easeInOut(duration: 0.1), value: appRouter.path.isEmpty)
         }
 
-        private func rootView() -> some View {
-            Splash(props: SampleApp.UI.Root.Splash.Props())
-                .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
-        }
     }
 }
 

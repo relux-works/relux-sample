@@ -25,7 +25,7 @@ Sample app demonstrating architecture patterns and guidelines for working in **R
 - Async-first, concurrency-safe code (Swift 6)
 - Unidirectional data flow via **Darwin Relux** (Swift Relux)
 
-A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, SampleApp, Auth and Notes modules with a shared Store and RootSaga.
+A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, Auth and Notes modules with a shared Store and RootSaga.
 
 ---
 
@@ -61,7 +61,6 @@ Detailed documentation in `Docs/Patterns/`:
 ```
 Packages/
   Auth/                       ← Domain package (6 products)
-  AuthUI/                     ← UI package (2 products)
   TestInfrastructure/         ← Shared test utilities
 
 relux_sample/
@@ -69,10 +68,8 @@ relux_sample/
     App/                      ← Root app module
     Notes/                    ← Notes domain
     Navigation/               ← Navigation state
-    Account/                  ← Account UI
     ErrorHandling/            ← Error tracking
     Logger/                   ← Relux logger
-  Adapters/                   ← Domain router adapters
   Utils/                      ← Shared utilities
   IoC/                        ← Dependency registration
 
@@ -83,6 +80,10 @@ Docs/
 ```
 
 ---
+
+## Launch and note access
+
+The root opens Notes directly. Its toolbar pushes Settings, which links to Account information; neither screen signs in or logs out. Auth is requested only by Unlock Note. See [note protection](Docs/Patterns/NOTE_PROTECTION.md) for provider ownership, editor redaction and background revocation.
 
 ## Key Principles
 
@@ -104,7 +105,7 @@ App composition → Implementations (injected behind interfaces)
 
 - **BusinessState**: Notes uses an actor to own domain truth; the protocol itself requires Sendable reference semantics and async reduction/cleanup
 - **UIState**: MainActor-isolated, derives UI data; Combine delivery is asynchronous
-- **HybridState**: Combined approach for simpler domains
+- **Auth**: Result-bearing Flow with no global login state; Notes owns per-note grants
 
 ### Side Effects
 
@@ -129,7 +130,7 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
 ### Container/View Separation (ReluxUI)
 
 **Containers** (`Relux.UI.Container`): Bridge between Relux and UI layer
-- Access environment state (`@EnvironmentObject` for Notes, observable environment for Auth)
+- Access environment state (`@EnvironmentObject` for Notes)
 - **All Relux action dispatching MUST be defined here** — never in views
 - Extract and transform data for child views
 - Pass actions as callbacks to views
@@ -307,6 +308,5 @@ Subject line must complete: "If applied, this commit will **[subject]**"
 |------|---------|
 | `relux_sample/App.swift` | App entry point, Relux initialization |
 | `relux_sample/IoC/IoC.swift` | Dependency registration |
-| `relux_sample/Adapters/` | Domain router adapters |
 | `Packages/Auth/` | Extracted Auth domain (reference implementation) |
 | `Docs/Patterns/` | Architecture pattern documentation |

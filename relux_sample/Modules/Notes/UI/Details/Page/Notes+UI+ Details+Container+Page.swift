@@ -27,7 +27,13 @@ extension Notes.UI.Details.Container {
                             Text(note.title).font(.title).bold().accessibilityAddTraits(.isHeader)
                             Text(note.createdAt.formatted(date: .abbreviated, time: .shortened))
                                 .font(.subheadline).foregroundStyle(.secondary)
-                            Text(note.content).textSelection(.enabled)
+                            if note.isLocked {
+                                Label("This note is locked", systemImage: "lock.fill")
+                                AsyncButton(action: actions.onUnlock) { Label("Unlock Note", systemImage: "lock.open") }
+                                    .buttonStyle(.borderedProminent)
+                            } else {
+                                Text(note.content).textSelection(.enabled)
+                            }
                             if let message = props.errorMessage {
                                 Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                             }
@@ -35,13 +41,23 @@ extension Notes.UI.Details.Container {
                         .frame(maxWidth: .infinity, alignment: .leading).padding()
                     }
                     .toolbar {
+                        ToolbarItem(placement: .secondaryAction) {
+                            if !note.isProtected {
+                                AsyncButton(action: actions.onProtect) { Label("Lock Note", systemImage: "lock") }
+                            } else if !note.isLocked {
+                                Menu("Protection", systemImage: "lock.open") {
+                                    AsyncButton(action: actions.onRelock) { Label("Relock", systemImage: "lock") }
+                                    AsyncButton(action: actions.onRemoveLock) { Text("Remove Lock") }
+                                }
+                            }
+                        }
                         ToolbarItem(placement: .primaryAction) {
                             AsyncButton(action: { await actions.onEdit(note) }) {
                                 Label("Edit Note", systemImage: "square.and.pencil")
-                            }
+                            }.disabled(note.isLocked)
                         }
                         ToolbarItem(placement: .secondaryAction) {
-                            Button("Delete Note", systemImage: "trash", role: .destructive) { confirmDelete = true }
+                            Button("Delete Note", systemImage: "trash", role: .destructive) { confirmDelete = true }.disabled(note.isLocked)
                         }
                     }
                     .confirmationDialog("Delete note?", isPresented: $confirmDelete, titleVisibility: .visible) {

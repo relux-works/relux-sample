@@ -62,3 +62,15 @@ extension Notes.UI.State {
         }
     }
 }
+
+extension Notes.UI.State {
+    func hideProtectedContent() {
+        func hide(_ note: Note) -> Note {
+            guard note.isProtected else { return note }
+            return Note(id: note.id, createdAt: note.createdAt, title: note.title,
+                        content: "", isProtected: true, isLocked: true)
+        }
+        if let current = notes.value { notes = .success(current.mapValues(hide)) }
+        if let current = notesGroupedByDay.value { notesGroupedByDay = .success(current.map { $0.map(hide) }) }
+    }
+}

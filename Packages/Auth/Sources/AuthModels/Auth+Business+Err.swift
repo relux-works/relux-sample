@@ -1,7 +1,8 @@
 extension Auth.Business {
-    public enum Err: Error {
+    public enum Err: Error, Sendable {
         case authenticationRejected
-        case failedToAuthWithBiometry_localAuthWithBiometryIsNotSupported
-        case failedToAuthWithBiometry(cause: Error)
+        case unavailable
+        case cancelled
+        case evaluationFailed
     }
 }

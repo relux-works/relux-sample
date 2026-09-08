@@ -3,63 +3,39 @@ import AuthModels
 import AuthServiceInt
 
 extension Auth.Business {
-    public actor Service {
-        public typealias Model = Auth.Business.Model
-        private var laCtx: LAContext
+    public actor Service: IService {
+        private let contextFactory: @Sendable () -> LAContext
 
-        public init() {
-            laCtx = Self.createContext()
+        public init() { self.contextFactory = { LAContext() } }
+
+        // Internal seam for deterministic policy tests; public construction always uses the system context.
+        init(contextFactory: @escaping @Sendable () -> LAContext) {
+            self.contextFactory = contextFactory
         }
-    }
-}
 
-extension Auth.Business.Service: Auth.Business.IService {
-    // LAContext remains owned by this actor; interfaces expose domain values only.
-
-    public var availableBiometry: Model.BiometryType { get async {
-
-        var error: NSError?
-        let allowed = laCtx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
-
-        return switch laCtx.biometryType {
-            case .none: .other(allowed: allowed)
-            case .touchID: .touch(allowed: allowed)
-            case .faceID: .face(allowed: allowed)
-            case .opticID: .other(allowed: allowed)
-            @unknown default: .other(allowed: allowed)
-        }
-    }}
-
-    public func runLocalAuth() async -> Result<Bool, Auth.Business.Err> {
-        let laContext = self.laCtx
-        return await withCheckedContinuation { ctx in
+        public func runLocalAuth() async -> Result<Bool, Err> {
+            guard !Task.isCancelled else { return .failure(.cancelled) }
+            // Each request owns a fresh context; no previous note's credential reuse.
+            let context = contextFactory()
+            defer { context.invalidate() }
             var error: NSError?
-            if laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-                let reason = "We need to unlock your data."
-
-                laContext.evaluatePolicy(
-                    .deviceOwnerAuthentication, localizedReason: reason
-                ) { success, authenticationError in
-                    switch authenticationError {
-                        case .none:
-                            ctx.resume(returning: .success(success))
-                        case let .some(err):
-                            ctx.resume(returning: .failure(.failedToAuthWithBiometry(cause: err)))
-                    }
+            guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+                return .failure(.unavailable)
+            }
+            do {
+                let authorized = try await context.evaluatePolicy(
+                    .deviceOwnerAuthentication, localizedReason: "Unlock this note."
+                )
+                guard !Task.isCancelled else { return .failure(.cancelled) }
+                return .success(authorized)
+            } catch let error as LAError {
+                switch error.code {
+                case .userCancel, .appCancel, .systemCancel: return .failure(.cancelled)
+                default: return .failure(.evaluationFailed)
                 }
-            } else {
-                ctx.resume(returning: .failure(.failedToAuthWithBiometry_localAuthWithBiometryIsNotSupported))
+            } catch {
+                return .failure(.evaluationFailed)
             }
         }
-    }
-
-    public func recreateLAContext() {
-        laCtx.invalidate()
-        laCtx = Self.createContext()
-    }
-
-    private static func createContext() -> LAContext {
-        let ctx = LAContext()
-        return ctx
     }
 }

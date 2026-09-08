@@ -7,7 +7,6 @@ extension Account.UI.Container.Page {
     }
 
     struct Actions: ViewCallbacks, Equatable {
-        let onLogout: ViewCallback<Void>
         let onOpenDebug: ViewCallback<Void>
     }
 }
