@@ -1,0 +1,957 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08342-271b-7cb0-9656-f3c49bb14be1
+--------
+user
+# Agent Task Assignment
+
+## FIRST — Run Immediately
+
+```bash
+task-board m 'set_status(TASK-260909-1b1pyo, status=integrating)'
+```
+
+## Operational Constraints (Headless Run)
+
+Read this before you run any gate or attach any outcome. A spawned run is
+usually headless: the session ends when your turn ends.
+
+- **Never background a long command and end your turn.** The session terminates
+  with the turn and the process dies with it, while the run is still recorded as
+  completed — a successful-looking run with no evidence attached.
+- **A single shell call is time-bounded (~10 minutes).** Waiting out a longer
+  check inside one call fails too. Split long verification into bounded
+  sequential calls (package subsets, `-run` masks) and state explicitly what you
+  reran yourself versus accepted from already-attached evidence.
+- **Attach evidence before you end the lifecycle, not after.** "I will attach it
+  when the run finishes" is unfulfillable by construction: once your turn ends
+  there is no session left to attach anything.
+
+## Your Role
+# developer
+
+## Description
+
+Writes code — features, bugfixes, refactoring. Writes tests for the code produced.
+
+## Deliverable
+
+Code + tests.
+Outcome resources are named `<ELEMENT-ID>_<slug>.<ext>` — the completion guard matches on that
+ID prefix, and a differently named artifact does not satisfy the handoff. Write the file outside the
+managed worktree, then attach it with `task-board resource add`.
+
+Final human-facing wording must say "ready for review" or "handed off to review", not "done", "complete", "finished", "final", or "готово", when the board status is `to-review`.
+
+## Standing Orders
+
+1. When you change behavior, add or update tests for that scope unless the task explicitly forbids it.
+2. Run the relevant test commands yourself before handoff; do not leave test execution implicit.
+3. Run the relevant build or validation command after changes to confirm the project still compiles.
+4. If a required test or build cannot be run, state exactly what was not run and why.
+5. Stop if the implementation starts depending on a forced fit: a platform/API constraint, product decision, UX state model, ownership boundary, or architecture conflict that would require compensating hacks. Document the constraint and options, then ask or mark the task blocked instead of adding more stubs, flags, priority rules, or tests around a broken assumption.
+6. For board reads, use compact task-specific projections. A concrete assignment does not need routine `summary()`, `plan()`, `schema()`, or `{ full }`; request scoped schema only after an unknown call.
+7. Report mutant evidence as a table: mutant, what it narrows the gate to, the named test that fails, and — for every surviving mutant — the bound that survival states. A mutant with no named failing test is a survivor and must be reported as one.
+
+### Evidence Honesty Contract
+
+1. Run each validation or gate command directly as a standalone process. Do not pipe it through `tee`; do not use a pipe chain unless `pipefail` is enabled and the gate command's real status is preserved.
+2. Report the real exit code of every validation or gate command.
+3. Report expected-red gates truthfully as failing: when a command is expected to fail (for example, `go test` in a package-less module), give its real non-zero exit code and a one-line expected-failure rationale; never present it as passing.
+4. Check a checklist item tied to a command only after that exact command has actually run green with exit code 0. If it did not run or did not exit 0, leave the item unchecked.
+
+## Status Transitions
+
+- **start_status:** `development`
+- **end_status:** `to-review` (review handoff, not accepted done)
+
+## Constraints
+
+Full read/write access does not authorize forced-fit workarounds. Tests and stubs may verify a valid design, but they must not be used to make an invalid product/API model appear acceptable.
+
+## Skills
+
+These role skill references are a lazy catalog, not a mandate to bulk-read every
+body. Before technical work, identify the skills relevant to this task's concrete
+scope and read those full skill bodies. Always read any skill explicitly required
+by the task, user, or project instructions.
+
+- **project-management**: `/Users/iv/.claude/skills/project-management/SKILL.md`
+- **swiftui**: `/Users/iv/.claude/skills/swiftui/SKILL.md`
+- **core-data**: `/Users/iv/.claude/skills/core-data/SKILL.md`
+- **go-testing-tools**: `/Users/iv/.claude/skills/go-testing-tools/SKILL.md`
+- **architecture-diagrams**: `/Users/iv/.claude/skills/architecture-diagrams/SKILL.md`
+
+## Definition of Done
+
+- [ ] Focused tests before refactoring prove per-note authorization success/failure/false/cancel, locked content redaction, refresh retention, mutation guards and late-result revocation
+- [ ] Notes-first root, Settings/Account and native lock controls implemented with no UI test work; iOS compile and relevant Swift unit tests pass
+- [ ] Implementation matches AC
+- [ ] Solution fits project architecture
+- [ ] Tests green
+- [ ] Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted
+- [ ] If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches
+- [ ] Code written per task description and AC
+- [ ] Relevant tests written for new or changed behavior and passing
+- [ ] In a managed Story worktree the candidate is left UNCOMMITTED in the worktree for the handoff to snapshot — never commit on the Story branch. A producer commit moves the branch tip off the recorded checkpoint and the handoff refuses with change_request_candidate_committed_past_checkpoint; repair with `git reset --soft <checkpoint_oid>` before completing again.
+- [ ] Every command, message, state, or refusal named in the AC is driven through the production entry point by a named committed test, or is declared a stated bound. Report coverage as a ratio — `n of m AC rows driven` — and name the production call site for each. Prose in place of the ratio is not evidence.
+- [ ] Gating, refusing, validating, authorizing, or attesting behavior covered by negative tests that fail when the gate admits what it must reject, with the production call site named
+- [ ] Every gate ships at least one NARROWING mutant — the gate stays present and is weakened to admit exactly one member of the class it must reject, and a named test must fail. A delete-only mutant proves only that the gate exists and is not accepted as evidence.
+- [ ] A gate that inspects source text is additionally attacked by a mutant that PRESERVES the searched-for token and changes behavior, and the mutant harness executes the behavioral suite, not only the static checker.
+- [ ] Lint clean
+- [ ] Relevant build/validation commands run after changes and build not broken
+- [ ] New outcome artifact attached on the board with a task-scoped name when the work produces notes, logs, screenshots, or other deliverables
+- [ ] Important findings, decisions, anomalies, or regressions recorded in logbook when relevant
+## Your Task
+
+- **ID**: TASK-260909-1b1pyo
+- **Title**: TASK-260909-1b1pyo: implement-notes-first-and-protection
+- **Parent**: STORY-260909-zr4s7z
+### Description
+
+Refactor app to open directly in Notes list without any startup authentication. Remove the Relux Sample landing screen and dead main/auth/logout entry routes. Move Account into a native Settings destination accessible from Notes toolbar. Repurpose existing Auth package as reusable system device-owner authentication for individual notes, not app-global login. Add per-note lock/unlock and explicit relock/remove-lock controls with simple native UI. Preserve iOS17/macOS14, glass availability fallbacks, KISS/DRY/SOLID and Relux dispatch-in-container, service/provider boundaries. Before behavioral refactors add focused Swift Testing coverage. No CUA, screenshots, simulator navigation, snapshot harnesses or UI tests: user explicitly requested blind best effort. Existing in-memory storage stays in-memory. Parent owns signed PR publication; leave candidate uncommitted for board handoff. Write a concise .spec/note-protection.md before implementation.
+### Acceptance Criteria
+
+Launch immediately shows Notes without system auth; Settings contains Account; old landing screen is removed. Locked note bodies are hidden from list/search/details/editor until that specific note is successfully authenticated using biometry or device credential fallback. Failed/false/cancelled/unavailable auth never grants access. Lock state survives refresh/edit in the in-memory provider; access is revoked on manual relock and app background, and late auth cannot regrant revoked access. Focused unit tests and iOS build pass; no deep UI testing
+
+## Instructions
+
+The following instructions have been attached to this task:
+
+### protection-decisions.md
+> Settled behavior and scope boundaries
+
+Titles remain visible for identifying notes; locked bodies must not appear in row previews, body search, details or editing props. Auth success authorizes only the requested note, not every note. Protect destructive/edit/remove-protection paths consistently; guard in domain/provider as appropriate, not only by hiding buttons. Keep protection metadata in the in-memory provider so reload/upsert cannot silently remove it; transient unlock grants are not persisted. Relock on explicit action and when app enters background (NOT inactive, which may occur during the system auth prompt). A result arriving after background/relock must not grant access: use a minimal operation/session generation check or equally simple correct approach. Prefer fresh LAContext per evaluation to avoid unintended credential reuse. System .deviceOwnerAuthentication supplies biometry or device passcode/macOS password fallback; failure/unavailability fails closed, no custom password or mock bypass. Remove app-global login/logout screens and routes that are now dead. Auth remains useful domain example behind interfaces; Notes must not import AuthServiceImpl or LocalAuthentication. Prefer result-bearing Flow for reusable authentication and straightforward coordination; inspect upstream API and choose least coupling. No at-rest encryption/persistence/network scope: docs describe an in-memory sample access lock honestly. Keep ordinary notes immediately editable without any auth. Prior user explicitly forbids expensive UI testing: no CUA/screenshot/snapshot/device-navigation work. Source is clean current main 7480dda. Parent owns publication, not worker.
+
+
+
+
+## Board CLI Reference
+
+You have access to `task-board` CLI for managing your work. All writes use the `m` (mutation DSL) subcommand:
+
+```bash
+# FIRST/LAST lifecycle commands:
+# Use explicit status changes when the task flow requires it.
+task-board m 'set_status(TASK-260909-1b1pyo, status=analysis)'       # analyst-style work
+task-board m 'set_status(TASK-260909-1b1pyo, status=development)'    # implementation / testing work
+task-board m 'set_status(TASK-260909-1b1pyo, status=reviewing)'      # reviewer handoff
+task-board m 'set_status(TASK-260909-1b1pyo, status=blocked)'        # when blocked
+task-board m 'set_status(TASK-260909-1b1pyo, status=to-review)'      # when your work is ready for review
+
+# Track progress with checklist
+task-board m 'check_item(TASK-260909-1b1pyo, item=1)'                        # check item N
+task-board m 'add_checklist_item(TASK-260909-1b1pyo, text="Write tests")'    # add checklist item
+
+# Add notes about your progress, decisions, blockers, or review findings
+task-board m 'set_notes(TASK-260909-1b1pyo, text="your note here")'
+
+# Save short text directly as outcome resources
+task-board m 'add_resource(TASK-260909-1b1pyo, name=TASK-260909-1b1pyo_results.md, content="...", type=outcome, description="Description")'
+
+# Attach an existing local file (screenshots, PDFs, logs, archives, research docs)
+task-board resource add TASK-260909-1b1pyo ./path/to/file --type outcome --name TASK-260909-1b1pyo_artifact.bin -d "Description"
+```
+
+## Spawn Run Control
+
+Tracked background spawn runs expose `TASK_BOARD_RUN_ID` in the child environment.
+If your work is long-running, check for operator directives at safe checkpoints:
+
+```bash
+task-board spawn status "$TASK_BOARD_RUN_ID"
+task-board spawn directives "$TASK_BOARD_RUN_ID"
+```
+
+Current runtimes do not support direct inbound push into your active session.
+Treat directives as cooperative checkpoint signals:
+- persist your current notes/artifacts before acting on `cancel`-style requests
+- only honor pause/reroute intent at a safe checkpoint
+- if no directive is present, continue normally
+
+## IMPORTANT: Saving Results
+
+When you produce work products (research documents, design docs, screenshots, logs, archives, implementation notes), you MUST save them as outcome resources with names that include the task ID:
+
+```bash
+task-board m 'add_resource(TASK-260909-1b1pyo, name=TASK-260909-1b1pyo_results.md, content="...", type=outcome, description="Description")'
+task-board resource add TASK-260909-1b1pyo ./path/to/file --type outcome --name TASK-260909-1b1pyo_artifact.bin -d "Description"
+```
+
+If you revise the same artifact later, use `task-board m 'update_resource(...)'` or `task-board resource update ...` instead of creating a silent overwrite.
+
+If you discover important findings, decisions, anomalies, regressions, or non-obvious constraints while working, record them in `logbook` as well as on the board.
+
+This ensures your results persist on the board and are accessible to other agents and the coordinator. Spawn completion is expected to produce at least one new task-scoped outcome artifact before the task can cleanly remain in `to-review`.
+
+## Evidence That Counts
+
+A passing suite means nothing unless something in it would have failed.
+
+- Any behavior that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS ships with negative tests that fail when the gate admits what it must reject. A positive test proves the gate is reachable, not that it works.
+- Prove a bound by NARROWING the gate, not only by deleting it. A delete-only mutant proves the gate exists and says nothing about the class it covers.
+- Prove behavior by driving the real entry point — launch, materialize, resolve, publish — and name the production call site. A helper that is unit-tested but called from nowhere promises nothing.
+- Standard negative shapes to test and to look for: forged or self-minted evidence; absent evidence treated as satisfied; the check present but uncalled from production; a bypass path around the check; a capability claim that does not reproduce.
+- A gate reports coverage as a measured ratio, not as prose: prose cannot distinguish 7 of 7 from 3 of 7, and "nothing is there" is not "nothing this checker sees". Name the blind spot as a stated bound.
+- An absence and a failure to read are different facts. A failed, partial, or malformed read is never a legitimate absence, and a fallback defined for absence must not fire on a read failure.
+- Prove, or report nothing. Where a property cannot be established, report unknown instead of inferring it from a proxy signal; callers act on a plausible guess.
+
+Shapes vocabulary and the incident record behind each rule: `references/negative-evidence.md` in the project-management skill.
+
+## Stop-The-Line: No Forced Fits
+
+Do not keep implementing when autonomous work starts requiring a forced fit. A forced fit is any path where the task conflicts with a platform/API constraint, product decision, UX state model, ownership boundary, or architecture, and the remaining "solution" is mostly compensating hacks.
+
+Warning signs:
+- each fix needs another flag, stub, priority rule, mock-only behavior, or special-case test
+- the tests can pass only because the test harness avoids the real platform behavior
+- the implementation depends on an assumption you can no longer defend
+- the user-facing behavior cannot be described cleanly without contradicting the product model
+
+When this happens, stop product-code changes before adding another workaround layer. Attach or note:
+- the constraint and evidence
+- the failed assumptions/attempts
+- the viable options and tradeoffs
+- the recommended option
+- the exact human/product/architecture decision needed
+
+Then set the board item to `blocked` and ask only for that exact decision or external input. This stop applies only to a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision; recoverable failures and ordinary rework stay autonomous. Tests and stubs are not proof that a forced-fit design is correct; use them only after the state model and platform assumptions are valid.
+
+## Completion Discipline
+
+Keep working until the task reaches a terminal handoff for your role. If no objective blocker remains, do not stop while the board item is still parked in `analysis`, `development`, `testing`, or `reviewing`.
+
+Before your final status change:
+- satisfy the task acceptance criteria and relevant checklist items
+- attach outcome evidence for the work you produced
+- run the relevant verification commands when the task changes code, tests, docs, or config
+
+Use `blocked` only for either a concrete external blocker you cannot resolve autonomously or an unresolved human-only platform/product/architecture/tradeoff/approval decision. Record the constraint, evidence, failed assumptions/attempts, viable alternatives and tradeoffs, recommendation, and exact human decision or external input needed. Recoverable failures and ordinary rework are not `blocked`.
+
+Status language is literal:
+- `to-review` means your role has handed work to review; it does not mean the board task is accepted or done.
+- In your final response, say "ready for review" or "handed off to review" when the final board status is `to-review`.
+- Do not say "done", "complete", "finished", "final", or "готово" as the overall task state unless the board status is actually `done`.
+
+## LAST — Run For Role Handoff
+
+When you have completed all role work and the task is ready for its role handoff, run this as your **final board command**:
+
+```bash
+task-board handoff TASK-260909-1b1pyo --role developer
+```
+
+## Working Directory
+Board directory: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board`
+
+Work in the project root. Do not modify board files directly — always use the `task-board` CLI.
+
+## Story Workspace
+
+You are running in an isolated Git worktree for STORY-260909-zr4s7z.
+
+- Workspace path: `.temp/STORY-260909-zr4s7z/worktree` (this is your working directory)
+- Branch: `task-board/story/STORY-260909-zr4s7z`, forked from `main`
+- Authoritative board: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board` (already exported as `TASK_BOARD_DIR`)
+
+Make every repository change here. Do not commit, switch, rebase, merge, or delete this branch, and do not run `task-board` against the `.task-board` copy inside this worktree — it is a checkout artifact, not the board. Integration into trunk is the orchestrator's step, not yours.
+
+Leave your work UNCOMMITTED in the worktree — the handoff snapshots the working tree against the recorded checkpoint. A commit of your own on this branch is refused at handoff with `change_request_candidate_committed_past_checkpoint`, and the repair is `git reset --soft <checkpoint_oid>` before completing again.
+
+## Integration Assignment
+
+This is the integration run for accepted Change Request `CR-TASK-260909-1b1pyo-1` revision 1. The immutable producer binding is role `developer` (archetype `implementer`). Keep the board at `integrating`; only the integration transaction may write `done`. This assignment supersedes generic producer FIRST/LAST status and handoff instructions: run the bound checkpoint or integration command, attach fresh task-scoped outcome evidence, then end without calling the generic `handoff` command or setting status yourself.
+
+codex
+Проверю accepted Change Request и контракт интеграции, затем выполню нужную транзакцию и приложу свежие результаты.
+
+exec
+/bin/zsh -lc "task-board m 'set_status(TASK-260909-1b1pyo, status=integrating)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 49ms:
+{"ok":true,"result":{"primary":{"action":"status_changed","element_id":"TASK-260909-1b1pyo","field":"status","new_value":"integrating","old_value":"integrating"}}}
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/SKILL.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+---
+name: project-management
+description: >
+  File-backed task boards and spawn-first multi-agent orchestration through
+  task-board. Use for board/spec decomposition, task tracking, planning,
+  status/progress, tracked producer/reviewer runs, and delivery goals. A normal
+  primary session is the Orchestrator; a prompt-assigned role or
+  TASK_BOARD_RUN_ID is a specialist worker. Russian triggers: борд, доска,
+  задачи, эпик, стори, таски, спавн, оркестратор, субагент, статус, прогресс.
+triggers:
+  - task board, epic, story, task, bug, status, progress
+  - spec decomposition, planning, critical path
+  - spawn, orchestrator, coordinator, sub-agent, delivery goal
+  - борд, доска, задачи, эпик, стори, таски, спавн, оркестратор
+---
+
+# Project Management Router
+
+Load only the focused references needed. Use `task-board` for reads/writes;
+never edit `.task-board/` directly.
+
+## Active Role
+
+- **Specialist:** when assigned a role, `TASK_BOARD_RUN_ID` exists, or the
+  human explicitly requests inline execution. Follow lifecycle/evidence gates.
+- **Orchestrator:** otherwise. Detail settled specs inline; route
+  every artifact-producing or validating task through a tracked
+  background child run. `solution-architect` only for genuine
+  architecture decisions.
+
+## Critical Invariants
+
+1. Preflight with `project_config(view=spawn-preflight, role=ROLE, agent=RUNTIME?)`;
+   bare `project_config()` stays the role-optional config surface.
+   Cross-provider ranking requires the agent-less query: omit `agent`, compare
+   recommendations, then narrow with `agent=RUNTIME` for the fresh spawn snapshot.
+   `providers.targeted` names the query's runtime scope; policy-allowed entries
+   outside it use `runtime_not_targeted_by_query`, while policy-excluded entries
+   use `provider_not_allowed_by_preferred_agentic_system`.
+   When workload recommendations are configured: query with `task_class` or an
+   explicit `workload_class`, reason about scope/risk/autonomy/validation and
+   context cost, then spawn an explicit pair with the exact class transport,
+   fresh snapshot digest, and one-line recommendation rationale. A ranking is
+   advice, never authority, a default, or permission to widen the pair.
+   For a proprietary (paid) model, choose the pair that maximises delivered
+   work per token and escalate only for a stated reason.
+   Every child has explicit role, background mode, and a complete
+   model/reasoning-effort pair across its applicable dimensions — model
+   either typed or seeded by a configured per-role default, and, for Codex,
+   Qwen, or a Claude model whose registry row declares a reasoning-effort
+   vocabulary, an in-policy effort either typed or default-seeded the same
+   way. Built-in runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+   (plus any runtime declared under `spawn.runtimes`); Gemini, Agy,
+   `muse-spark-1.2-contributor`, and an effortless Claude model take no
+   `--reasoning-effort` at all, while `muse-spark-1.3-contributor` and its
+   `muse-spark` alias REQUIRE one from `high`/`xhigh`/`max`. The
+   versioned-short `muse-spark-1.3` names no registered row and is not
+   spawnable; codex `gpt-6-astra`/`astra` REQUIRE one of `low`/`medium`/`high`/`xhigh`/`max`/`ultra`.
+   Treat the v3 `admitted_pairs` set the
+   preflight reports as the exact admission authority, not `allowed_models`,
+   which is one input form and is `null` when the runtime uses combinable
+   `entries`; when preflight reports a v2 migration warning, use the
+   full read-only migration snapshot for an explicit reviewed repository edit.
+   Never infer admission from `PolicyRank` or silently migrate config.
+   Codex-only `fast_mode` defaults false and forces direct/managed
+   `service_tier` default/priority; preflight records root/remote provenance.
+   Remote-v4 parity is owned by the client projection and its checked fixtures;
+   authority schema v1 intentionally authorizes an empty per-board backend
+   policy set, so do not infer or add a server policy route.
+2. Workers use compact, task-specific projections. Skip routine
+   `summary()`, `plan()`, `schema()`, and `{ full }`; scoped schema only
+   repairs an unknown call.
+3. Default to `task-board spawn observe RUN --until terminal --format compact`,
+   then route its handoff. Other reads are for barriers, replay/follow,
+   diagnosis.
+4. The Orchestrator owns producer -> reviewer -> rework -> reviewer until the
+   configured review policy is satisfied and the board reaches `done`.
+   `to-review` is a routing trigger, not human acceptance. Commit
+   decomposition is that same Orchestrator's own call, never a per-commit
+   human checkpoint.
+5. Handoff needs a task-scoped outcome and `task-board handoff TASK-ID --role
+   ROLE`. Early exits and intermediate parked states are
+   retried, or rerouted through a focused child; routine work is never handed to the human.
+   Producer `set_status(to-review)`
+   is refused, and reviewer `accept_cr` requires its live merged checklist.
+   Attach artifacts through resource CRUD under
+   `.task-board/.resources/<ELEMENT-ID>/`, optionally in safe nested paths;
+   never write that tree directly or attach directories.
+6. `blocked` needs an evidence-backed external blocker or unresolved
+   human-only product/platform/architecture/approval decision. Persist
+   constraint, evidence, failed assumptions/attempts, viable alternatives,
+   tradeoffs, recommendation, and the exact decision or external input needed.
+7. At `to-review` say **ready for review** / **handed off to review**;
+   done/complete/final only for `done`.
+8. `board-goal-v2` is authoritative: `goal` owns `parent/primary`; `spawn goal`
+   owns `run/RUN-*`. V1 shapes are compatibility-only.
+9. `openai-board` / `anthropic-board` launch the primary `task-board
+   codex|claude` sessions.
+   agents-infra composes; `tb-sessiond` owns goal bind, location-scoped
+   `openai-board|anthropic-board resume [SES-*]`, native identity restart, and
+   session operations. Provider-native adoption remains explicit as
+   `codex resume THREAD_ID` (compatibility form) or `codex --resume THREAD_ID`,
+   and `claude --resume UUID`.
+   Bad records move to private `<state>/quarantine/`; listen continues and
+   status/list report them.
+10. Freeze stable project/config/runtime/control roots and one binding+digest.
+    Explicit config must exist; direct/managed children override ambient roots.
+    `TASK_BOARD_DIR` stores, not authority. Resolve authority from a
+    binding via fresh `git ls-remote --symref <authorized-url> HEAD`,
+    exact-ref fetch, and equal advertised/fetched OIDs. Never use cached/local
+    refs, tracking, caller/config fields, or prior tuples. Cross-check
+    `integration_base_branch` against the independent branch/remote
+    pair. Zero/multiple/unavailable/indeterminate evidence refuses.
+    Producer publishes a Change Request, reviewer runs `accept_cr`,
+    then Orchestrator checkpoints leaves and integrates the Story. Managed
+    commits use `-S` with repository human identity/key; index failures never
+    justify broad reset. See
+    [tracked background spawn](references/tracked-background-spawn.md#story-worktree-isolation).
+11. Cross-Story `set_parent` and integration are durable and fail closed; move
+    evidence never widens source-tombstone admission. See
+    [tracked background spawn](references/tracked-background-spawn.md#what-the-board-state-commit-covers-and-what-it-leaves-alone).
+12. Board validation stays strict by default. The project setting
+    `validation.allow_legacy_empty_done_containers=true` suppresses only the
+    historical empty-`done` Story/Epic aggregate mismatch; active or
+    child-backed containers remain strict.
+13. Transaction-owned `.activity/<ID>/events.ndjson` forbids caller logging.
+    Reads are bounded; corrections privileged/append-only. Transfer/worktrees
+    reject foreign history, preserve legacy/deletion boundaries, and never backfill.
+    See [file format](references/file-formats.md#activity-streams),
+    [query](references/querying.md), and
+    [coverage](docs/activity-mutation-coverage.md).
+14. Never run `make install*`, `scripts/setup.sh`, or `task-board self-update`
+    from inside a manager-hosted session. A Claude host's PTY master lives in
+    the `tb-sessiond` process, so replacing that daemon hangs up every hosted
+    session including the caller's own. A binary swap is a human action taken
+    between sessions; the manager restarts from an outside shell with
+    `task-board session restart`. See
+    [goals recovery](references/goals-recovery.md#1-a-skill-reinstall-beside-a-running-tb-sessiond).
+
+## Decision Tree
+
+```text
+Prompt-assigned role or TASK_BOARD_RUN_ID? -> work as that specialist
+Artifact, test, docs, research, or review? -> tracked role-based spawn
+Producer reached to-review? -> spawn reviewer, route verdict
+Concrete stop boundary? -> persist packet, then blocked
+Known structured board operation? -> q/m DSL with narrow projection
+Unknown name/field? -> schema(); known call syntax? -> schema(operation|mutation=NAME); see querying recovery examples
+```
+
+## Lazy Reference Routes
+
+| Need | Read |
+| --- | --- |
+| Queries, observability, goals, estimates, deps | [querying](references/querying.md), [file formats](references/file-formats.md) |
+| Status, review, recovery, Stop-The-Line | [statuses](references/statuses.md) |
+| Resources, bugs, evidence | [resources and bugs](references/resources-and-bugs.md) |
+| Detailing, plans, execution | [planning workflow](references/planning-workflow.md) |
+| Research and synthesis | [research workflow](references/research-workflow.md) |
+| Roles, task classes, DoD | [roles](references/roles.md) |
+| Negative tests, gate proofs, unknown vs absence | [negative evidence](references/negative-evidence.md) |
+| Spawned goals, selection, runs, recovery, Story worktrees | [tracked background spawn](references/tracked-background-spawn.md) |
+| Change Request order, checkpoint, republish | [CR lifecycle](references/change-request-lifecycle.md) |
+| Session Manager wrappers, goal runtimes | [codex goal runtime](docs/codex-goal-runtime.md), [claude goal runtime](docs/claude-goal-runtime.md) |
+| Templates, reviewer routing | [sub-agent templates](references/sub-agent-templates.md) |
+| Context budgets | [context efficiency](references/context-efficiency.md) |
+| Config feature gates | [config features](references/config-features.md) |
+| Goal daemon skew, native recovery | [goals recovery](references/goals-recovery.md) |
+| Project config refusals/schema/examples, authority envelopes, guarded alias migration, spawn supervision in minutes | [canonical config reference](references/task-board-config.md); persist a matching scoped selection before removing legacy `remote.user`, preview with `task-board migrate-project-config`, then apply only with its reviewed `--expected-digest` |
+| Install/bootstrap | [setup](references/setup.md) |
+| Remote auth/admin/ops | [remote board runbook](docs/remote-board-operations.md) |
+| CLI/deploy overview | [README](README.md) |
+
+Runtime changes follow canonical `.specs/` contracts.
+
+Built-in spawn runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+(plus any runtime declared under `spawn.runtimes`). Gemini CLI 0.54.4 is
+deprecated in favour of Antigravity, but both remain supported.
+
+```bash
+task-board spawn TASK-ID --role developer --background --agent agy --model gemini-3.6-flash-high --timeout 35m
+```
+
+`agy` takes no `--reasoning-effort`; effort is encoded in its eight scoped
+model IDs. Minimum `agy` is 1.1.12; 1.1.14 is validated. Prompt delivery has
+a 96 KiB argv budget; `SUCCESS`/`ERROR` JSON overrides process exit. Only the
+top-level worker is tracked. See [README](README.md) for the full models,
+flags, JSON, safety, configuration, and Gemini compatibility contract.
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/references/change-request-lifecycle.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+# Change Request Lifecycle Runbook
+
+Orchestrator-owned. An accepted Change Request is accepted work, not delivered
+work. This page states the order, the recovery paths, and the republish
+semantics that used to live only in an operator's head.
+
+The full typed contract — how a candidate is snapshotted, what
+`repository_delta` means, what a `stale` revision is, and every refusal you can
+hit — stays in
+[tracked background spawn](tracked-background-spawn.md), section
+`Change Requests, review, rework, and checkpoint`. This page is the order of
+operations on top of it.
+
+---
+
+## The Change Request lifecycle, in order
+
+1. **Accept.** The reviewer runs
+   `task-board m 'accept_cr(<ELEMENT-ID>, revision=<N>, evidence=<ELEMENT-ID>_review-verdict.md)'`.
+   The element moves to `integrating`. It is accepted, not delivered. Only the
+   reviewer run that was handed the revision may accept it.
+2. **Checkpoint immediately.** For every non-final leaf, run
+   `task-board worktree checkpoint <ELEMENT-ID>` as the next action after
+   acceptance. The accepted tree lands on the Story branch only, and the leaf
+   stays `integrating` until Story integration lands it on trunk. Delay here is
+   what makes the next producer's Change Request go `stale`.
+3. **Checkpoint refreshes the real index automatically.** Candidate capture
+   records (but never mutates) the real-index tree. Under the bound run's Story
+   lease and the candidate-captured index CAS, checkpoint replaces only that
+   captured state and independently verifies branch/HEAD/index/worktree
+   identity. A typed
+   `change_request_checkpoint_index_unsynced` refusal is retried after its named
+   lock, I/O, or ownership condition is resolved; do not use a broad manual
+   reset that can erase unreviewed staged state.
+4. **Final leaf: integrate, do not checkpoint.** `checkpoint` refuses the
+   Story's last open leaf with `change_request_final_leaf_checkpoint`, because
+   closing it would promote a Story whose branch has never reached trunk. Land
+   the Story with
+   `task-board worktree integrate <STORY-ID> --cr <ELEMENT-ID> --revision <N>`.
+5. **When `integrate` refuses, report the refusal.** `validation_not_configured`
+   (`BUG-260807-1o5092`, the as-shipped behavior) and
+   `integration_indeterminate` for a board that lives outside the control root
+   are blockers, not detours. Report the refusal as the blocker it is and land
+   only by the documented manual signed substitute — an isolated clone, signed
+   cherry-pick of the exact reviewed head, a platform review record, and a
+   fail-closed plain push. Never route around a typed refusal by moving board
+   files or the branch by hand.
+6. **A lost run is recovered by republish, never by re-running the producer.** A
+   run that died after producing content but before the board recorded it still
+   has its content on disk. Republish it with provenance. Re-running the
+   producer discards work that already exists and costs the run again.
+7. **A republish of an unchanged accepted tree is an annotation, not a new
+   revision.** A candidate whose `repository_delta` is byte-identical to the
+   accepted one, and whose acceptance still stands, is not a new candidate.
+   Recording it as a revision turns the revision count — the only rework
+   measure the board has — into process noise.
+8. **Never commit manually on the Story branch.** The managed worktree's tree is
+   published by the producer's handoff and landed by `checkpoint` or
+   `integrate`. A hand commit on that branch makes the accepted snapshot and the
+   branch head disagree, and the disagreement surfaces later as an unexplained
+   `stale` or an integration that lands the wrong tree. A `task_delta` handoff
+   now fails closed on it: the tip is compared to the workspace record's
+   `checkpoint_oid` before the validation suite runs and before anything is
+   written, and a disagreement is refused with
+   `change_request_candidate_committed_past_checkpoint`. The producer repairs it
+   inside its own run with `git reset --soft <checkpoint_oid>` — the work stays
+   in the worktree — and completes the handoff again.
+
+## A revision that will never be integrated
+
+Two shapes end a Change Request revision without a reviewer verdict, and they
+are different facts.
+
+### An empty delta does not block the Story
+
+A revision whose `repository_delta` is `empty` — an analyst or research run that
+changed no repository file — is created `ready` like any other, because
+emptiness is an attribute of the candidate and never a state. What changed with
+`BUG-260906-37s3ps` is what that revision does to everybody else: while it sits
+`ready` or `reviewing`, it no longer refuses a sibling producer with
+`change_request_sibling_producer_blocked`.
+
+The gate's argument is contamination — the new producer writes into the same
+Story worktree the pending candidate was snapshotted from — and an empty
+candidate has no repository work product for those writes to reach. Its
+checkpoint writes no commit, and its integration is a no-op. Before the fix a
+research-only run deadlocked its whole Story: nothing was routed at a candidate
+with nothing to review, and every later producer was refused with a blocker
+nobody could clear.
+
+The exemption is scoped, and the scope is deliberate:
+
+| Blocking state | `repository_delta=present` | `repository_delta=empty` |
+| --- | --- | --- |
+| `ready`, `reviewing` | refuses siblings | **admits siblings** |
+| `draft`, `changes_requested`, `stale`, `conflicted` | refuses siblings | refuses siblings |
+
+The bottom row expects a REPUBLISH, and the next snapshot of the shared worktree
+would pick up the sibling's writes. Emptiness today says nothing about the
+revision that replaces it. A revision with no readable `repository_delta` —
+legacy, or from a newer build — refuses: a value this build cannot read is not
+evidence that the candidate is empty.
+
+The revision is still fully auditable. It is not deleted, not hidden, and not
+given a special state; it simply stops being a blocker.
+
+### Retiring a revision: `withdraw_cr`
+
+An empty delta is not the only revision that never reaches integration. A
+candidate can be superseded, abandoned, or published by a run whose deliverable
+turned out to belong somewhere else. Before `BUG-260906-37s3ps` there was no
+route for that at all: `accept_cr` needs a reviewer verdict and a merged
+checklist, `worktree abort` discards the entire workspace, and republishing only
+produces another revision in the same unresolved state.
+
+```bash
+task-board m 'withdraw_cr(<ELEMENT-ID>, revision=<N>, reason="why this revision will never be integrated")'
+```
+
+It moves the revision to `aborted`, which is terminal on both predicates that
+read the state: it stops refusing sibling producers, and it stops withholding
+the Story workspace's base convergence. The revision file and its ledger row
+stay readable.
+
+Four things it refuses, and why:
+
+- **A revision that is `accepted`, `checkpointing`, `checkpointed`,
+  `integrating` or `integrated`** — `change_request_state_conflict`. Those
+  carry a reviewer's attestation, or commits that are already on the Story
+  branch or in trunk. Recording one as never integrated would make the board
+  disagree with git history.
+- **A missing or whitespace-only `reason`** —
+  `change_request_withdraw_reason_missing`. The ledger row is the only surviving
+  explanation of why the revision exists and was never integrated.
+- **A call from inside a tracked spawn run** —
+  `change_request_withdraw_unauthorized`. Withdrawal is an ORCHESTRATOR route.
+  A producer refused by `change_request_sibling_producer_blocked` must not clear
+  its own blocker, and a producer handed `changes_requested` must not retire the
+  rework signal instead of answering it.
+- **A revision number that is not the current one** —
+  `change_request_revision_conflict`, the same CAS every other transition takes.
+
+`withdraw_cr` deliberately does NOT move the board element. Where the element
+goes next — back to development, `blocked`, or closed as a duplicate — is a
+routing decision the orchestrator makes with information the mutation does not
+have; make it explicitly, in a separate call.
+
+## Two same-class findings mean a missing gate
+
+When two consecutive reviews of one leaf raise the same finding class, stop
+routing another rework revision. Spawn one task to add a gate for the class — a
+conformance vector set, a checker, a mutant harness — and let the next revision
+be reviewed against the gate rather than against a reviewer's memory. The
+reviewer's `repeat-of:` verdict field is the signal to route on.
+
+## Recovery surfaces
+
+- Stopped or refused integration: `task-board worktree transaction show <STORY-ID>`,
+  then the disposition surface it names.
+- A leaf whose handoff guard refused for artifact naming: attach the correctly
+  named `<ELEMENT-ID>_<slug>.<ext>` outcome resource and re-run the handoff. Do
+  not respawn the producer to satisfy a naming rule.
+
+exec
+/bin/zsh -lc 'task-board --help' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+Manage a file-based task board with epics, stories, tasks, and bugs.
+
+Usage:
+  task-board [command]
+
+Available Commands:
+  admin                  Server administration (users, tokens, access)
+  boards                 List boards accessible to the current user (remote mode)
+  claude                 Launch Claude through the Task-board Session Manager
+  codex                  Attach Codex to the Task-board Session Manager
+  completion             Generate the autocompletion script for the specified shell
+  export                 Export current board into a tar.gz archive
+  goal                   Read and align the board-scoped parent primary goal
+  grep                   Full-text search across board files
+  handoff                Verify role handoff evidence and move to the role end status
+  help                   Help about any command
+  import                 Import a tar.gz archive into the current board
+  limits                 Inspect and control provider rate-limit state
+  login                  Store a token for the current remote
+  logout                 Remove active user's token for current remote
+  m                      Execute a mutation (write operation)
+  migrate-keychain       Import legacy remote credentials into macOS Keychain
+  migrate-project-config Preview or apply guarded deprecated project-config alias migration
+  plan                   Show execution plan with phases and critical path
+  q                      Query the board with a mini DSL
+  repair-links           List or remove unsupported container dependency links
+  resource               Upload, update, download, and delete board resources
+  self-update            Update task-board to the latest version
+  session                Inspect and stop Task-board Session Manager sessions
+  spawn                  Queue an agent spawn run for a board task
+  switch-user            Switch active user for current remote
+  tree                   Show board as hierarchical tree
+  tui                    Launch interactive TUI
+  validate               Validate board structure
+  whoami                 Show current remote and active user
+  worktree               Inspect and repair managed Story workspaces
+
+Flags:
+      --board-dir string         Path to the board directory (overrides TASK_BOARD_DIR and config local.board_dir) (default ".task-board")
+      --context-profile string   Agent context profile override: full or lite
+  -h, --help                     help for task-board
+      --insecure                 Skip TLS certificate verification (for self-signed certs)
+      --json                     Output in JSON format
+      --no-update-check          Disable automatic update check
+      --remote string            Remote board server URL (overrides TASK_BOARD_REMOTE)
+      --remote-board string      Remote board ID (overrides TASK_BOARD_ID)
+  -v, --version                  version for task-board
+
+Use "task-board [command] --help" for more information about a command.
+
+exec
+/bin/zsh -lc 'task-board worktree integrate --help' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+Land the accepted story_final Change Request for a Story as ONE squash commit on
+trunk, perform the Story's done transition, and commit the Story's board delta
+as a second, board-only commit.
+
+This command runs in the control root — the repository's main working tree, on
+the configured trunk branch — but only from the tracked integration run whose
+role and archetype match the accepted revision's immutable producer binding.
+Reviewers, orchestrators, and other producer archetypes are refused. No other
+checkout is ever advanced.
+
+It is idempotent. A crashed run leaves one durable transaction record; re-running
+resumes the recorded phase rather than starting a second integration, and the
+only phase that offers a rollback is 'prepared' with trunk unmoved.
+
+On a remote board it refuses with worktree_isolation_requires_local_board before
+the integration lock and before the transaction opens. The rationale is data
+locality, not authority: admission compares worktree bytes against the store's
+own rendering, and no single process holds both operands on a remote board.
+
+Usage:
+  task-board worktree integrate <STORY-ID> [flags]
+
+Flags:
+      --commit-time string   explicit RFC3339 commit time; required when version_control.confirm is enabled, and applied to both the author and the committer date
+      --cr string            Change Request ID (the element the accepted story_final CR is attached to)
+  -h, --help                 help for integrate
+      --revision int         accepted Change Request revision
+      --rollback             roll back a transaction at phase prepared with trunk unmoved instead of resuming it; available in no other phase
+
+Global Flags:
+      --board-dir string         Path to the board directory (overrides TASK_BOARD_DIR and config local.board_dir) (default ".task-board")
+      --context-profile string   Agent context profile override: full or lite
+      --insecure                 Skip TLS certificate verification (for self-signed certs)
+      --json                     Output in JSON format
+      --no-update-check          Disable automatic update check
+      --remote string            Remote board server URL (overrides TASK_BOARD_REMOTE)
+      --remote-board string      Remote board ID (overrides TASK_BOARD_ID)
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-1b1pyo) { id status }; get(STORY-260909-zr4s7z) { id status children }'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+[{"id":"TASK-260909-1b1pyo","status":"integrating"},{"children":["TASK-260909-1b1pyo","TASK-260909-gqutty"],"id":"STORY-260909-zr4s7z","status":"integrating"}]
+
+exec
+/bin/zsh -lc 'mkdir -p .temp/integration-readiness
+ git --version > .temp/integration-readiness/git.log
+ task-board --version > .temp/integration-readiness/task-board.log
+ git status --short' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+ M Packages/Auth/Package.swift
+ M Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift
+ D Packages/Auth/Sources/AuthModels/Auth+Business+Model+BiometryType.swift
+ M Packages/Auth/Sources/AuthModels/Auth+Namespace.swift
+ M Packages/Auth/Sources/AuthReluxImpl/Auth+Module.swift
+ D Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State+Reducer.swift
+ D Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State.swift
+ D Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift
+ D Packages/Auth/Sources/AuthReluxInt/Business/Auth+Business+Action.swift
+ M Packages/Auth/Sources/AuthReluxInt/Business/Auth+Business+Protocols.swift
+ M Packages/Auth/Sources/AuthReluxInt/Business/Middleware/Auth+Business+Effect.swift
+ D Packages/Auth/Sources/AuthReluxInt/UI/Model/Auth+UI+Model+Page.swift
+ M Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
+ M Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift
+ D Packages/Auth/Sources/AuthTestSupport/Assertions/Auth+TestHelpers.swift
+ M Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift
+ D Packages/Auth/Sources/AuthTestSupport/Stubs/Auth+Model+Stubs.swift
+ M Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
+ D Packages/AuthUI/Package.resolved
+ D Packages/AuthUI/Package.swift
+ D Packages/AuthUI/Sources/AuthUI/Auth+TypeAliases.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/Auth+UI+Router.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page+Props.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift
+ D Packages/AuthUI/Sources/AuthUI/UI/Utils/AsyncButton.swift
+ D Packages/AuthUI/Sources/AuthUIAPI/AuthUIProviding.swift
+ M README.md
+ M relux_sample.xcodeproj/project.pbxproj
+ D relux_sample/Adapters/AuthRouterAdapter.swift
+ M relux_sample/App.swift
+ M relux_sample/IoC/IoC.swift
+ M relux_sample/Modules/Account/UI/Account+UI+Container.swift
+ M relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page+Props.swift
+ M relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift
+ D relux_sample/Modules/App/App+Module.swift
+ M relux_sample/Modules/App/App+Namespace.swift
+ D relux_sample/Modules/App/Business/SampleApp+Business+Effect.swift
+ D relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift
+ D relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift
+ D relux_sample/Modules/App/UI/Main/App+UI+Main+Router.swift
+ D relux_sample/Modules/App/UI/Main/Model/App+UI+Main+Model+Page.swift
+ D relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift
+ M relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift
+ M relux_sample/Modules/App/UI/Root/App+UI+Root+Router.swift
+ M relux_sample/Modules/Navigation/Navigation+Module.swift
+ M relux_sample/Modules/Navigation/UI/Models/Navigation+UI+Model+AppPage.swift
+ M relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Effect.swift
+ M relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
+ M relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
+ M relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
+ M relux_sample/Modules/Notes/Business/Notes+Business+Action.swift
+ M relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift
+ M relux_sample/Modules/Notes/Business/Notes+Business+State.swift
+ M relux_sample/Modules/Notes/Data/Api/DTO/Notes+Data+Api+DTO+Note.swift
+ M relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
+ M relux_sample/Modules/Notes/Err/Notes+Business+Err.swift
+ M relux_sample/Modules/Notes/Notes+Module.swift
+ M relux_sample/Modules/Notes/Notes+Namespace.swift
+ M relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
+ M "relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift"
+ M "relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift"
+ M relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
+ M relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift
+ M "relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift"
+ M "relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift"
+ M relux_sample/Modules/Notes/UI/Model/Notes+UI+Page.swift
+ M relux_sample/Modules/Notes/UI/Notes+UI+Router.swift
+ M relux_sample/Modules/Notes/UI/Notes+UI+State.swift
+ D relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift
+ D relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page+Props.swift
+ D relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift
+ M relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift
+ M relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift
+ M relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift
+ M relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift
+ M relux_sampleTests/Notes/Utils/NotesTests+Mocks.swift
+?? .spec/note-protection.md
+?? Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Flow.swift
+?? Packages/Auth/Tests/AuthTests/DeviceOwnerServiceTests.swift
+?? relux_sampleTests/Notes/NoteProtectionTests.swift
+
+codex
+Использую skill `project-management` для интеграции принятой ревизии. В Story два leaf-task; уточню, нужен ли checkpoint этой реализации или интеграция всей Story.
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-gqutty) { id status }; schema(operation=change_request)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ exited 1 in 0ms:
+[{"id":"TASK-260909-gqutty","status":"backlog"},{"error":{"message":"unknown operation \"change_request\"; relevant operation signature: schema(operation?:string, mutation?:string)"}}]
+
+exec
+/bin/zsh -lc 'task-board worktree checkpoint --help' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+Checkpoint an accepted Change Request revision.
+
+The accepted candidate tree becomes one internal commit on the Story branch,
+created under a compare-and-swap on the branch tip. The leaf remains integrating:
+nothing is landed on trunk, and internal checkpoints only delimit later Task
+diffs and make the work recoverable before the final Story squash.
+
+A Change Request with repository_delta=empty creates no commit — its tree would
+equal its parent's — and the leaf likewise remains integrating.
+
+Only the tracked integration run bound to the accepted revision's producer role
+and archetype may run this command. Reviewers, orchestrators, and other producer
+archetypes are refused.
+
+Usage:
+  task-board worktree checkpoint <ELEMENT-ID> [flags]
+
+Flags:
+  -h, --help   help for checkpoint
+
+Global Flags:
+      --board-dir string         Path to the board directory (overrides TASK_BOARD_DIR and config local.board_dir) (default ".task-board")
+      --context-profile string   Agent context profile override: full or lite
+      --insecure                 Skip TLS certificate verification (for self-signed certs)
+      --json                     Output in JSON format
+      --no-update-check          Disable automatic update check
+      --remote string            Remote board server URL (overrides TASK_BOARD_REMOTE)
+      --remote-board string      Remote board ID (overrides TASK_BOARD_ID)
+
+exec
+/bin/zsh -lc "rg -n 'change_request\\(|checkpoint |story_final|task_delta' /Users/iv/.claude/skills/project-management/references/tracked-background-spawn.md" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+207:partial landing: an internal Task checkpoint never reaches trunk on its own, and
+412:`task_delta` or `story_final`, and the second is what `worktree integrate`
+419:never answered, and answering `task_delta` on a failed read would leave the Story
+422:**The base follows the kind.** A `task_delta` is measured from the Story branch
+423:tip, where earlier leaves already checkpointed. A `story_final` is measured from
+428:consistent provenance. Publication accepts either the unchanged checkpoint with
+430:single-parent commit past that checkpoint when the commit tree equals the tree
+458:checkpoint creates no commit, and blocking on it deadlocked any Story whose
+503:clean Story checkpoint branch onto current trunk, so that producer works and
+519:sequence Git is authorized to replay; the old checkpoint is positively
+529:checkpoint `fb61f3d6`. A later `story_final` publication may converge a
+574:with that exact producer role and archetype may checkpoint or integrate the
+577:`story_final` revision it also records the **reviewed trunk OID**, which is the
+589:A `task_delta` records no reviewed trunk OID at all — its base is a Story
+612:task-board worktree checkpoint <ELEMENT-ID>
+624:its checkpoint commit sits on. That transaction makes `done` for the final leaf
+625:and for every sibling that is `integrating` with durable checkpoint evidence, in
+629:A replayed checkpoint creates no second commit. A drifted worktree, a branch that
+644:CAS already landed, and replay also repairs a workspace checkpoint record left
+654:**A checkpoint never closes the Story.** If the leaf is the Story's last open
+667:A checkpoint asserts that the branch tip still equals the revision's recorded
+952:that owns its own accepted `story_final` Change Request passes every other gate.
+1129:| `change_request_checkpoint_conflict` | the Story branch moved under the checkpoint CAS |
+1130:| `change_request_checkpoint_index_unsynced` | the managed branch may have advanced, but the real-index owner/lease/CAS or four-identity verification refused; resolve the named condition and retry the same checkpoint |
+1131:| `change_request_final_leaf_checkpoint` | the checkpoint would also close the Story; use `worktree integrate`, which lands the branch first |
+1164:transition element, not other leaves inferred from current checkpoint records;
+1189:task-board worktree checkpoint ELEMENT  # commit an accepted candidate; the leaf stays integrating
+1198:checkpoint is still reachable from the recorded branch; a rewritten branch is
+1303:checkpoint reachability `unknown` rather than reporting a branch rewritten past
+1640:   a non-final checkpoint preserves `integrating` and is progress toward
+1852:- `restart` and `reroute_after_checkpoint` create successor `RUN-...` records instead of rewriting existing run history. Running reroute/pause requests are rejected when the runtime cannot checkpoint safely in place.
+1914:one-release safe-checkpoint behavior. New manager-owned sessions do not use
+
+exec
+/bin/zsh -lc 'task-board worktree checkpoint TASK-260909-1b1pyo' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 1009ms:
+TASK-260909-1b1pyo: checkpointed as 7fff2e23445ca5446ce037a94f6fe00b2ae85c54 on task-board/story/STORY-260909-zr4s7z
+TASK-260909-1b1pyo: status integrating
+
+exec
+/bin/zsh -lc 'git verify-commit HEAD' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+Good "git" signature for oparin@me.com with ECDSA key SHA256:V6JiKG7J29mjsvikcLoSVp0bLa77VTsFy12gnLO81cM
+
+exec
+/bin/zsh -lc "git status --short
+ git log -1 --format='%H%n%s'
+ git diff --check" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+7fff2e23445ca5446ce037a94f6fe00b2ae85c54
+TASK-260909-1b1pyo: TASK-260909-1b1pyo: implement-notes-first-and-protection
+
+exec
+/bin/zsh -lc "mkdir -p /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/integration-evidence
+cat > /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/integration-evidence/TASK-260909-1b1pyo_checkpoint.md <<'EOF'
+# Accepted revision checkpoint
+
+Accepted change request: CR-TASK-260909-1b1pyo-1 revision 1.
+
+Ran "'`task-board worktree checkpoint TASK-260909-1b1pyo` directly; exit 0.
+Checkpoint: 7fff2e23445ca5446ce037a94f6fe00b2ae85c54.
+Branch: task-board/story/STORY-260909-zr4s7z.
+The transaction retained integrating status. Sibling TASK-260909-gqutty is backlog; this is a non-final leaf checkpoint, not trunk delivery.
+
+Fresh verification:
+- `git verify-commit HEAD`: exit 0, good signature for configured human author oparin@me.com.
+- `git status --short`: exit 0, empty output, clean worktree.
+- `git diff --check`: exit 0.
+
+No source changes were made by this integration run. No unit tests or iOS build were rerun: this run checkpoints the accepted immutable candidate and relies on its existing producer/reviewer validation evidence; it makes no new behavioral coverage claim.
+
+Readiness: task-board --help/--version and git --version succeeded. Readiness logs are in worktree/.temp/integration-readiness/.
+A diagnostic query for schema(operation=change_request) returned exit 1 (unknown operation); checkpoint command help supplied the supported transaction instead. No inference of absent CR was made from that failure.
+
+No generic handoff or manual status transition follows this transaction. Parent owns remaining Story delivery.
+EOF
+task-board resource add TASK-260909-1b1pyo /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/integration-evidence/TASK-260909-1b1pyo_checkpoint.md --type outcome --name TASK-260909-1b1pyo_checkpoint.md -d '"'Fresh accepted revision checkpoint and signature verification evidence'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 157ms:
+Attached TASK-260909-1b1pyo_checkpoint.md on TASK-260909-1b1pyo as outcome
+
+codex
+Accepted CR закреплён checkpoint `7fff2e2`. Подпись проверена, worktree чистый; evidence приложен.
+
+Статус остаётся `integrating`: интеграция Story в trunk ещё предстоит. Тесты и build в этом запуске не повторялись.
+tokens used
+39,666
+Accepted CR закреплён checkpoint `7fff2e2`. Подпись проверена, worktree чистый; evidence приложен.
+
+Статус остаётся `integrating`: интеграция Story в trunk ещё предстоит. Тесты и build в этом запуске не повторялись.

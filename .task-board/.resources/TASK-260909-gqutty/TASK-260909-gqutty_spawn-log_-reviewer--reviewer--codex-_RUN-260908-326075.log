@@ -1,0 +1,3018 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08347-7912-76e2-8ddc-962bd72ab2e5
+--------
+user
+# Agent Task Assignment
+
+## FIRST — Run Immediately
+
+```bash
+task-board m 'set_status(TASK-260909-gqutty, status=reviewing)'
+```
+
+## Operational Constraints (Headless Run)
+
+Read this before you run any gate or attach any outcome. A spawned run is
+usually headless: the session ends when your turn ends.
+
+- **Never background a long command and end your turn.** The session terminates
+  with the turn and the process dies with it, while the run is still recorded as
+  completed — a successful-looking run with no evidence attached.
+- **A single shell call is time-bounded (~10 minutes).** Waiting out a longer
+  check inside one call fails too. Split long verification into bounded
+  sequential calls (package subsets, `-run` masks) and state explicitly what you
+  reran yourself versus accepted from already-attached evidence.
+- **Attach evidence before you end the lifecycle, not after.** "I will attach it
+  when the run finishes" is unfulfillable by construction: once your turn ends
+  there is no session left to attach anything.
+
+## Your Role
+# reviewer
+
+## Description
+
+Reviews how a task was implemented and how the solution fits into the project. Does not modify code; records one of the explicit verdict branches below.
+
+When the run is goal-bound, query `task-board spawn goal "$TASK_BOARD_RUN_ID"` before recording the verdict. The reviewer goal is role-derived as `reviewer_verdict/reviewer_verdict`, carries its immutable parent goal ID/revision, and is satisfied only by exactly one verdict branch with evidence. A provider exit or `reviewing` status is not a verdict.
+The runner persists the branch from the accepted board status plus a new or updated task-scoped verdict artifact. Only persisted `accepted` can satisfy the parent delivery goal; `changes_requested` and `stop_the_line` finish the reviewer goal without accepting delivery.
+
+## Deliverable
+
+Verdict branches are explicit:
+
+- accepted → `done`, or `accept_cr` when the run was launched against a Change Request (see below)
+- changes requested → `to-dev` for implementation rework or `analysis` for research/decision work, with verdict evidence for the next producer and another reviewer cycle
+- genuine stop-the-line boundary → `blocked` only for a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision, with evidence, failed assumptions/attempts, viable alternatives and tradeoffs, a recommendation, and the exact human decision or external input needed
+
+Do not leave the task in `reviewing`, and do not use `blocked` for ordinary rework or a recoverable child/runtime failure.
+
+### Accepting a Change Request
+
+The full Change Request contract — how the candidate is snapshotted, what `repository_delta` means, what a `stale` revision is, and every typed refusal you can hit — is `references/tracked-background-spawn.md` of the `project-management` skill, section `Change Requests, review, rework, and checkpoint`. Read it when a refusal surprises you rather than guessing at a retry.
+
+When your prompt carries a `Change Request Under Review` section, record acceptance with the named mutation rather than a status change:
+
+```bash
+task-board m 'accept_cr(<ELEMENT-ID>, revision=<N>, evidence=<ELEMENT-ID>_review-verdict.md)'
+```
+
+The signature is exactly `accept_cr(ID, revision=N, evidence=NAME)`. Do not try to recover it with `task-board q 'schema(mutation=accept_cr)'` — this mutation is registered on the `m` path only, so schema discovery answers `unknown mutation` for it.
+
+Only the run that was handed the revision may accept it. `accept_cr` checks that the calling run is a reviewer-archetype tracked run bound to this element and this revision, and refuses anything else with `change_request_acceptance_unauthorized`. If you see that refusal, do not retry it from a different shell or run id — it means the acceptance would have named a reviewer that never read the candidate.
+
+`accept_cr` writes `accepted` and `integrating` atomically: the Change Request becomes `accepted`, your run is stamped as the reviewer, and it routes the element to `integrating`. That state means "accepted, not landed". The accepted revision is bound to its producer role and archetype, and only a new tracked run carrying that exact producer role and archetype may checkpoint or integrate it; the orchestrator routes that run but does not close the leaf, and an orchestrator run that tries to integrate is refused. `done` is produced only by the integration transaction. Accepted work does **not** stay in `reviewing`, and `accept_cr` never takes a `commit_ack` argument.
+
+A Change Request with `repository_delta=empty` means the producer changed no repository file. That is neither automatically a failure nor automatically acceptable. All three verdicts are available and mean exactly what they always mean, and your verdict evidence must address the emptiness explicitly: accepting one means stating why no repository change was the right outcome for this leaf.
+
+For an enforced Bug/Story `done` transition, a reviewer-archetype run must not supply `commit_ack`, and must never escalate the commit-or-acknowledge decision to the human. Record acceptance evidence and stop there. Under a Change Request the routing above applies: `accept_cr` moves the element to `integrating`, and only the bound producer run may checkpoint or integrate it. For an inline element with no Change Request the acknowledged transition belongs to the producer that owns the committed scope. Never make it yourself.
+
+For board reads, use compact task-specific projections. A concrete review does not need routine `summary()`, `plan()`, `schema()`, or `{ full }`; request scoped schema only after an unknown call.
+
+## Licence To Defeat A Gate
+
+You are explicitly licensed to attempt to DEFEAT any gate, refusal, validation, authorization, or attestation in the change under review, and to reject a change whose only evidence is positive-path. Reading the code is not review; attacking it is.
+
+- Try to make the gate admit what it must reject. Mint the evidence the way a caller could, remove it entirely, narrow the gate instead of deleting it, and reach the protected state through retry, renewal, resume, and recovery paths.
+- Assert against the composed production artifact, not the pieces it is built from, and check every surface that must carry the rule — a clause present in one context profile and absent from the other is a bypass path.
+- Grep for callers before believing a guard is in force. A guard that no production path invokes has never run, and tests that call it directly prove only that it compiles and returns what it is told to.
+- Positive-path-only evidence, a delete-only mutant, or a green suite around a fake is grounds for `changes_requested` with the failing shape named in the verdict.
+- Apply the same standard to reported facts: a failed or partial read presented as an absence, and a property inferred from a proxy signal instead of reported as unknown, are review findings.
+- Check the AC-row coverage ratio before reading any code. An AC row with no named driving test is an unchecked AC row and is `changes_requested` on its own. A mutant table whose entries are all deletions is positive-path evidence wearing a mutant costume — name the shape and reject it.
+- A gate that inspects source text is defeated by a mutant that preserves the searched-for token. Reject a mutant harness that runs the static checker alone: it reports nothing about the class.
+
+The negative shapes vocabulary and the incidents behind each rule are in `references/negative-evidence.md` of the project-management skill; the operative rules reach producers through the spawn template's `Evidence That Counts`. Name the shape rather than restating the rule.
+
+## Execution Rules
+
+Reviews run sequentially in this session. Do not delegate to sub-agents: the verdict is yours to produce and evidence, and a review distributed across children that do not complete produces nothing. A reviewer run that ends without a recorded verdict is a failed run, not a partial one — record the verdict before you finish, even when the finding list is short.
+
+Every `changes_requested` verdict names a `repeat-of:` value — the prior revision and finding ID this repeats, or `none`. The orchestrator routes on that field, and two consecutive same-class findings mean the next step is a gate, not another revision.
+
+A republish of an unchanged, already-accepted tree is an annotation, not a new revision of substance. Do not review it as fresh work and do not count it as rework.
+
+## Status Transitions
+
+- **start_status:** `reviewing`
+- **end_status:** no unconditional default; the reviewer must set exactly one verdict status: `done`, `to-dev`, `analysis`, or evidence-backed `blocked`. For a Change Request run, acceptance is recorded by `accept_cr`, which routes the element to `integrating` on your behalf and binds the revision to its producer role and archetype; the other three branches are unchanged.
+
+## Constraints
+
+Does NOT modify code. Read-only access.
+- Reviewer-archetype runs must not supply `commit_ack` and must not escalate the commit-or-acknowledge decision to the human; record acceptance evidence and leave every `done` transition to the producer side.
+- When your prompt carries a `Change Request Under Review` section, record acceptance with `task-board m 'accept_cr(ID, revision=N, evidence=ID_review-verdict.md)'`. It writes `accepted` and `integrating` atomically and routes the element to `integrating` — accepted work never stays in `reviewing` and never reaches `done` from here. The accepted revision is bound to its producer role and archetype, and only a new tracked run with that exact producer role and archetype may checkpoint or integrate it; the orchestrator routes that run but does not close the leaf. `accept_cr` takes no `commit_ack`, and only the reviewer run that was handed the revision may call it.
+
+## Skills
+
+These role skill references are a lazy catalog, not a mandate to bulk-read every
+body. Before technical work, identify the skills relevant to this task's concrete
+scope and read those full skill bodies. Always read any skill explicitly required
+by the task, user, or project instructions.
+
+- **project-management**: `/Users/iv/.claude/skills/project-management/SKILL.md`
+- **architecture-diagrams**: `/Users/iv/.claude/skills/architecture-diagrams/SKILL.md`
+
+## Definition of Done
+
+- [ ] Update note-auth and navigation documentation with accurate rendered diagram assets and valid local links
+- [ ] Code written per task description and AC
+- [ ] New outcome artifact attached on the board with a task-scoped name when the work produces notes, logs, screenshots, or other deliverables
+- [ ] Important findings, decisions, anomalies, or regressions recorded in logbook when relevant
+- [ ] Implementation matches AC
+- [ ] Solution fits project architecture
+- [ ] Tests green
+- [ ] Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted
+- [ ] If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches
+## Your Task
+
+- **ID**: TASK-260909-gqutty
+- **Title**: TASK-260909-gqutty: explain-note-protection-pattern
+- **Parent**: STORY-260909-zr4s7z
+### Description
+
+Update concise README, PROJECT_GUIDE, relevant pattern docs, inline explanations and learning exercises for Notes-first launch and per-note Auth. Replace obsolete global-login/logout diagram with focused note-unlock sequence; retain useful dependency/upsert diagrams and update as needed. Document system device credentials, in-memory demo limits, per-note access lifetime and no at-rest-encryption claim. Read accepted implementation, no functional app edits. Use architecture-diagrams skill, focused diagram/link checks only; no app builds or UI testing.
+### Acceptance Criteria
+
+Docs and diagrams match final startup/settings/protected-note behavior, are concise and link to real files; sources render and local links resolve
+
+## Instructions
+
+The following instructions have been attached to this task:
+
+### final-docs-brief.md
+> Documentation only after accepted implementation
+
+Use accepted TASK-260909-1b1pyo implementation in this same Story worktree. Parent wants a short finish: update current docs/README/diagrams to Notes-first root, Settings/Account, and reusable Auth Flow with per-note grants. Remove or replace obsolete logout/current HybridState/AuthUI claims; historical evidence may remain clearly historical. Diagram source + small linked SVG documentation assets. Verify references against actual provider/service/Flow/reducer/callback code, including title-visible/body-redacted locked notes, editor protection and background relock/late-result generation. Clarify in-memory access control is not at-rest encryption, and system deviceOwnerAuthentication supplies device passcode/macOS password fallback. Keep exercises useful now that locking exists. No product behavior changes, dependency upgrades, build invocations, unit or UI/snapshot testing. Only source/link checks and bounded diagram rendering. Read existing accepted report only if needed, not entire historical spawn logs. Parent owns signed hosted PR and landing; leave documentation candidate uncommitted and handoff when concise docs and diagram checks pass.
+
+
+
+
+## Board CLI Reference
+
+You have access to `task-board` CLI for managing your work. All writes use the `m` (mutation DSL) subcommand:
+
+```bash
+# FIRST/LAST lifecycle commands:
+# Use explicit status changes when the task flow requires it.
+task-board m 'set_status(TASK-260909-gqutty, status=analysis)'       # analyst-style work
+task-board m 'set_status(TASK-260909-gqutty, status=development)'    # implementation / testing work
+task-board m 'set_status(TASK-260909-gqutty, status=reviewing)'      # reviewer handoff
+task-board m 'set_status(TASK-260909-gqutty, status=blocked)'        # when blocked
+task-board m 'set_status(TASK-260909-gqutty, status=to-review)'      # when your work is ready for review
+
+# Track progress with checklist
+task-board m 'check_item(TASK-260909-gqutty, item=1)'                        # check item N
+task-board m 'add_checklist_item(TASK-260909-gqutty, text="Write tests")'    # add checklist item
+
+# Add notes about your progress, decisions, blockers, or review findings
+task-board m 'set_notes(TASK-260909-gqutty, text="your note here")'
+
+# Save short text directly as outcome resources
+task-board m 'add_resource(TASK-260909-gqutty, name=TASK-260909-gqutty_results.md, content="...", type=outcome, description="Description")'
+
+# Attach an existing local file (screenshots, PDFs, logs, archives, research docs)
+task-board resource add TASK-260909-gqutty ./path/to/file --type outcome --name TASK-260909-gqutty_artifact.bin -d "Description"
+```
+
+## Spawn Run Control
+
+Tracked background spawn runs expose `TASK_BOARD_RUN_ID` in the child environment.
+If your work is long-running, check for operator directives at safe checkpoints:
+
+```bash
+task-board spawn status "$TASK_BOARD_RUN_ID"
+task-board spawn directives "$TASK_BOARD_RUN_ID"
+```
+
+Current runtimes do not support direct inbound push into your active session.
+Treat directives as cooperative checkpoint signals:
+- persist your current notes/artifacts before acting on `cancel`-style requests
+- only honor pause/reroute intent at a safe checkpoint
+- if no directive is present, continue normally
+
+## IMPORTANT: Saving Results
+
+When you produce work products (research documents, design docs, screenshots, logs, archives, implementation notes), you MUST save them as outcome resources with names that include the task ID:
+
+```bash
+task-board m 'add_resource(TASK-260909-gqutty, name=TASK-260909-gqutty_results.md, content="...", type=outcome, description="Description")'
+task-board resource add TASK-260909-gqutty ./path/to/file --type outcome --name TASK-260909-gqutty_artifact.bin -d "Description"
+```
+
+If you revise the same artifact later, use `task-board m 'update_resource(...)'` or `task-board resource update ...` instead of creating a silent overwrite.
+
+If you discover important findings, decisions, anomalies, regressions, or non-obvious constraints while working, record them in `logbook` as well as on the board.
+
+This ensures your results persist on the board and are accessible to other agents and the coordinator. Spawn completion is expected to produce at least one new task-scoped outcome artifact before the task can cleanly remain in `to-review`.
+
+## Evidence That Counts
+
+A passing suite means nothing unless something in it would have failed.
+
+- Any behavior that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS ships with negative tests that fail when the gate admits what it must reject. A positive test proves the gate is reachable, not that it works.
+- Prove a bound by NARROWING the gate, not only by deleting it. A delete-only mutant proves the gate exists and says nothing about the class it covers.
+- Prove behavior by driving the real entry point — launch, materialize, resolve, publish — and name the production call site. A helper that is unit-tested but called from nowhere promises nothing.
+- Standard negative shapes to test and to look for: forged or self-minted evidence; absent evidence treated as satisfied; the check present but uncalled from production; a bypass path around the check; a capability claim that does not reproduce.
+- A gate reports coverage as a measured ratio, not as prose: prose cannot distinguish 7 of 7 from 3 of 7, and "nothing is there" is not "nothing this checker sees". Name the blind spot as a stated bound.
+- An absence and a failure to read are different facts. A failed, partial, or malformed read is never a legitimate absence, and a fallback defined for absence must not fire on a read failure.
+- Prove, or report nothing. Where a property cannot be established, report unknown instead of inferring it from a proxy signal; callers act on a plausible guess.
+
+Shapes vocabulary and the incident record behind each rule: `references/negative-evidence.md` in the project-management skill.
+
+## Stop-The-Line: No Forced Fits
+
+Do not keep implementing when autonomous work starts requiring a forced fit. A forced fit is any path where the task conflicts with a platform/API constraint, product decision, UX state model, ownership boundary, or architecture, and the remaining "solution" is mostly compensating hacks.
+
+Warning signs:
+- each fix needs another flag, stub, priority rule, mock-only behavior, or special-case test
+- the tests can pass only because the test harness avoids the real platform behavior
+- the implementation depends on an assumption you can no longer defend
+- the user-facing behavior cannot be described cleanly without contradicting the product model
+
+When this happens, stop product-code changes before adding another workaround layer. Attach or note:
+- the constraint and evidence
+- the failed assumptions/attempts
+- the viable options and tradeoffs
+- the recommended option
+- the exact human/product/architecture decision needed
+
+Then set the board item to `blocked` and ask only for that exact decision or external input. This stop applies only to a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision; recoverable failures and ordinary rework stay autonomous. Tests and stubs are not proof that a forced-fit design is correct; use them only after the state model and platform assumptions are valid.
+
+## Working Directory
+Board directory: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board`
+
+Work in the project root. Do not modify board files directly — always use the `task-board` CLI.
+
+## Story Workspace
+
+You are running in an isolated Git worktree for STORY-260909-zr4s7z.
+
+- Workspace path: `.temp/STORY-260909-zr4s7z/worktree` (this is your working directory)
+- Branch: `task-board/story/STORY-260909-zr4s7z`, forked from `main`
+- Authoritative board: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board` (already exported as `TASK_BOARD_DIR`)
+
+Make every repository change here. Do not commit, switch, rebase, merge, or delete this branch, and do not run `task-board` against the `.task-board` copy inside this worktree — it is a checkout artifact, not the board. Integration into trunk is the orchestrator's step, not yours.
+
+Leave your work UNCOMMITTED in the worktree — the handoff snapshots the working tree against the recorded checkpoint. A commit of your own on this branch is refused at handoff with `change_request_candidate_committed_past_checkpoint`, and the repair is `git reset --soft <checkpoint_oid>` before completing again.
+
+## Change Request Under Review
+
+- Change Request: `CR-TASK-260909-gqutty-1` revision `1` (state `ready`)
+- Element: `TASK-260909-gqutty`, integration scope: `STORY-260909-zr4s7z`
+- Branch: `task-board/story/STORY-260909-zr4s7z`
+- Base OID: `7480ddac95d011be88d6c0edb4e4d9a77090de88`
+- Candidate tree OID: `134761f76d253a767ffa2277e8efffcb9337bb34`
+- Repository delta: `present`
+- Patch resource: `TASK-260909-gqutty_change-request_rev1.patch` (sha256 `2b727702886747a41bf8a5aed106e5f0d6a1f864d00e9f4af5cffdeb2e7c6604`)
+
+```bash
+git -C . diff 7480ddac95d011be88d6c0edb4e4d9a77090de88 134761f76d253a767ffa2277e8efffcb9337bb34          # the exact reviewable delta
+git -C . diff --stat 7480ddac95d011be88d6c0edb4e4d9a77090de88 134761f76d253a767ffa2277e8efffcb9337bb34   # its shape
+```
+
+Changed paths (100):
+
+- `.spec/note-protection.md`
+- `Docs/ArchitectureAudit.md`
+- `Docs/LearningExercises.md`
+- `Docs/Patterns/DOMAIN_TEST_SUPPORT.md`
+- `Docs/Patterns/NOTE_PROTECTION.md`
+- `Docs/Patterns/RELUX_FLOW_VS_SAGA.md`
+- `Docs/Patterns/RELUX_MODULAR.md`
+- `Docs/Patterns/RELUX_ORCHESTRATION.md`
+- `Docs/Patterns/TESTING_STRATEGY.md`
+- `PROJECT_GUIDE.md`
+- `Packages/Auth/Package.swift`
+- `Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift`
+- `Packages/Auth/Sources/AuthModels/Auth+Business+Model+BiometryType.swift`
+- `Packages/Auth/Sources/AuthModels/Auth+Namespace.swift`
+- `Packages/Auth/Sources/AuthReluxImpl/Auth+Module.swift`
+- `Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State+Reducer.swift`
+- `Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State.swift`
+- `Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Flow.swift`
+- `Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift`
+- `Packages/Auth/Sources/AuthReluxInt/Business/Auth+Business+Action.swift`
+- `Packages/Auth/Sources/AuthReluxInt/Business/Auth+Business+Protocols.swift`
+- `Packages/Auth/Sources/AuthReluxInt/Business/Middleware/Auth+Business+Effect.swift`
+- `Packages/Auth/Sources/AuthReluxInt/UI/Model/Auth+UI+Model+Page.swift`
+- `Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift`
+- `Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift`
+- `Packages/Auth/Sources/AuthTestSupport/Assertions/Auth+TestHelpers.swift`
+- `Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift`
+- `Packages/Auth/Sources/AuthTestSupport/Stubs/Auth+Model+Stubs.swift`
+- `Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift`
+- `Packages/Auth/Tests/AuthTests/DeviceOwnerServiceTests.swift`
+- `Packages/AuthUI/Package.resolved`
+- `Packages/AuthUI/Package.swift`
+- `Packages/AuthUI/Sources/AuthUI/Auth+TypeAliases.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/Auth+UI+Router.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page+Props.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift`
+- `Packages/AuthUI/Sources/AuthUI/UI/Utils/AsyncButton.swift`
+- `Packages/AuthUI/Sources/AuthUIAPI/AuthUIProviding.swift`
+- `README.md`
+- `diagrams/README.md`
+- `diagrams/plantuml/component/auth-dependencies.puml`
+- `diagrams/plantuml/sequence/logout-orchestration.puml`
+- `diagrams/plantuml/sequence/note-unlock.puml`
+- `diagrams/plantuml/sequence/notes-upsert.puml`
+- `diagrams/rendered/auth-dependencies.svg`
+- `diagrams/rendered/logout-orchestration.svg`
+- `diagrams/rendered/note-unlock.svg`
+- `diagrams/rendered/notes-upsert.svg`
+- `relux_sample.xcodeproj/project.pbxproj`
+- `relux_sample/Adapters/AuthRouterAdapter.swift`
+- `relux_sample/App.swift`
+- `relux_sample/IoC/IoC.swift`
+- `relux_sample/Modules/Account/UI/Account+UI+Container.swift`
+- `relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page+Props.swift`
+- `relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift`
+- `relux_sample/Modules/App/App+Module.swift`
+- `relux_sample/Modules/App/App+Namespace.swift`
+- `relux_sample/Modules/App/Business/SampleApp+Business+Effect.swift`
+- `relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift`
+- `relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift`
+- `relux_sample/Modules/App/UI/Main/App+UI+Main+Router.swift`
+- `relux_sample/Modules/App/UI/Main/Model/App+UI+Main+Model+Page.swift`
+- `relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift`
+- `relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift`
+- `relux_sample/Modules/App/UI/Root/App+UI+Root+Router.swift`
+- `relux_sample/Modules/Navigation/Navigation+Module.swift`
+- `relux_sample/Modules/Navigation/UI/Models/Navigation+UI+Model+AppPage.swift`
+- `relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Effect.swift`
+- `relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift`
+- `relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift`
+- `relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift`
+- `relux_sample/Modules/Notes/Business/Notes+Business+Action.swift`
+- `relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift`
+- `relux_sample/Modules/Notes/Business/Notes+Business+State.swift`
+- `relux_sample/Modules/Notes/Data/Api/DTO/Notes+Data+Api+DTO+Note.swift`
+- `relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift`
+- `relux_sample/Modules/Notes/Err/Notes+Business+Err.swift`
+- `relux_sample/Modules/Notes/Notes+Module.swift`
+- `relux_sample/Modules/Notes/Notes+Namespace.swift`
+- `relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift`
+- `relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift`
+- `relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift`
+- `relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift`
+- `relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift`
+- `relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift`
+- `relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift`
+- `relux_sample/Modules/Notes/UI/Model/Notes+UI+Page.swift`
+- `relux_sample/Modules/Notes/UI/Notes+UI+Router.swift`
+- `relux_sample/Modules/Notes/UI/Notes+UI+State.swift`
+- `relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift`
+- `relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page+Props.swift`
+- `relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift`
+- `relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift`
+- `relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift`
+- `relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift`
+- `relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift`
+- `relux_sampleTests/Notes/NoteProtectionTests.swift`
+- `relux_sampleTests/Notes/Utils/NotesTests+Mocks.swift`
+
+### Recording the verdict
+
+Acceptance is a named mutation, not a status change:
+
+```bash
+task-board m 'accept_cr(TASK-260909-gqutty, revision=1, evidence=TASK-260909-gqutty_review-verdict-rev1.md)'
+```
+
+`accept_cr` writes `accepted` and `integrating` atomically: the Change Request becomes `accepted`, this run is stamped as the reviewer, and TASK-260909-gqutty routes the element to `integrating` — accepted but not landed, and never `done`. The accepted revision is bound to its producer role and archetype (`developer`/`implementer`), and only a new tracked run with that exact producer role and archetype may checkpoint or integrate it. The orchestrator routes that run; it does not close the leaf, and no orchestrator run may execute the integration itself. `done` is produced only by the integration transaction, never by you and never by an acknowledgement. Never supply `commit_ack` yourself.
+
+Changes requested and Stop-The-Line are unchanged: route to `to-dev`/`analysis` or evidence-backed `blocked`. Leaving the element in `reviewing` is still not a verdict and still gets this run cancelled and respawned.
+
+codex
+Проверю документацию и диаграммы по принятой реализации. Использую skills project-management и architecture-diagrams; сборки и UI-тесты запускать не буду.
+
+exec
+/bin/zsh -lc "task-board m 'set_status(TASK-260909-gqutty, status=reviewing)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 443ms:
+{"ok":true,"result":{"primary":{"action":"status_changed","element_id":"TASK-260909-gqutty","field":"status","new_value":"reviewing","old_value":"to-review"},"side_effects":[{"action":"promoted","element_id":"STORY-260909-zr4s7z","field":"status","new_value":"reviewing","old_value":"to-review"},{"action":"promoted","element_id":"EPIC-260909-1h8p6e","field":"status","new_value":"reviewing","old_value":"to-review"}]}}
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/SKILL.md /Users/iv/.claude/skills/architecture-diagrams/SKILL.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+---
+name: project-management
+description: >
+  File-backed task boards and spawn-first multi-agent orchestration through
+  task-board. Use for board/spec decomposition, task tracking, planning,
+  status/progress, tracked producer/reviewer runs, and delivery goals. A normal
+  primary session is the Orchestrator; a prompt-assigned role or
+  TASK_BOARD_RUN_ID is a specialist worker. Russian triggers: борд, доска,
+  задачи, эпик, стори, таски, спавн, оркестратор, субагент, статус, прогресс.
+triggers:
+  - task board, epic, story, task, bug, status, progress
+  - spec decomposition, planning, critical path
+  - spawn, orchestrator, coordinator, sub-agent, delivery goal
+  - борд, доска, задачи, эпик, стори, таски, спавн, оркестратор
+---
+
+# Project Management Router
+
+Load only the focused references needed. Use `task-board` for reads/writes;
+never edit `.task-board/` directly.
+
+## Active Role
+
+- **Specialist:** when assigned a role, `TASK_BOARD_RUN_ID` exists, or the
+  human explicitly requests inline execution. Follow lifecycle/evidence gates.
+- **Orchestrator:** otherwise. Detail settled specs inline; route
+  every artifact-producing or validating task through a tracked
+  background child run. `solution-architect` only for genuine
+  architecture decisions.
+
+## Critical Invariants
+
+1. Preflight with `project_config(view=spawn-preflight, role=ROLE, agent=RUNTIME?)`;
+   bare `project_config()` stays the role-optional config surface.
+   Cross-provider ranking requires the agent-less query: omit `agent`, compare
+   recommendations, then narrow with `agent=RUNTIME` for the fresh spawn snapshot.
+   `providers.targeted` names the query's runtime scope; policy-allowed entries
+   outside it use `runtime_not_targeted_by_query`, while policy-excluded entries
+   use `provider_not_allowed_by_preferred_agentic_system`.
+   When workload recommendations are configured: query with `task_class` or an
+   explicit `workload_class`, reason about scope/risk/autonomy/validation and
+   context cost, then spawn an explicit pair with the exact class transport,
+   fresh snapshot digest, and one-line recommendation rationale. A ranking is
+   advice, never authority, a default, or permission to widen the pair.
+   For a proprietary (paid) model, choose the pair that maximises delivered
+   work per token and escalate only for a stated reason.
+   Every child has explicit role, background mode, and a complete
+   model/reasoning-effort pair across its applicable dimensions — model
+   either typed or seeded by a configured per-role default, and, for Codex,
+   Qwen, or a Claude model whose registry row declares a reasoning-effort
+   vocabulary, an in-policy effort either typed or default-seeded the same
+   way. Built-in runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+   (plus any runtime declared under `spawn.runtimes`); Gemini, Agy,
+   `muse-spark-1.2-contributor`, and an effortless Claude model take no
+   `--reasoning-effort` at all, while `muse-spark-1.3-contributor` and its
+   `muse-spark` alias REQUIRE one from `high`/`xhigh`/`max`. The
+   versioned-short `muse-spark-1.3` names no registered row and is not
+   spawnable; codex `gpt-6-astra`/`astra` REQUIRE one of `low`/`medium`/`high`/`xhigh`/`max`/`ultra`.
+   Treat the v3 `admitted_pairs` set the
+   preflight reports as the exact admission authority, not `allowed_models`,
+   which is one input form and is `null` when the runtime uses combinable
+   `entries`; when preflight reports a v2 migration warning, use the
+   full read-only migration snapshot for an explicit reviewed repository edit.
+   Never infer admission from `PolicyRank` or silently migrate config.
+   Codex-only `fast_mode` defaults false and forces direct/managed
+   `service_tier` default/priority; preflight records root/remote provenance.
+   Remote-v4 parity is owned by the client projection and its checked fixtures;
+   authority schema v1 intentionally authorizes an empty per-board backend
+   policy set, so do not infer or add a server policy route.
+2. Workers use compact, task-specific projections. Skip routine
+   `summary()`, `plan()`, `schema()`, and `{ full }`; scoped schema only
+   repairs an unknown call.
+3. Default to `task-board spawn observe RUN --until terminal --format compact`,
+   then route its handoff. Other reads are for barriers, replay/follow,
+   diagnosis.
+4. The Orchestrator owns producer -> reviewer -> rework -> reviewer until the
+   configured review policy is satisfied and the board reaches `done`.
+   `to-review` is a routing trigger, not human acceptance. Commit
+   decomposition is that same Orchestrator's own call, never a per-commit
+   human checkpoint.
+5. Handoff needs a task-scoped outcome and `task-board handoff TASK-ID --role
+   ROLE`. Early exits and intermediate parked states are
+   retried, or rerouted through a focused child; routine work is never handed to the human.
+   Producer `set_status(to-review)`
+   is refused, and reviewer `accept_cr` requires its live merged checklist.
+   Attach artifacts through resource CRUD under
+   `.task-board/.resources/<ELEMENT-ID>/`, optionally in safe nested paths;
+   never write that tree directly or attach directories.
+6. `blocked` needs an evidence-backed external blocker or unresolved
+   human-only product/platform/architecture/approval decision. Persist
+   constraint, evidence, failed assumptions/attempts, viable alternatives,
+   tradeoffs, recommendation, and the exact decision or external input needed.
+7. At `to-review` say **ready for review** / **handed off to review**;
+   done/complete/final only for `done`.
+8. `board-goal-v2` is authoritative: `goal` owns `parent/primary`; `spawn goal`
+   owns `run/RUN-*`. V1 shapes are compatibility-only.
+9. `openai-board` / `anthropic-board` launch the primary `task-board
+   codex|claude` sessions.
+   agents-infra composes; `tb-sessiond` owns goal bind, location-scoped
+   `openai-board|anthropic-board resume [SES-*]`, native identity restart, and
+   session operations. Provider-native adoption remains explicit as
+   `codex resume THREAD_ID` (compatibility form) or `codex --resume THREAD_ID`,
+   and `claude --resume UUID`.
+   Bad records move to private `<state>/quarantine/`; listen continues and
+   status/list report them.
+10. Freeze stable project/config/runtime/control roots and one binding+digest.
+    Explicit config must exist; direct/managed children override ambient roots.
+    `TASK_BOARD_DIR` stores, not authority. Resolve authority from a
+    binding via fresh `git ls-remote --symref <authorized-url> HEAD`,
+    exact-ref fetch, and equal advertised/fetched OIDs. Never use cached/local
+    refs, tracking, caller/config fields, or prior tuples. Cross-check
+    `integration_base_branch` against the independent branch/remote
+    pair. Zero/multiple/unavailable/indeterminate evidence refuses.
+    Producer publishes a Change Request, reviewer runs `accept_cr`,
+    then Orchestrator checkpoints leaves and integrates the Story. Managed
+    commits use `-S` with repository human identity/key; index failures never
+    justify broad reset. See
+    [tracked background spawn](references/tracked-background-spawn.md#story-worktree-isolation).
+11. Cross-Story `set_parent` and integration are durable and fail closed; move
+    evidence never widens source-tombstone admission. See
+    [tracked background spawn](references/tracked-background-spawn.md#what-the-board-state-commit-covers-and-what-it-leaves-alone).
+12. Board validation stays strict by default. The project setting
+    `validation.allow_legacy_empty_done_containers=true` suppresses only the
+    historical empty-`done` Story/Epic aggregate mismatch; active or
+    child-backed containers remain strict.
+13. Transaction-owned `.activity/<ID>/events.ndjson` forbids caller logging.
+    Reads are bounded; corrections privileged/append-only. Transfer/worktrees
+    reject foreign history, preserve legacy/deletion boundaries, and never backfill.
+    See [file format](references/file-formats.md#activity-streams),
+    [query](references/querying.md), and
+    [coverage](docs/activity-mutation-coverage.md).
+14. Never run `make install*`, `scripts/setup.sh`, or `task-board self-update`
+    from inside a manager-hosted session. A Claude host's PTY master lives in
+    the `tb-sessiond` process, so replacing that daemon hangs up every hosted
+    session including the caller's own. A binary swap is a human action taken
+    between sessions; the manager restarts from an outside shell with
+    `task-board session restart`. See
+    [goals recovery](references/goals-recovery.md#1-a-skill-reinstall-beside-a-running-tb-sessiond).
+
+## Decision Tree
+
+```text
+Prompt-assigned role or TASK_BOARD_RUN_ID? -> work as that specialist
+Artifact, test, docs, research, or review? -> tracked role-based spawn
+Producer reached to-review? -> spawn reviewer, route verdict
+Concrete stop boundary? -> persist packet, then blocked
+Known structured board operation? -> q/m DSL with narrow projection
+Unknown name/field? -> schema(); known call syntax? -> schema(operation|mutation=NAME); see querying recovery examples
+```
+
+## Lazy Reference Routes
+
+| Need | Read |
+| --- | --- |
+| Queries, observability, goals, estimates, deps | [querying](references/querying.md), [file formats](references/file-formats.md) |
+| Status, review, recovery, Stop-The-Line | [statuses](references/statuses.md) |
+| Resources, bugs, evidence | [resources and bugs](references/resources-and-bugs.md) |
+| Detailing, plans, execution | [planning workflow](references/planning-workflow.md) |
+| Research and synthesis | [research workflow](references/research-workflow.md) |
+| Roles, task classes, DoD | [roles](references/roles.md) |
+| Negative tests, gate proofs, unknown vs absence | [negative evidence](references/negative-evidence.md) |
+| Spawned goals, selection, runs, recovery, Story worktrees | [tracked background spawn](references/tracked-background-spawn.md) |
+| Change Request order, checkpoint, republish | [CR lifecycle](references/change-request-lifecycle.md) |
+| Session Manager wrappers, goal runtimes | [codex goal runtime](docs/codex-goal-runtime.md), [claude goal runtime](docs/claude-goal-runtime.md) |
+| Templates, reviewer routing | [sub-agent templates](references/sub-agent-templates.md) |
+| Context budgets | [context efficiency](references/context-efficiency.md) |
+| Config feature gates | [config features](references/config-features.md) |
+| Goal daemon skew, native recovery | [goals recovery](references/goals-recovery.md) |
+| Project config refusals/schema/examples, authority envelopes, guarded alias migration, spawn supervision in minutes | [canonical config reference](references/task-board-config.md); persist a matching scoped selection before removing legacy `remote.user`, preview with `task-board migrate-project-config`, then apply only with its reviewed `--expected-digest` |
+| Install/bootstrap | [setup](references/setup.md) |
+| Remote auth/admin/ops | [remote board runbook](docs/remote-board-operations.md) |
+| CLI/deploy overview | [README](README.md) |
+
+Runtime changes follow canonical `.specs/` contracts.
+
+Built-in spawn runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+(plus any runtime declared under `spawn.runtimes`). Gemini CLI 0.54.4 is
+deprecated in favour of Antigravity, but both remain supported.
+
+```bash
+task-board spawn TASK-ID --role developer --background --agent agy --model gemini-3.6-flash-high --timeout 35m
+```
+
+`agy` takes no `--reasoning-effort`; effort is encoded in its eight scoped
+model IDs. Minimum `agy` is 1.1.12; 1.1.14 is validated. Prompt delivery has
+a 96 KiB argv budget; `SUCCESS`/`ERROR` JSON overrides process exit. Only the
+top-level worker is tracked. See [README](README.md) for the full models,
+flags, JSON, safety, configuration, and Gemini compatibility contract.
+---
+name: architecture-diagrams
+version: 1.0.0
+description: Create and organize architecture diagrams as code using C4 model (Structurizr DSL) and PlantUML
+triggers:
+  - architecture diagram
+  - c4 diagram
+  - structurizr
+  - plantuml
+  - sequence diagram
+  - component diagram
+  - system context
+  - container diagram
+tools:
+  - Bash
+  - Read
+  - Write
+  - Glob
+  - Grep
+---
+
+# Architecture Diagrams Skill
+
+Create maintainable, well-organized architecture diagrams using diagrams-as-code approach.
+
+## Supported Tools
+
+- **Structurizr DSL** — C4 model diagrams (System Context, Container, Component, Deployment)
+- **PlantUML** — All UML diagram types:
+  - Sequence — Runtime interaction flows
+  - Component — Architecture and module structure
+  - Activity — Workflows and processes
+  - Class — Domain models and OOP design
+  - State — State machines and lifecycles
+  - Use Case — Actor-system interactions
+  - Deployment — Infrastructure and deployment
+  - Object — Runtime object snapshots
+- **Graphviz** — Dependency graphs, DOT notation
+
+## Core Principles
+
+### 1. Diagrams as Code
+- All diagrams are text files in version control
+- Diffs are readable and reviewable
+- CI can validate and render automatically
+
+### 2. One Purpose Per Diagram
+- Each file has a single, clear purpose
+- Split large diagrams into focused views
+- Name files descriptively: `<domain>-<scenario>.<ext>`
+
+### 3. Separation of Concerns
+- **Model** defines elements (what exists)
+- **Views** define presentation (what to show)
+- **Styles** define appearance (how it looks)
+
+### 4. Progressive Disclosure (C4)
+- Level 1: System Context — big picture, external actors
+- Level 2: Container — deployable units, tech choices
+- Level 3: Component — internal structure
+- Level 4: Code — class/interface level (rarely needed)
+
+---
+
+## C4 Model Ideology
+
+The C4 model answers different questions at each level:
+
+| Level | Diagram | Audience | Question Answered |
+|-------|---------|----------|-------------------|
+| 1 | System Context | Everyone | What is the system? Who uses it? What does it integrate with? |
+| 2 | Container | Technical | What are the major building blocks? What technologies? |
+| 3 | Component | Developers | How is a container structured internally? |
+| 4 | Code | Developers | What are the classes/interfaces? (Usually auto-generated) |
+
+**Key insight**: You don't need all 4 levels. Most teams use only Context + Container.
+
+### C4 Abstractions
+
+- **Person** — User, actor, role, persona (human or external system acting as user)
+- **Software System** — Highest abstraction; the thing being built or interacting with
+- **Container** — Deployable unit: app, service, database, file system, queue
+- **Component** — Logical grouping inside a container (module, package, class cluster)
+
+---
+
+## Folder Structure
+
+```
+diagrams/
+├── README.md                    # Tool setup & usage docs
+├── c4/                          # Structurizr DSL
+│   ├── workspace.dsl            # Minimal entrypoint
+│   ├── model/
+│   │   ├── 01-people.dsl        # Actors, users
+│   │   ├── 02-systems.dsl       # Systems, containers, components
+│   │   └── 99-relationships.dsl # All relationships (loaded last)
+│   ├── views/
+│   │   ├── context.dsl          # System context view
+│   │   ├── containers.dsl       # Container view
+│   │   └── components.dsl       # Component views
+│   └── styles/
+│       └── styles.dsl           # Visual theme
+├── plantuml/
+│   ├── _includes/               # Shared styling (optional)
+│   │   ├── theme.puml
+│   │   └── common.puml
+│   ├── sequence/
+│   │   └── auth-flow.puml
+│   └── component/
+│       └── api-structure.puml
+└── artefacts/                   # Generated outputs (PNG/SVG)
+    ├── c4/
+    └── plantuml/
+```
+
+---
+
+## Structurizr DSL Patterns
+
+### Workspace Entrypoint (workspace.dsl)
+
+Keep minimal — delegate via `!include`:
+
+```dsl
+workspace "Project Name" "Brief description" {
+  !identifiers hierarchical
+
+  model {
+    !include model
+  }
+
+  views {
+    !include views
+    !include styles
+  }
+}
+```
+
+### Model Definition (model/02-systems.dsl)
+
+Use hierarchical nesting:
+
+```dsl
+mySystem = softwareSystem "My System" "Description" {
+  webapp = container "Web Application" "Serves UI" "React" {
+    authModule = component "Auth Module" "Handles authentication" "TypeScript"
+    apiClient = component "API Client" "Backend communication" "TypeScript"
+  }
+
+  api = container "API Server" "REST API" "Node.js" {
+    authService = component "Auth Service" "JWT validation" "TypeScript"
+    userService = component "User Service" "User CRUD" "TypeScript"
+  }
+
+  database = container "Database" "Stores data" "PostgreSQL" {
+    tags "Database"
+  }
+}
+```
+
+### Relationships (model/99-relationships.dsl)
+
+Centralize all relationships:
+
+```dsl
+# External relationships
+user -> mySystem.webapp "Uses" "HTTPS"
+
+# Internal relationships
+mySystem.webapp -> mySystem.api "Calls" "REST/JSON"
+mySystem.api -> mySystem.database "Reads/Writes" "SQL"
+
+# Component-level
+mySystem.webapp.authModule -> mySystem.api.authService "Authenticates" "JWT"
+mySystem.webapp.apiClient -> mySystem.api.userService "CRUD operations" "REST"
+```
+
+### Views (views/context.dsl)
+
+Keep views focused:
+
+```dsl
+systemContext mySystem "SystemContext" "System Context diagram" {
+  include *
+  autolayout lr
+}
+```
+
+### Styles (styles/styles.dsl)
+
+```dsl
+styles {
+  element "Person" {
+    shape person
+    background #08427b
+    color #ffffff
+  }
+  element "Software System" {
+    background #1168bd
+    color #ffffff
+  }
+  element "Container" {
+    background #438dd5
+    color #ffffff
+  }
+  element "Component" {
+    background #85bbf0
+    color #000000
+  }
+  element "Database" {
+    shape cylinder
+  }
+}
+```
+
+---
+
+## PlantUML Patterns
+
+### Sequence Diagram
+
+```plantuml
+@startuml
+!theme plain
+
+actor User
+participant "Web App" as Web
+participant "API Server" as API
+database "Database" as DB
+
+title User Authentication Flow
+
+== Login ==
+User -> Web: Enter credentials
+Web -> API: POST /auth/login
+API -> DB: Query user
+DB --> API: User record
+
+alt Valid credentials
+  API --> Web: JWT token
+  Web --> User: Redirect to dashboard
+else Invalid
+  API --> Web: 401 Unauthorized
+  Web --> User: Show error
+end
+
+@enduml
+```
+
+### Component Diagram
+
+```plantuml
+@startuml
+!theme plain
+
+package "API Server" {
+  [Auth Controller] as AuthCtrl
+  [User Controller] as UserCtrl
+  [Auth Service] as AuthSvc
+  [User Service] as UserSvc
+  [User Repository] as UserRepo
+}
+
+database "PostgreSQL" as DB
+
+AuthCtrl --> AuthSvc
+UserCtrl --> UserSvc
+AuthSvc --> UserRepo
+UserSvc --> UserRepo
+UserRepo --> DB
+
+@enduml
+```
+
+### Key PlantUML Syntax
+
+**Participants**: `actor`, `participant`, `boundary`, `control`, `entity`, `database`, `queue`
+
+**Arrows**:
+- `->` solid
+- `-->` dotted
+- `->>` thin
+- `<->` bidirectional
+
+**Control flow**:
+- `alt/else/end` — conditional
+- `opt/end` — optional
+- `loop/end` — repetition
+- `par/end` — parallel
+- `break/end` — exit early
+
+**Sections**: `== Section Name ==`
+
+**Notes**: `note left of X: text`, `note over X,Y: text`
+
+---
+
+## Commands
+
+### Structurizr CLI
+
+```bash
+# Validate DSL
+structurizr validate -workspace diagrams/c4/workspace.dsl
+
+# Export to PNG
+structurizr export -workspace diagrams/c4/workspace.dsl -format png -output diagrams/artefacts/c4
+
+# Export to SVG
+structurizr export -workspace diagrams/c4/workspace.dsl -format svg -output diagrams/artefacts/c4
+
+# Export to PlantUML (for further processing)
+structurizr export -workspace diagrams/c4/workspace.dsl -format plantuml -output diagrams/artefacts/c4
+```
+
+### PlantUML
+
+```bash
+# Render single diagram
+java -jar plantuml.jar diagram.puml
+
+# Render all in directory
+java -jar plantuml.jar -o ../artefacts/plantuml diagrams/plantuml/**/*.puml
+
+# Generate SVG
+java -jar plantuml.jar -tsvg diagram.puml
+```
+
+### Tool Installation
+
+```bash
+# Structurizr CLI (macOS)
+brew install structurizr-cli
+
+# PlantUML JAR
+curl -L -o .temp/plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
+
+# Graphviz (required for some PlantUML diagrams)
+brew install graphviz
+```
+
+---
+
+## Best Practices
+
+### DO
+
+- Use `!include` to split large DSL files
+- Number model files for load order (01-, 02-, 99-)
+- Use `autolayout` unless manual positioning is needed
+- Keep views focused on one story
+- Use hierarchical identifiers (`system.container.component`)
+- Name files descriptively
+- Commit generated artifacts for easy review
+
+### DON'T
+
+- Create monolithic workspace.dsl with everything
+- Mix model and views in same file
+- Include everything in one view
+- Use Code diagrams unless auto-generated
+- Create deep nesting in PlantUML (flatten with aliases)
+
+---
+
+## References
+
+### Structurizr DSL
+- @references/structurizr-dsl.md — DSL syntax reference
+
+### PlantUML (All UML Types)
+- @references/plantuml-sequence.md — Sequence diagrams (interactions, flows)
+- @references/plantuml-component.md — Component diagrams (architecture)
+- @references/plantuml-activity.md — Activity diagrams (workflows, processes)
+- @references/plantuml-class.md — Class diagrams (domain model, OOP)
+- @references/plantuml-state.md — State diagrams (state machines, lifecycle)
+- @references/plantuml-usecase.md — Use Case diagrams (actors, requirements)
+- @references/plantuml-deployment.md — Deployment diagrams (infrastructure)
+- @references/plantuml-object.md — Object diagrams (runtime snapshots)
+
+### Templates
+- @templates/ — Starter templates
+
+---
+
+## When to Use Each Tool
+
+| Need | Tool |
+|------|------|
+| System architecture overview | Structurizr (C4 Context) |
+| Technology landscape | Structurizr (C4 Container) |
+| Internal module structure | Structurizr (C4 Component) |
+| Runtime interaction flow | PlantUML Sequence |
+| API/module structure | PlantUML Component |
+| Process/workflow/algorithm | PlantUML Activity |
+| Domain model/OOP design | PlantUML Class |
+| State machine/lifecycle | PlantUML State |
+| Requirements/actors | PlantUML Use Case |
+| Infrastructure/deployment | PlantUML Deployment |
+| Runtime object snapshot | PlantUML Object |
+| Quick dependency graph | Graphviz DOT |
+
+exec
+/bin/zsh -lc "mkdir -p .temp/review-gqutty
+(task-board --version; git --version; rg --version; python3 --version; command -v plantuml) > .temp/review-gqutty/readiness.log 2>&1
+task-board q 'task(TASK-260909-gqutty) { status notes checklist resources }'
+task-board spawn goal \""'$TASK_BOARD_RUN_ID"' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 83ms:
+Active Goal: none (run is not goal-bound)
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/references/negative-evidence.md
+rg --files agents/skills .claude/skills .codex/skills .temp 2>/dev/null | head -70' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+# Negative Evidence Contract
+
+A passing suite means nothing unless something in it would have failed. This
+file is the single source of truth for the rules that make a green check mean
+something, and for the incident record behind each one. The operative wording
+that reaches every spawned child lives in the spawn template section
+`Evidence That Counts`; the reviewer's licence lives in `.roles/reviewer/role.md`;
+the repeated-variant heuristic lives in `.roles/orchestrator/role.md`. Read this
+file when you need the shapes, the failure vocabulary, or the incidents that
+produced a rule — do not restate these rules in other documents.
+
+| Rule | Operative statement | Evidence record |
+| --- | --- | --- |
+| Negative tests for gates | spawn template, `Evidence That Counts` | this file |
+| Narrowing, not deleting | spawn template, `Evidence That Counts` | this file |
+| Production call site | spawn template, `Evidence That Counts` | this file |
+| Absence vs failure to read | spawn template, `Evidence That Counts` | this file |
+| Prove, or report nothing | spawn template, `Evidence That Counts` | this file |
+| Reviewer licence to defeat a gate | `.roles/reviewer/role.md` | this file |
+| Many variants, one unowned decision | `.roles/orchestrator/role.md` | this file |
+
+## Negative Tests For Gates
+
+Any feature that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS must ship
+with negative tests that fail when the gate admits what it is supposed to
+reject. A positive test proving the happy path passes is not evidence that the
+gate works; it is evidence that the gate is reachable.
+
+This is the dominant defect class in this repository's 2026-07-28..08-03 waves.
+Every instance below was found because a reviewer deliberately attacked the
+gate, not because anyone read the code:
+
+- the fact-assay attested a COLD child that never inherited the context, because
+  it checked inventory, session id, digests, and output shape, but never
+  inheritance;
+- the assay fork had repository tool access, so it could answer from disk while
+  the base was false;
+- the builder attestation accepted a correctly-shaped forged digest that the
+  caller minted itself;
+- clearance enforcement existed but no production path called it, and counting
+  tests around a fake proved nothing;
+- an unknown assay event preserved a false zero-tool observation;
+- a provider capability was declared absent to disable a flaky check, and the
+  claim did not reproduce (9/11 success).
+
+## Standard Negative Shapes
+
+Use these names in checklists, verdicts, and test names. They are the shapes a
+negative test must cover and the shapes a reviewer looks for first.
+
+| Shape | What it looks like when nobody tests for it | What the negative test must do |
+| --- | --- | --- |
+| Forged or self-minted evidence | The caller supplies the proof that the gate checks, and a correctly-shaped value passes. | Mint the evidence in the test the way a caller could, and require refusal. |
+| Absent evidence treated as satisfied | Missing input takes the permissive branch; the suite only ever supplies the input. | Remove the evidence entirely and require refusal, not a default-pass. |
+| Check present but uncalled from production | The guard is implemented and unit-tested by direct call; no production path invokes it. | Drive the real entry point — launch, materialize, resolve, publish — and name the production call site. |
+| Bypass path around the check | One entry point enforces; a second, older, or retry/renewal path does not. | Exercise every entry point that reaches the protected state, including retry, renewal, resume, and recovery, and every delivery surface that carries the rule — a contract clause reaching one context profile and not the other is this shape. |
+| Capability claim that does not reproduce | A capability is declared absent or present to make a flaky check go away. | Re-run the claim enough times to state a real rate, or report unknown. |
+
+## Derive Completeness From An Independent Source
+
+Completeness is derived from the pinned source or generated artifact, never
+enumerated by hand. When a registry, schema set, or declared scope defines the
+members, derive the expected set from that source and fail when any member lacks
+enforcement. This rule comes from five consecutive review rounds that each
+closed exactly the hand-picked members named by the previous reviewer; the next
+unlisted member defeated every list.
+
+A completeness test that reads the implementation's own table is circular and
+can never detect a missing entry: removing the entry also removes it from the
+test's expected set. Derive the expectation from the normative source of truth,
+not from the code under test. This distinction was what let the next Story's
+round-1 review demand a source-derived completeness test instead of accepting
+the producer's two selected cases.
+
+## Prove Exact Bounds At The Production Entry
+
+Prove every bound in both directions at the production entry: accept at the
+limit and refuse past the limit. Character bounds count characters rather than
+bytes. The motivating failure was a value containing 3,999 characters but
+5,999 bytes that production rejected with a byte comparison even though the
+normative `string[1..4096]` bound permitted it; helper-only or ASCII-only tests
+could not expose that narrowing.
+
+## Disable Every Refusal Clause
+
+Disable each refusal clause individually. If the suite stays green, that clause
+is a hole unless the test or evidence documents it as provably subsumed and
+names the check that subsumes it. This is measured rather than hypothetical: in
+one file, disabling 110 clause sites produced 45 surviving mutants, and 12 of
+those survivors were genuine widenings.
+
+Numeric-bound mutation and clause-disablement are different classes, and one
+harness rarely generates both. Numeric mutation finds off-by-one defects but
+cannot express disabling a tagged-union arm, cross-field equality, or grammar
+predicate; clause disablement finds those omissions but cannot move a numeric
+boundary. The 110-site clause run exposed widenings that the numeric harness
+could not generate, so run both classes.
+
+## Check Refusals Against The Normative Source
+
+A green test can defend a bug when it asserts a refusal that the normative
+source does not require. One observed test required production to reject values
+that the pinned specification permitted, so the suite protected the narrowing
+instead of detecting it. Whenever a test encodes a refusal, check that refusal
+against the pinned source rather than copying current behaviour into the
+assertion.
+
+## Eliminate Ambient Test Inputs
+
+No test may depend on ambient environment. Fixtures set explicit identity and
+all other values that could otherwise come from global configuration, the OS,
+or developer-machine state. A developer machine let Git derive an author name
+from the OS and passed the suite, while a CI runner with an empty GECOS field
+failed with `empty ident name`; only CI can catch this class, so the fixture
+must make its identity deterministic before CI exercises it.
+
+## Prove A Bound By Narrowing, Not By Deleting
+
+A test that removes a gate entirely proves only that the gate exists. It says
+nothing about whether the gate covers the right class. Restrict the gate to a
+narrower condition instead and require a named test to fail.
+
+Two repository incidents where a narrowed gate survived a green suite:
+
+- **BUG-260801-3kiloe F1** — the recovery successor cap was proven only by total
+  removal. Narrowing it to provider-limit signals left every other recoverable
+  failure unbounded, with the whole suite still green.
+- **TASK-260802-17wetr F16** — thirteen cycles later, the same shape: the
+  probe-lease cap survived deletion tests while the renewal path escaped it.
+- **TASK-260730-2c1e8l cycle 1** — this contract itself. The reviewer clauses
+  landed in the role body and the shipped test checked the role file and the
+  lite template separately, so both halves were green while the composed lite
+  prompt carried neither. Assert on the composed production artifact, not on the
+  pieces it is built from.
+- **TASK-260730-2c1e8l cycle 2** — the same contract, one level up, and the
+  clearest statement of the difference between the two shapes. The cycle-1 fix
+  did assert on the composed prompt, but it called the composition helper
+  directly and handed it the role, task-class filter, and profile itself.
+  Production builds those inputs inside the spawn entry point, so a mutant
+  narrowing only the real lite-reviewer routing just before composition left the
+  test green while an actual lite reviewer lost its gate-defeat licence. A test
+  that supplies the inputs is testing the helper, not the path. Obtain the
+  artifact the way the consumer does — here, read the prompt file recorded on
+  the run manifest after driving the entry point — so role resolution, the
+  task-class filter, and profile resolution are all under test rather than
+  assumed.
+
+Three traps when running the mutants themselves, all hit while proving this file:
+
+- **The mutant must be re-run with `-count=1`.** `go test` caches on package
+  sources; a test that reads `.roles/*.md` or any file outside its package at
+  runtime returns a stale cached PASS after that file is mutated. A cached green
+  is not a surviving mutant, it is an unexecuted test.
+- **A passing assertion may be satisfied by the wrong source.** Two mutants of
+  the producer DoD entries survived because the phrase asserted also appears,
+  differently worded, in the shared spawn template. Choose assertion wording
+  that only the intended source can supply, then narrow that source and require
+  the named test to fail.
+- **Restore the mutant from a copy, not from git.** `git checkout <file>`
+  restores from the index, which silently discards uncommitted work in that file
+  — during this task it reverted the whole cycle-2 change, not just the mutant.
+  Copy the file aside before mutating, restore from the copy, and verify the
+  restoration by diffing against it before rerunning the gates.
+
+## A Gate Publishes Its Coverage As A Ratio
+
+Prose about what a gate checks cannot distinguish 7 of 7 from 3 of 7. Every
+statement such a description makes is usually true — it is true of what the gate
+can see, and silent about what it cannot. The longer and more careful the
+description, the more thorough the gate looks.
+
+Report the fraction of intended targets the gate actually reaches, and assert
+that fraction so it reddens when a target drops out of reach. A target no mutant
+can redden is not covered, however elaborate the structure around it.
+
+Three defects of this exact shape, each found only once a ratio existed:
+
+- an AST call graph that recorded an edge only for a direct identifier call
+  covered 3 of 7 guarded functions while every pin passed; the package's real
+  dispatch was a function-value table, and the blind spot was invisible from
+  inside;
+- a classifier keyed on prose that a sibling gate was actively rewriting silently
+  dropped 8 rows, taking a suite from 107 executed subtests to 66, while its
+  completeness check `count == 0` reported nothing, because four is not zero;
+- an ownership gate that proved a symbol exists and a case is linked reported 48
+  sections as owned; measured against the specification, those bindings
+  discharged 2 of 394 normative clauses.
+
+A non-empty check on a derived set is the recurring form. `len(x) > 0` answers a
+different question from `len(x) == expected`, and only the second notices a
+narrowing.
+
+## A Blind Spot Is Not An Empty Set
+
+"Nothing is there" and "nothing this checker can see" are different facts, and
+only the second is a statement about the checker. Reporting the first when you
+mean the second converts a limitation into a clean bill of health, and the reader
+has no way to tell.
+
+An ownership gate scanned for uppercase RFC 2119 keywords. Sections stating their
+obligations in declarative present tense scored zero, were bucketed as carrying
+no obligations, and were admitted with no evidence required. Its documentation
+said "there is no obligation to enumerate". The true sentence was "the section
+carries no keyword line, so the scanner cannot see its obligations" — and 19 of
+151 headings were free-admission surface the moment they were bound, including a
+19-row exit-code registry and a closed manifest specification.
+
+Two rules follow:
+
+- State the bound of what the checker can see, next to what it reports. A
+  residual class that is named can be attacked later; one that is implied cannot.
+- Do not let the bucket for "nothing to check" also be the bucket that skips the
+  check. Where absence of measurable obligation is a legitimate state, require an
+  explicit reviewed justification for it, so the weakest entries are the ones
+  that must say the most rather than the least.
+
+## An Absence And A Failure To Read Are Different Facts
+
+Absence is a legitimate state with a defined fallback. A failed, partial, or
+malformed read is evidence of a problem. Treating the second as the first lets
+the fallback launder a fault into a normal-looking value, and a fallback defined
+for absence must never fire on a read failure.
+
+Each of these was a separate defect in this repository:
+
+- a non-empty value read as verified;
+- an unknown scanner version read as clean;
+- a partial provenance record read as absent;
+- a zero pid start time read as alive;
+- a malformed `api_error_status` read as missing;
+- an unparsed envelope read as no envelope — this one produced a false provider
+  suppression that would have hidden a healthy provider for hours.
+
+## Prove, Or Report Nothing
+
+Where a property cannot be established, report unparsed or unknown rather than
+inferring it from a proxy signal. A plausible guess is worse than an explicit
+unknown, because callers act on it.
+
+Incident: headless top-level inference in the Claude classifier was unsound in
+principle and produced six variants before it was deleted rather than
+strengthened.
+
+## Many Variants, One Unowned Decision
+
+A long run of same-shaped variants usually means a decision has more than one
+owner, not that there are many bugs. Eleven framing variants stopped reproducing
+only when structure got a single scanner and a single state type; every per-site
+patch before that produced the next variant. The operative wording is in
+`.roles/orchestrator/role.md`: unify the decision, do not patch each site.
+
+## Reviewer Licence
+
+Reviewers are explicitly licensed to attempt to defeat a gate and to reject a
+change whose only evidence is positive-path. Grep for callers before believing a
+guard is in force. The operative wording is in `.roles/reviewer/role.md`.
+.temp/review-1/narrow-false-01.log
+.temp/review-1/producer-results.md
+.temp/review-1/TASK-260909-1b1pyo_review-evidence-rev1.tar.gz
+.temp/review-1/status.txt
+.temp/review-1/ios-tests-01.log
+.temp/review-1/attack-description.txt
+.temp/review-1/readiness.log
+.temp/review-1/state-management-reference.txt
+.temp/review-1/auth-tests-01.log
+.temp/review-1/tree-verification.txt
+.temp/review-1/diff-check-01.log
+.temp/review-1/view-structure-reference.txt
+.temp/review-1/TASK-260909-1b1pyo_review-verdict-rev1.md
+.temp/review-1/attack/Packages/Auth/Sources/AuthReluxInt/Business/Auth+Business+Protocols.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthReluxInt/Business/Middleware/Auth+Business+Effect.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthReluxInt/Reexports.swift
+.temp/review-1/attack/Packages/Auth/Package.resolved
+.temp/review-1/attack/Packages/Auth/Package.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthReluxImpl/Auth+Module.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthModels/Auth+Namespace.swift
+.temp/review-gqutty/readiness.log
+.temp/review-1/attack/Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
+.temp/TASK-260909-gqutty/check-links.py
+.temp/TASK-260909-gqutty/note-unlock.png
+.temp/TASK-260909-gqutty/dot-01.log
+.temp/TASK-260909-gqutty/auth-dependencies.png
+.temp/TASK-260909-gqutty/plantuml-01.log
+.temp/TASK-260909-gqutty/notes-upsert.png
+.temp/TASK-260909-gqutty/readiness-01.log
+.temp/review-1/attack/Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
+.temp/review-1/attack/Packages/Auth/Tests/AuthTests/DeviceOwnerServiceTests.swift
+.temp/integration-readiness/task-board.log
+.temp/integration-readiness/git.log
+.temp/review-1/attack/Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Flow.swift
+.temp/review-1/attack/Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift
+.temp/TASK-260909-1b1pyo/mutant-editor.json
+.temp/TASK-260909-1b1pyo/mutant-missing-unlock.log
+.temp/TASK-260909-1b1pyo/mutant-missing-protection.json
+.temp/TASK-260909-1b1pyo/apple-readiness-01.log
+.temp/TASK-260909-1b1pyo/mutant-auth-policy-unavailable.log
+.temp/TASK-260909-1b1pyo/build-final-01.log
+.temp/TASK-260909-1b1pyo/auth-context-before-01.log
+.temp/TASK-260909-1b1pyo/mutant-late-note-existence.log
+.temp/TASK-260909-1b1pyo/mutant-cancelled-task.json
+.temp/TASK-260909-1b1pyo/mutant-cross-note.log
+.temp/TASK-260909-1b1pyo/mutant-auth-cancelled-task.json
+.temp/TASK-260909-1b1pyo/mutant-cross-note.json
+.temp/TASK-260909-1b1pyo/mutant-editor.log
+.temp/TASK-260909-1b1pyo/tests-final-02.log
+.temp/TASK-260909-1b1pyo/auth-after-01.log
+.temp/TASK-260909-1b1pyo/mutant-missing-unlock.json
+.temp/TASK-260909-1b1pyo/mutant-snapshot-replay.json
+.temp/TASK-260909-1b1pyo/implement.py
+.temp/TASK-260909-1b1pyo/mutant-remove-lock.log
+.temp/TASK-260909-1b1pyo/tests-final-01.log
+.temp/TASK-260909-1b1pyo/auth-after-02.log
+.temp/TASK-260909-1b1pyo/mutate.py
+.temp/TASK-260909-1b1pyo/mutant-metadata.log
+.temp/TASK-260909-1b1pyo/mutant-cancelled-task.log
+.temp/TASK-260909-1b1pyo/write-outcome.py
+.temp/TASK-260909-1b1pyo/mutant-remove-lock.json
+.temp/TASK-260909-1b1pyo/mutant-late-generation.json
+.temp/TASK-260909-1b1pyo/mutant-auth-credential-fallback.log
+.temp/TASK-260909-1b1pyo/doc-links-02.log
+.temp/TASK-260909-1b1pyo/processes-01.log
+.temp/TASK-260909-1b1pyo/mutant-auth-credential-fallback.json
+.temp/TASK-260909-1b1pyo/mutant-late-note-existence.json
+.temp/TASK-260909-1b1pyo/mutant-auth-unavailable.log
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-gqutty) { status notes checklist resources }'
+cat .temp/TASK-260909-gqutty/check-links.py
+cat .temp/review-1/TASK-260909-1b1pyo_review-verdict-rev1.md
+git diff --stat 7480ddac95d011be88d6c0edb4e4d9a77090de88 134761f76d253a767ffa2277e8efffcb9337bb34
+cat diagrams/README.md Docs/Patterns/NOTE_PROTECTION.md" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+query error: parse error at 1:52: unknown field "resources" (got "resources"); see schema() for valid fields and preset names
+from pathlib import Path
+import re, urllib.parse
+files=[Path("README.md"),Path("PROJECT_GUIDE.md"),Path("diagrams/README.md"),*Path("Docs").glob("*.md"),*Path("Docs/Patterns").glob("*.md")]
+n=0; bad=[]
+for p in files:
+ for target in re.findall(r"\]\(([^)]+)\)",p.read_text()):
+  if "://" in target or target.startswith("#"): continue
+  target=urllib.parse.unquote(target.split("#")[0]); n+=1
+  if target and not (p.parent/target).exists(): bad.append(f"{p}: {target}")
+print(f"{n-len(bad)}/{n} local file targets resolve; URL and fragment validation excluded")
+print("\n".join(bad))
+raise SystemExit(bool(bad))
+# TASK-260909-1b1pyo — review verdict, revision 1
+
+Verdict: accepted
+Candidate: CR-TASK-260909-1b1pyo-1 revision 1
+Base: 7480ddac95d011be88d6c0edb4e4d9a77090de88
+Tree: 6e19864ce5449d0d9ec720bb1384a28b71470070
+Repository delta: present; 82 changed paths. A repository change is necessary for this implementation.
+
+No blocking findings within the requested in-memory sample and blind-review scope.
+The working files and symlink targets match every blob in the candidate tree.
+No product code, candidate tests, branch, index or commits were changed by this reviewer.
+The only modified source was an isolated disposable Auth copy under .temp/review-1/attack.
+
+## AC assessment: 10 of 14 behavioral AC rows driven
+
+Reviewed the producer's attached results before code inspection. Retain its honest
+10/14 ratio: four UI/system rows are explicitly bounded by the user's prohibition
+on UI work, not silently counted as tested. Named tests are in the candidate;
+committing them belongs to the subsequent producer integration transaction.
+
+| Row | Production entry / named driving tests |
+| --- | --- |
+| Load without auth | Notes.Module / Flow.apply: moduleLoadsWithoutAuthenticationAndUsesInjectedAuthForUnlock |
+| Redacted body/search/editor inputs | Fetcher.snapshot, Service.getNotes, list Props.groups, Note.editableNote, UI.State.hideProtectedContent: lockedSearchAndEditorProjectionHideBody; backgroundRedactsBothUIProjectionsImmediately; flowEnforcesProtectionAndPublishesCanonicalSnapshots |
+| Per-note grants | Service.unlock → Fetcher.unlock: successUnlocksOnlyRequestedNoteAndRefreshPreservesProtection |
+| Device-owner policy/context/unavailable | Auth.Service.runLocalAuth: deviceOwnerPolicyReturnsActualBoolean; unavailablePolicyNeverEvaluatesOrAuthorizes; everyRequestCreatesAndInvalidatesItsOwnContext |
+| False/error/cancel refusal | Auth.Flow.authenticate, Auth.Service.runLocalAuth, Fetcher.unlock: authorizationFalseReturnsFailure; failedAuthenticationReturnsFailure; cancelledAuthenticationReturnsFailure; unavailableAuthenticationReturnsFailure; taskCancelledDuringAuthenticationCannotSucceed; evaluationErrorsNeverAuthorize; cancelledTaskCannotGrantAccess |
+| Refresh/edit retention | Service.upsert/getNotes → Fetcher: successUnlocksOnlyRequestedNoteAndRefreshPreservesProtection |
+| Mutation guards and absent IDs | Notes.Flow.apply → Service → Fetcher: rejectedAuthAndLockedMutationPathsFailClosed; flowEnforcesProtectionAndPublishesCanonicalSnapshots; missingNotesCannotBeUnlockedOrHaveProtectionChanged |
+| Explicit/all-note relock | Service.relock, Flow.apply: successfulFlowUnlockAndRelockRefreshState; successUnlocksOnlyRequestedNoteAndRefreshPreservesProtection |
+| Late auth/snapshot replay | Fetcher.unlock/relock, State.reduce: lateAuthenticationCannotUndoRevocation; reducerRejectsSnapshotOlderThanRevocation |
+| Ordinary edits without auth | Service.upsert/unlock: unprotectedNoteUnlockDoesNotEvaluateAuthentication; inMemoryServiceCreateEditDeleteJourney |
+| First rendered screen | BOUND: Root.Container and App wiring inspected and iOS compiled, no UI assertion |
+| Settings/Account/native controls | BOUND: route/toolbar/page source inspected and compiled, no UI assertion |
+| Actual system credential interaction | BOUND: adapter tested with scripted LAContext; no actual biometric/passcode prompt |
+| OS scene delivery/rendering | BOUND: background-only handler inspected, domain revocation/redaction tested; actual lifecycle and rendered frame ordering not exercised |
+
+## Independent verification
+
+- swift test --package-path Packages/Auth --force-resolved-versions: exit 0;
+  11 Swift tests / 2 suites. Log: auth-tests-01.log.
+- xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample
+  -destination 'platform=iOS Simulator,name=iPhone 17'
+  -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO
+  -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile
+  CODE_SIGNING_ALLOWED=NO: exit 0; 33 Swift tests / 16 suites;
+  includes iOS compilation. Log: ios-tests-01.log.
+- git diff --check: exit 0, diff-check-01.log. No separate configured linter.
+- Candidate blob/symlink comparison: zero mismatches, tree-verification.txt.
+- Tool versions: readiness.log. iOS deployment baseline remains 17, macOS 14;
+  neither oldest-OS execution nor a fresh macOS app build is claimed.
+
+## Gate attack
+
+Independently reproduced the absent-success-evidence shape in a disposable copy:
+changed only Auth.Flow.authenticate's success(false) branch from rejection to
+success, keeping error and cancellation refusals in force. Ran:
+
+swift test --package-path .temp/review-1/attack/Packages/Auth
+  --force-resolved-versions --filter authorizationFalseReturnsFailure
+
+Exit 1 after successful compilation. The named behavioral test failed with
+“False must fail”; narrow-false-01.log records the actual assertion. This is a
+narrowing mutant, not gate deletion or a source-token checker.
+
+Accepted the producer's attached raw evidence for the remaining provider,
+revocation, redaction, editor and Auth adapter mutations; those were not rerun
+by this reviewer. Inspected the mutation records and relevant production call
+sites. Producer reports 19/20 probes killed, including a generation +1 narrowing.
+The surviving final-note-existence clause is subsumed by generation revocation:
+all current deletion/protection changes revoke that note, and unlock also checks
+the generation. It is not counted as an independently killed gate. No production
+source-text gate was added, so token-preserving static-checker requirements are
+not applicable.
+
+The provider is the mutation/access authority; auth is injected at app composition
+and Notes does not import AuthServiceImpl or LocalAuthentication. Snapshot versions
+reject delayed canonical reads. Old reducer success actions remain reachable by
+trusted in-process dispatch but have no current production emitters (searched
+callers); arbitrary malicious in-process code is outside this expressly non-encrypted
+sample access-lock boundary. This review does not claim tamper resistance against
+forged arbitrary Relux actions or memory access.
+
+## Scope / follow-up
+
+No CUA, screenshots, snapshot harness, simulator navigation or UI tests were used.
+App-hosted unit tests launch the test host. Broader architecture-guide/diagram
+updates belong to the sibling documentation task, as recorded in the producer
+handoff; they are not represented as completed here. The retained legacy success
+actions can be removed in a subsequent cleanup with their legacy reducer tests.
+
+Reviewer goal query returned “none (run is not goal-bound)”. No operator directives.
+Review lifecycle branch is acceptance via accept_cr, never reviewer done/commit_ack.
+ .spec/note-protection.md                           |  32 +++
+ Docs/ArchitectureAudit.md                          |   4 +-
+ Docs/LearningExercises.md                          |  16 +-
+ Docs/Patterns/DOMAIN_TEST_SUPPORT.md               |   4 +-
+ Docs/Patterns/NOTE_PROTECTION.md                   |  21 ++
+ Docs/Patterns/RELUX_FLOW_VS_SAGA.md                |  10 +-
+ Docs/Patterns/RELUX_MODULAR.md                     |  10 +-
+ Docs/Patterns/RELUX_ORCHESTRATION.md               |  21 +-
+ Docs/Patterns/TESTING_STRATEGY.md                  |   4 +-
+ PROJECT_GUIDE.md                                   |  14 +-
+ Packages/Auth/Package.swift                        |   1 +
+ .../Sources/AuthModels/Auth+Business+Err.swift     |   7 +-
+ .../Auth+Business+Model+BiometryType.swift         |  19 --
+ .../Auth/Sources/AuthModels/Auth+Namespace.swift   |  10 +-
+ .../Auth/Sources/AuthReluxImpl/Auth+Module.swift   |  64 +-----
+ .../Business/Auth+Business+State+Reducer.swift     |  15 --
+ .../Business/Auth+Business+State.swift             |  28 ---
+ .../Business/Middleware/Auth+Business+Flow.swift   |  30 +++
+ .../Business/Middleware/Auth+Business+Saga.swift   |  80 --------
+ .../Business/Auth+Business+Action.swift            |  12 --
+ .../Business/Auth+Business+Protocols.swift         |  15 +-
+ .../Business/Middleware/Auth+Business+Effect.swift |   8 +-
+ .../AuthReluxInt/UI/Model/Auth+UI+Model+Page.swift |   9 -
+ .../AuthServiceImpl/Auth+Business+Service.swift    |  76 +++----
+ .../AuthServiceInt/AuthServiceInterface.swift      |   5 -
+ .../Assertions/Auth+TestHelpers.swift              |  30 ---
+ .../AuthTestSupport/Mocks/Auth+ServiceMock.swift   |  25 +--
+ .../AuthTestSupport/Stubs/Auth+Model+Stubs.swift   |   7 -
+ .../Auth/Tests/AuthTests/AuthBasicsTests.swift     | 141 +++++--------
+ .../Tests/AuthTests/DeviceOwnerServiceTests.swift  |  93 +++++++++
+ Packages/AuthUI/Package.resolved                   |  42 ----
+ Packages/AuthUI/Package.swift                      |  35 ----
+ .../AuthUI/Sources/AuthUI/Auth+TypeAliases.swift   |  13 --
+ .../AuthUI/Sources/AuthUI/UI/Auth+UI+Router.swift  |  17 --
+ .../UI/LocalAuth/Auth+UI+LocalAuth+Container.swift |  34 ---
+ .../Page/Auth+UI+Container+Page+Props.swift        |  12 --
+ .../UI/LocalAuth/Page/Auth+UI+Container+Page.swift |  28 ---
+ .../LogoutFlow/Auth+UI+LogoutFlow+Container.swift  |  26 ---
+ .../Sources/AuthUI/UI/Utils/AsyncButton.swift      | 122 -----------
+ .../AuthUI/Sources/AuthUIAPI/AuthUIProviding.swift |   8 -
+ README.md                                          |  30 ++-
+ diagrams/README.md                                 |   6 +-
+ diagrams/plantuml/component/auth-dependencies.puml |  10 +-
+ .../plantuml/sequence/logout-orchestration.puml    |  32 ---
+ diagrams/plantuml/sequence/note-unlock.puml        |  33 +++
+ diagrams/plantuml/sequence/notes-upsert.puml       |   7 +-
+ diagrams/rendered/auth-dependencies.svg            |   2 +-
+ diagrams/rendered/logout-orchestration.svg         |   1 -
+ diagrams/rendered/note-unlock.svg                  |   1 +
+ diagrams/rendered/notes-upsert.svg                 |   2 +-
+ relux_sample.xcodeproj/project.pbxproj             |  32 +--
+ relux_sample/Adapters/AuthRouterAdapter.swift      |  12 --
+ relux_sample/App.swift                             |  13 +-
+ relux_sample/IoC/IoC.swift                         |  32 +--
+ .../Modules/Account/UI/Account+UI+Container.swift  |   7 -
+ .../UI/Page/Account+UI+Container+Page+Props.swift  |   1 -
+ .../UI/Page/Account+UI+Container+Page.swift        |  12 +-
+ relux_sample/Modules/App/App+Module.swift          |  43 ----
+ relux_sample/Modules/App/App+Namespace.swift       |  12 +-
+ .../App/Business/SampleApp+Business+Effect.swift   |   5 -
+ .../App/Business/SampleApp+Business+Saga.swift     |  48 -----
+ .../App/UI/Main/App+UI+Main+Container.swift        |  18 --
+ .../Modules/App/UI/Main/App+UI+Main+Router.swift   |  13 --
+ .../App/UI/Main/Model/App+UI+Main+Model+Page.swift |   7 -
+ .../UI/Main/Page/App+UI+Main+Container+Page.swift  |  30 ---
+ .../App/UI/Root/App+UI+Root+Container.swift        |  34 +--
+ .../Modules/App/UI/Root/App+UI+Root+Router.swift   |  37 +++-
+ .../Modules/Navigation/Navigation+Module.swift     |   2 +-
+ .../UI/Models/Navigation+UI+Model+AppPage.swift    |   7 +-
+ .../Middleware/Notes+Business+Effect.swift         |   3 +
+ .../Business/Middleware/Notes+Business+Flow.swift  |  41 +++-
+ .../Middleware/Notes+Business+Service.swift        |  25 ++-
+ .../Business/Model/Notes+Business+Model+Note.swift |  15 ++
+ .../Notes/Business/Notes+Business+Action.swift     |   1 +
+ .../Business/Notes+Business+State+Reducer.swift    |   4 +
+ .../Notes/Business/Notes+Business+State.swift      |   1 +
+ .../Data/Api/DTO/Notes+Data+Api+DTO+Note.swift     |   2 +
+ .../Notes/Data/Api/Notes+Data+Api+Fetcher.swift    |  94 ++++++---
+ .../Modules/Notes/Err/Notes+Business+Err.swift     |   3 +
+ relux_sample/Modules/Notes/Notes+Module.swift      |  12 +-
+ relux_sample/Modules/Notes/Notes+Namespace.swift   |   1 -
+ .../UI/Details/Notes+UI+Details+Container.swift    |  22 +-
+ .../Notes+UI+ Details+Container+Page+Props.swift   |   4 +
+ .../Page/Notes+UI+ Details+Container+Page.swift    |  22 +-
+ .../Notes/UI/Edit/Notes+UI+Edit+Container.swift    |  17 +-
+ .../Notes/UI/List/Notes+UI+List+Container.swift    |   7 +-
+ .../Page/Notes+UI+ List+Container+Page+Props.swift |   1 +
+ .../List/Page/Notes+UI+ List+Container+Page.swift  |   7 +-
+ .../Modules/Notes/UI/Model/Notes+UI+Page.swift     |   2 +-
+ .../Modules/Notes/UI/Notes+UI+Router.swift         |   2 +-
+ relux_sample/Modules/Notes/UI/Notes+UI+State.swift |  12 ++
+ .../UI/Widget/Notes+UI+Widget+Container.swift      |  36 ----
+ .../Notes+UI+Widget+Container+Page+Props.swift     |  12 --
+ .../Page/Notes+UI+Widget+Container+Page.swift      |  71 -------
+ .../Notes+Business+Action+TestableAction.swift     |   2 +
+ .../Saga/NotesTests+Business+Saga+Delete.swift     |   2 +-
+ .../Saga/NotesTests+Business+Saga+Obtain.swift     |   2 +-
+ .../Saga/NotesTests+Business+Saga+Upsert.swift     |   2 +-
+ relux_sampleTests/Notes/NoteProtectionTests.swift  | 227 +++++++++++++++++++++
+ .../Notes/Utils/NotesTests+Mocks.swift             |   9 +-
+ 100 files changed, 924 insertions(+), 1374 deletions(-)
+# Architecture diagrams
+
+Each source covers one question, checked against the application composition and package manifests.
+
+| Source | Question | Implementation anchors |
+| --- | --- | --- |
+| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift) |
+| [Notes upsert](plantuml/sequence/notes-upsert.puml) | How does a draft become domain state? | [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [UI projection](../relux_sample/Modules/Notes/UI/Notes+UI+State.swift) |
+| [Note unlock](plantuml/sequence/note-unlock.puml) | Who owns authentication and per-note access? | [Protection pattern](../Docs/Patterns/NOTE_PROTECTION.md) |
+
+## Render locally
+
+Install PlantUML and Graphviz if absent (`brew install plantuml graphviz`). Check `plantuml -version` and `dot -V` first. From the repository root, render all three sources to a task-local output directory:
+
+```bash
+mkdir -p .temp/diagrams
+plantuml -failfast2 -tpng -o "$PWD/.temp/diagrams" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml
+```
+
+The command exits nonzero on a source error. Open each PNG and check labels, arrows, clipping, and the stated boundary against its implementation anchors. For scalable export, replace `-tpng` with `-tsvg`. Keep editable sources and the requested small SVG documentation assets in Git. Temporary PNG previews stay under `.temp/`. Render shareable SVGs with `plantuml -failfast2 -tsvg -o "$PWD/diagrams/rendered" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml`.
+
+## View the diagrams
+
+![Auth production target dependencies](rendered/auth-dependencies.svg)
+
+![Notes save flow](rendered/notes-upsert.svg)
+
+![Per-note unlock](rendered/note-unlock.svg)
+
+Start the learning path at [LearningExercises.md](../Docs/LearningExercises.md). Dependency arrows and runtime messages have different meanings; read each diagram's title and legend before combining them.
+# Per-note device-owner authentication
+
+Notes opens without authentication. The Notes toolbar pushes Settings, then Account information through [app routes](../../relux_sample/Modules/App/UI/Root/App+UI+Root+Router.swift). There is no app-wide sign-in or logout.
+
+## Ownership and entry point
+
+[Details.Container](../../relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift) wraps Lock Note, Unlock Note, Relock and Remove Lock in callbacks that dispatch Notes effects. Lock Note protects and immediately locks an ordinary note without prompting. Unlock Note invokes the [Notes Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [service](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift) and [provider](../../relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift). App IoC injects the reusable Auth Flow; the provider alone owns protection metadata and per-note grants.
+
+The [Auth service](../../Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift) creates and invalidates a fresh LAContext for each request. It evaluates `deviceOwnerAuthentication`: system biometry with device passcode or macOS password fallback, not an app-defined PIN or account identity. False, cancellation, unavailable policy and evaluation errors do not authorize access.
+
+## Visibility and lifetime
+
+Titles remain visible and searchable. Locked snapshots redact bodies before reaching business/UI state, so previews, body search and details cannot display that content. The provider rejects edits, deletion and removing protection while locked. Existing provider metadata wins over editor-supplied protection flags.
+
+A grant applies to one note and survives navigation and refresh until relock or background revocation; there is no timer. Remove Lock requires access and revokes the grant while making the note ordinary. Deletion also revokes access. Notes, protection and grants reset on process restart.
+
+[The root](../../relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift) hides protected content immediately on background, removes presentation content while revocation is pending, and dispatches relock for all notes. Inactive system-prompt transitions do not relock. [The editor](../../relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift) resolves the current note by ID, refuses locked content and dismisses on background; background destroys local drafts.
+
+Each revocation advances the provider's per-note generation. An authentication result grants access only if the generation still matches, the task is not cancelled and the note remains protected. A later unlock supersedes an earlier request. Provider snapshots have increasing revisions; [the reducer](../../relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift) rejects older snapshots. These are separate guards against late authentication and stale projection input.
+
+This is **in-memory access control, not at-rest encryption**. Plaintext remains inside the provider, and no durable storage or backend account isolation is implemented. See the [rendered unlock sequence](../../diagrams/README.md) and [optional extensions](../LearningExercises.md).
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-gqutty) { status notes checklist }'
+task-board resource list TASK-260909-gqutty
+git diff 6e19864ce5449d0d9ec720bb1384a28b71470070 134761f76d253a767ffa2277e8efffcb9337bb34 -- ':"'!diagrams/rendered'"'
+cat .temp/review-gqutty/readiness.log" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 13ms:
+diff --git a/Docs/ArchitectureAudit.md b/Docs/ArchitectureAudit.md
+index 4aa43fa..44633d2 100644
+--- a/Docs/ArchitectureAudit.md
++++ b/Docs/ArchitectureAudit.md
+@@ -1,7 +1,7 @@
+ # Dependency and Architecture Audit
+ 
+ Task: TASK-260909-3hzrc3 (`refresh-dependencies-and-patterns`), 2026-09-09.
+-Audited dependency-repair baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`. This document records the pinned contracts; historical producer evidence is linked below.
++Audited dependency-repair baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`. This document records the historical dependency-repair baseline, before Notes-first launch and per-note Auth. AuthUI, HybridState and logout references below describe that baseline only. For current behavior see [note protection](Patterns/NOTE_PROTECTION.md) and [modular boundaries](Patterns/RELUX_MODULAR.md); historical producer evidence is linked below.
+ 
+ ## Verified dependency graph
+ 
+@@ -19,7 +19,7 @@ SwiftUIRelux 9.0.0 requires Relux >=9.2.0 and Router >=12.1.0 within their curre
+ 
+ Direct requirements are now exact in the local manifests and Xcode project. Four checked-in lockfiles cover the app and each independently resolvable package. Router's transitive revision is fixed by those lockfiles. Re-resolution with Xcode's `-onlyUsePackageVersionsFromResolvedFile` and `-disableAutomaticPackageResolution` succeeded; all 4 of 4 lockfile SHA-256 values remained unchanged. SwiftPM validation uses `--force-resolved-versions`. This demonstrates resolution at the audited revisions; it does not promise continued network availability or immutable upstream tags without the locks.
+ 
+-## Contracts verified from implementation
++## Contracts verified at the historical baseline
+ 
+ - **Module ownership:** [Relux.swift](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux.swift) recursively retains dependencies and connects each module once by `moduleKey`. [Module](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Module/Relux+Module.swift) defaults the key to concrete type identity, not instance identity. Unregister releases owners and cleans up disconnected state. The app registers its actual modules; SessionOrchestration and DataOrchestration packages mentioned in the old guide do not exist.
+ - **State isolation:** [State protocols](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Store/Relux+State.swift) make UIState and HybridState MainActor-isolated. BusinessState requires Sendable reference semantics and async reduction/cleanup; it does not itself require an actor. Auth uses an observable HybridState; Notes uses an actor BusinessState and a MainActor ObservableObject projection. The Auth registered-module test exercises dispatch, reduction, unregister, and cleanup together.
+diff --git a/Docs/LearningExercises.md b/Docs/LearningExercises.md
+index 39c8e4a..51fa4a2 100644
+--- a/Docs/LearningExercises.md
++++ b/Docs/LearningExercises.md
+@@ -2,7 +2,7 @@
+ 
+ Run the app using [README](../README.md#quick-start), then trace the [three diagrams](../diagrams/README.md). Notes currently supports in-memory create, edit, delete and local title/body search. Auth uses system device-owner authentication. None of the four extensions below is shipped behavior.
+ 
+-Auth's small observable HybridState stays on MainActor. Notes separates actor-owned business truth from a derived MainActor UIState. Choose the split for isolation and consumers, not to maximize package count: Auth's six products live in one package, and Notes still lives in the app.
++Auth returns a reusable authentication outcome without global login state. Notes separates actor-owned business truth from a derived MainActor UIState. Choose the split for isolation and consumers, not to maximize package count: Auth's six products live in one package, and Notes still lives in the app.
+ 
+ ## 1. Duplicate a note
+ 
+@@ -10,23 +10,23 @@ Auth's small observable HybridState stays on MainActor. Notes separates actor-ow
+ 
+ Start at the [note model](../relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift), [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [reducer](../relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift), and [Details.Container](../relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift). Use the existing upsert path; define duplication rules in the domain and expose a container callback.
+ 
+-Write reducer and Flow tests first: distinct ID, fresh date, unchanged original, exactly one inserted copy. A service failure must return failure and insert nothing. Then drive the callback in the app and verify the list. Use [upsert tests](../relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift) as a starting point. Avoid dispatch in a Page or a second mutable notes collection in UI.
++Write reducer and Flow tests first: distinct ID, fresh date, unchanged original, exactly one inserted copy. Define whether an accessible protected source produces a protected copy; reject duplication of a locked source. A service failure must return failure and insert nothing. Then drive the callback in the app and verify the list. Use [upsert tests](../relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift) as a starting point. Avoid dispatch in a Page or a second mutable notes collection in UI.
+ 
+ ## 2. Keep notes across launches
+ 
+ **Goal:** saved and deleted notes retain their state after relaunch.
+ 
+-Replace the provider behind [IFetcher](../relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift), wired by [Notes.Module](../relux_sample/Modules/Notes/Notes+Module.swift). An actor-backed file provider is sufficient. Keep DTO conversion and domain error mapping at the [service boundary](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift); do not put file operations in the Flow. The current delete method is spelled `deletetNote`.
++Replace the provider behind [IFetcher](../relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift), wired by [Notes.Module](../relux_sample/Modules/Notes/Notes+Module.swift). Define durable protection metadata and keep grants transient; persistence alone does not encrypt bodies. An actor-backed file provider is a starting point. Keep DTO conversion and domain error mapping at the [service boundary](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift); do not put file operations in the Flow. The current delete method is spelled `deletetNote`.
+ 
+ Write/read/recreate/delete/recreate a temporary real store. Specify first-run behavior for absent storage; unreadable or corrupt storage must fail rather than become a successful empty list. Failed writes must not emit successful domain mutations. Add provider durability tests and service-mapping tests, then relaunch the app against that implementation.
+ 
+-## 3. Make logout cleanup session-safe
++## 3. Add timed per-note access expiry
+ 
+-**Goal:** notes from a previous session cannot reappear through reload or a late request.
++**Goal:** an unlocked protected note relocks after an explicitly chosen interval, including while its editor is open.
+ 
+-Start at the [app saga](../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift), [Auth saga](../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift), and Notes module/provider. Current store cleanup does not erase the provider dictionary. Decide whether durable notes are erased or retained for the same device user; LocalAuthentication does not define multi-account backend identity.
++Start with the [protection pattern](Patterns/NOTE_PROTECTION.md). Manual/background revocation and late-result generations already exist; expiry does not. Define whether the interval starts at authentication or last interaction, inject a clock into the provider, and reuse Notes-owned revocation and snapshot publication.
+ 
+-Expose Notes-owned cleanup through an interface and coordinate it explicitly. Drive registered logout dispatch; verify the chosen provider policy, state/projection cleanup and routing. Hold an old request, log out, release it and prove it cannot repopulate state. Include cleanup failure. Independent subscribers do not establish ordering; see [logout diagram](../diagrams/plantuml/sequence/logout-orchestration.puml). Avoid Auth importing Notes implementation or adding mock-only session guarantees.
++Verify just-before/at-deadline behavior, independent note deadlines, editor redaction, and an authentication request held across expiry. Advancing a fake clock must drive the same production expiry path. Do not hide expiry only in UI or introduce global login state.
+ 
+ ## 4. Reuse Notes from a headless CLI
+ 
+@@ -34,7 +34,7 @@ Expose Notes-owned cleanup through an interface and coordinate it explicitly. Dr
+ 
+ Extract necessary models, interfaces, implementation and utilities into a UI-independent package. Compose a business-only module with injected dispatcher/service. The current Notes module creates UIState and resolves an app dispatcher; it cannot be reused unchanged. Use [Auth's manifest](../Packages/Auth/Package.swift) as a boundary example, not a mandatory six-product template.
+ 
+-Build the business target without SwiftUI, AuthUI or app navigation. Launch the actual executable against temporary storage and assert output, reducer state and exit status for list/create/delete. Malformed input and storage errors must exit nonzero without success output. Add a documented `swift run` command only after an executable target exists. Do not bypass shared Flow/reducers with a duplicated service-only CLI.
++Build the business target without SwiftUI or app navigation. Launch the actual executable against temporary storage and assert output, reducer state and exit status for list/create/delete. Malformed input and storage errors must exit nonzero without success output. Add a documented `swift run` command only after an executable target exists. Do not bypass shared Flow/reducers with a duplicated service-only CLI.
+ 
+ ## Review your extension
+ 
+diff --git a/Docs/Patterns/DOMAIN_TEST_SUPPORT.md b/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
+index 68d915d..5450755 100644
+--- a/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
++++ b/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
+@@ -1,6 +1,6 @@
+ # Domain test support
+ 
+-[AuthTestSupport](../../Packages/Auth/Package.swift) is the existing domain helper product. It contains a [service mock](../../Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift), [model stubs](../../Packages/Auth/Sources/AuthTestSupport/Stubs/Auth+Model+Stubs.swift), and [assertion helpers](../../Packages/Auth/Sources/AuthTestSupport/Assertions/Auth+TestHelpers.swift). It is not proof that every current test consumes those helpers: AuthBehaviorTests defines its own fixtures.
++[AuthTestSupport](../../Packages/Auth/Package.swift) is the existing domain helper product. It contains an actor-isolated [service mock](../../Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift). It is not proof that every current test consumes those helpers: AuthBehaviorTests defines its own fixtures.
+ 
+ Within a package, reference targets by name (`"AuthModels"`, `"AuthServiceInt"`, `"AuthReluxInt"`). Across packages, use `.product(name: "TestInfrastructure", package: "TestInfrastructure")`. Do not introduce a `Domain-Self` package reference or force dynamic libraries for test support.
+ 
+@@ -8,6 +8,6 @@ Notes is not extracted and has no NotesTestSupport product. Its mocks and stubs
+ 
+ ## Fixture discipline
+ 
+-Prefer actor-isolated mutable service fixtures for concurrent tests. The legacy Auth ServiceMock uses `@unchecked Sendable` with mutable handlers and counters; do not share it across concurrent tests or treat the annotation as a concurrency guarantee. Its `recreateLAContext` is a no-op, so use an explicit recording fixture when asserting that behavior.
++Prefer actor-isolated mutable service fixtures for concurrent tests. Auth ServiceMock returns a configured result and counts calls; use held-request fixtures when testing revocation during authentication.
+ 
+ Use stable IDs, dates and explicit strings when they affect assertions. Return deliberate failures for unexpected calls. Assert false authorization separately from thrown/service errors; assert Flow failure separately from logged error effects. See executable [Auth tests](../../Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift) and the [testing strategy](TESTING_STRATEGY.md).
+diff --git a/Docs/Patterns/NOTE_PROTECTION.md b/Docs/Patterns/NOTE_PROTECTION.md
+new file mode 100644
+index 0000000..bf51299
+--- /dev/null
++++ b/Docs/Patterns/NOTE_PROTECTION.md
+@@ -0,0 +1,21 @@
++# Per-note device-owner authentication
++
++Notes opens without authentication. The Notes toolbar pushes Settings, then Account information through [app routes](../../relux_sample/Modules/App/UI/Root/App+UI+Root+Router.swift). There is no app-wide sign-in or logout.
++
++## Ownership and entry point
++
++[Details.Container](../../relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift) wraps Lock Note, Unlock Note, Relock and Remove Lock in callbacks that dispatch Notes effects. Lock Note protects and immediately locks an ordinary note without prompting. Unlock Note invokes the [Notes Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [service](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift) and [provider](../../relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift). App IoC injects the reusable Auth Flow; the provider alone owns protection metadata and per-note grants.
++
++The [Auth service](../../Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift) creates and invalidates a fresh LAContext for each request. It evaluates `deviceOwnerAuthentication`: system biometry with device passcode or macOS password fallback, not an app-defined PIN or account identity. False, cancellation, unavailable policy and evaluation errors do not authorize access.
++
++## Visibility and lifetime
++
++Titles remain visible and searchable. Locked snapshots redact bodies before reaching business/UI state, so previews, body search and details cannot display that content. The provider rejects edits, deletion and removing protection while locked. Existing provider metadata wins over editor-supplied protection flags.
++
++A grant applies to one note and survives navigation and refresh until relock or background revocation; there is no timer. Remove Lock requires access and revokes the grant while making the note ordinary. Deletion also revokes access. Notes, protection and grants reset on process restart.
++
++[The root](../../relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift) hides protected content immediately on background, removes presentation content while revocation is pending, and dispatches relock for all notes. Inactive system-prompt transitions do not relock. [The editor](../../relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift) resolves the current note by ID, refuses locked content and dismisses on background; background destroys local drafts.
++
++Each revocation advances the provider's per-note generation. An authentication result grants access only if the generation still matches, the task is not cancelled and the note remains protected. A later unlock supersedes an earlier request. Provider snapshots have increasing revisions; [the reducer](../../relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift) rejects older snapshots. These are separate guards against late authentication and stale projection input.
++
++This is **in-memory access control, not at-rest encryption**. Plaintext remains inside the provider, and no durable storage or backend account isolation is implemented. See the [rendered unlock sequence](../../diagrams/README.md) and [optional extensions](../LearningExercises.md).
+diff --git a/Docs/Patterns/RELUX_FLOW_VS_SAGA.md b/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
+index 78b4e89..d7a163c 100644
+--- a/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
++++ b/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
+@@ -6,21 +6,21 @@
+ | Caller gets operation success/failure | Yes | Observe domain state/actions instead |
+ | Async work awaited | Yes | Yes; Void does not mean detached |
+ | State mutation | Dispatch actions to reducers | Dispatch actions to reducers |
+-| Current example | Notes create/update/delete/fetch | Auth and SampleApp coordination |
++| Current example | Notes operations and Auth authentication | Error tracking |
+ 
+ ## Notes: return the operation outcome
+ 
+-[Notes.Business.Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift) calls an injected service. A successful upsert dispatches `upsertNoteSuccess` and returns `.success`. Failure dispatches `upsertNoteFail` and error tracking concurrently, then returns `.failure(err)`. Logging never converts failure into success. The service rejects blank titles/content before writing to the provider.
++[Notes.Business.Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift) calls an injected service. A successful upsert fetches a provider snapshot and dispatches `Action.snapshot`; the reducer accepts only a newer revision. The Flow returns the refresh outcome. Failure dispatches `upsertNoteFail` and error tracking concurrently, then returns `.failure(err)`. Logging never converts failure into success. The service rejects blank titles/content before writing to the provider.
+ 
+ [Create.Container](../../relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift) awaits `actions(actions: { Notes.Business.Effect.upsert(note: note) })`; success dismisses the editor, failure sets an error message while preserving its local draft. Views invoke callbacks; they do not dispatch Relux actions.
+ 
+ See the [upsert sequence](../../diagrams/plantuml/sequence/notes-upsert.puml). Awaiting reduction is not a guarantee that Combine's scheduled main-queue projection or SwiftUI rendering has already occurred.
+ 
+-## Auth: observe actions and navigation
++## Auth: return a reusable authentication outcome
+ 
+-[Auth.Business.Saga](../../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift) accepts only `.success(true)` from `runLocalAuth`. False emits `authenticationRejected`; errors emit failure. Only true dispatches `authSucceed` and the main route. LocalAuthentication uses device-owner authentication, including system credential fallback; the “biometry” names do not promise biometric-only authentication.
++[Auth.Business.Flow](../../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Flow.swift) accepts only `.success(true)` from `runLocalAuth`. False becomes `authenticationRejected`; service errors and cancellation remain failures. It returns an outcome without navigation or global login actions. App IoC adapts that result to the Notes provider's authentication callback.
+ 
+-The caller does not use a returned domain result to navigate: the saga requests routing through its injected interface. Thus navigation alone does not dictate Flow versus Saga. Choose based on who owns the outcome and how consumers observe it. Cross-domain event observers in this sample use Saga; see [orchestration](RELUX_ORCHESTRATION.md).
++The provider decides whether the requested note may receive a grant after the await. See [note protection](NOTE_PROTECTION.md) and [composition](RELUX_ORCHESTRATION.md). Auth proves device-owner authentication; Notes owns access lifetime.
+ 
+ ## Validate both sides
+ 
+diff --git a/Docs/Patterns/RELUX_MODULAR.md b/Docs/Patterns/RELUX_MODULAR.md
+index 4103e5e..d34064a 100644
+--- a/Docs/Patterns/RELUX_MODULAR.md
++++ b/Docs/Patterns/RELUX_MODULAR.md
+@@ -5,23 +5,23 @@ Auth demonstrates six library products within [one package](../../Packages/Auth/
+ | Auth product | Responsibility | Direct local target dependencies |
+ | --- | --- | --- |
+ | AuthModels | Namespace, data, errors | None |
+-| AuthReluxInt | Actions, effects, state and router contracts | AuthModels |
++| AuthReluxInt | Authentication effect and Flow contract | AuthModels |
+ | AuthServiceInt | Service contract | AuthModels |
+ | AuthServiceImpl | LocalAuthentication implementation | AuthModels, AuthServiceInt |
+-| AuthReluxImpl | State, reducer, saga and module | AuthModels, AuthReluxInt, AuthServiceInt |
++| AuthReluxImpl | Result-bearing Flow and module | AuthModels, AuthReluxInt, AuthServiceInt |
+ | AuthTestSupport | Domain test helpers | AuthModels, AuthServiceInt, AuthReluxInt |
+ 
+-External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. [AuthUI](../../Packages/AuthUI/Package.swift) has AuthUIAPI and AuthUI targets. UI imports interfaces, not service or Relux implementations. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
++External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. Auth has no UI package or login state. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
+ 
+ ## Composition root
+ 
+-[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(router:serviceFactory:)`. The module resolves an `IService`; it does not import AuthServiceImpl. Swap a service at this construction boundary without changing the saga or view. [AuthRouterAdapter](../../relux_sample/Adapters/AuthRouterAdapter.swift) maps domain navigation needs into app actions so Auth does not import app navigation.
++[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(service:)` and injects its `flow.authenticate()` through a callback into Notes. AuthReluxImpl does not import AuthServiceImpl or app navigation. Swap the service at this construction boundary.
+ 
+ Use target names for dependencies within a package and product dependencies across packages. Use automatic library linkage. Do not add a self-package dependency or manually embed every product: duplicate static Relux ownership caused runtime duplicate-class warnings in the [architecture audit](../ArchitectureAudit.md). TestSupport belongs to testing consumers, not the app's production dependency graph. There is no installed import-lint gate; manifests, compilation and review enforce the current boundaries.
+ 
+ ## State sizing
+ 
+-Auth uses an observable MainActor HybridState for a small domain. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
++Auth returns an authentication outcome without maintaining global state. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
+ 
+ [Notes.Module](../../relux_sample/Modules/Notes/Notes+Module.swift) constructs both states, a flow, a service and an in-memory fetcher. Its current wiring is not a headless package. Extract a business-only composition when undertaking the [CLI exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli).
+ 
+diff --git a/Docs/Patterns/RELUX_ORCHESTRATION.md b/Docs/Patterns/RELUX_ORCHESTRATION.md
+index 7fa4b2b..b89ea8e 100644
+--- a/Docs/Patterns/RELUX_ORCHESTRATION.md
++++ b/Docs/Patterns/RELUX_ORCHESTRATION.md
+@@ -1,24 +1,13 @@
+ # Relux orchestration
+ 
+-Cross-domain coordination lives at the composition boundary. In this sample, [SampleApp.Business.Saga](../../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift) observes `Auth.Business.Effect.runLogoutFlow` and calls `store.cleanup(exclusions: [AppRouter.self])`. [SampleApp.Module](../../relux_sample/Modules/App/App+Module.swift) registers the saga and no states.
++Cross-domain coordination lives at the composition boundary. [App IoC](../../relux_sample/IoC/IoC.swift) registers ErrorHandling, Navigation, Auth and Notes with one Store and RootSaga. It supplies Auth's service and injects `flow.authenticate()` into Notes as an async Boolean callback. Notes does not import Auth implementations, and Auth knows nothing about note IDs or navigation.
+ 
+-See the [logout sequence](../../diagrams/plantuml/sequence/logout-orchestration.puml).
++## Await the required outcome
+ 
+-## Actual entry point
++Unlock Note dispatches a Notes effect from its container. The Notes Flow awaits service/provider work; the provider awaits the injected Auth callback before granting access to that note. There are no independent logout subscribers or global login route. See the [unlock sequence](../../diagrams/README.md) and [access lifetime](NOTE_PROTECTION.md).
+ 
+-Account's container dispatches `Auth.Business.Effect.logout`. Auth routes to `.logoutFlow`; that screen's container dispatches `runLogoutFlow` from its task. Two sagas observe the effect:
+-
+-- Auth recreates its LocalAuthentication context, then dispatches the local-auth route and `logOutSucceed` action.
+-- SampleApp cleans registered store states except AppRouter.
+-
+-Auth does not import Notes. The app coordinates cleanup through the store. Cleanup is not deletion of the in-memory Notes fetcher, and no late-request rejection is implemented. See the [session-safe cleanup exercise](../LearningExercises.md#3-make-logout-cleanup-session-safe).
+-
+-## Ordering and ownership
+-
+-Registration makes modules available; it does not establish a subscriber execution order. The actual IoC registration order is ErrorHandling, Navigation, SampleApp, Auth, then async Notes. Serial dispatch orders actions within that dispatch, not all saga subscribers of one effect. If an invariant requires cleanup before routing, make the awaited coordination explicit and test that order with a held request.
+-
+-A Saga returns Void but its async work can still be awaited. Avoid interpreting “fire-and-forget” as a detached task or proof that the operation succeeded. Store state belongs to domains; coordination should not create another copy of it.
++The root container handles background transitions by hiding protected content and awaiting Notes relock. The provider owns revocation, while the root temporarily removes presentation content so editor drafts cannot remain visible during revocation. Inactive transitions from the system prompt are not background transitions.
+ 
+ ## Scaling beyond the demo
+ 
+-SessionOrchestration, DataOrchestration, Profile and Settings packages do not exist here. A larger app may extract a focused concern into an orchestrator that imports domain interfaces and exposes no domain state. Start with an app-local saga until separate ownership or reuse warrants a package. Test through registered dispatch and assert real state/service/routing outcomes, not only the presence of logged effects.
++Use an app-local orchestrator when multiple domain outcomes must be coordinated. Await dependencies explicitly: registration order and serial action dispatch do not establish subscriber ordering. A Saga returns Void but its async work can still be awaited. Extract a package only when ownership or reuse warrants it; do not create another domain-state store in the coordinator.
+diff --git a/Docs/Patterns/TESTING_STRATEGY.md b/Docs/Patterns/TESTING_STRATEGY.md
+index f004230..4007b6a 100644
+--- a/Docs/Patterns/TESTING_STRATEGY.md
++++ b/Docs/Patterns/TESTING_STRATEGY.md
+@@ -6,7 +6,7 @@ Use Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`) in Swift. [README c
+ 
+ | Source | Entry point and assertions | Bound |
+ | --- | --- | --- |
+-| [AuthBehaviorTests](../../Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift) | Registered module dispatch; authorization true/false/error, routing, biometry state and cleanup | Injected service; does not exercise physical LocalAuthentication |
++| [AuthBehaviorTests](../../Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift) | Registered module dispatch; authorization true/false/error and cancellation | Injected service; does not exercise physical LocalAuthentication |
+ | [Notes flow tests](../../relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift) | `Flow.apply`; returned result and logged actions for success/failure (also Upsert and Delete files) | Injected service/dispatcher; not whole-app UI |
+ | [Notes reducer tests](../../relux_sampleTests/Notes/Business/State/NotesTests+Business+State+Upsert.swift) | Real action reduction and domain state | No provider or routing integration |
+ | [Notes UIState tests](../../relux_sampleTests/Notes/UI/State/NotesTests+UI+State.swift) | Business-to-UI projection | Does not prove rendered frames |
+@@ -19,7 +19,7 @@ Auth tests live in a package target. Notes retains the app-hosted `relux_sampleT
+ - Flow: inject a service; assert both operation result and all dispatched success/failure actions. Concurrent error tracking must not hide failure.
+ - Reducer: pass real actions; assert resulting values and preservation on failed mutations. Use an exhaustive switch over the domain action enum.
+ - Service/provider: verify conversion and error mapping. For durable storage, use a temporary real store and recreate it to verify persistence. These durability tests are proposed, not present.
+-- Orchestration: drive registered dispatch; assert state, provider policy and routing. Hold an in-flight request when proving logout ordering. The current app has no session-safe provider-reset guarantee.
++- Orchestration: drive registered dispatch; assert state, provider policy and routing. Hold an authentication request across relock and verify it cannot restore a grant.
+ - UI projection: observe derived values with a bounded wait; do not assume dispatch return means Combine delivery has run.
+ - Wiring: register the real module, dispatch via its production dispatcher, and inspect the resulting state. Use AuthBehaviorTests as the executable example instead of inventing Store registration APIs.
+ 
+diff --git a/PROJECT_GUIDE.md b/PROJECT_GUIDE.md
+index cd75343..079e1bd 100644
+--- a/PROJECT_GUIDE.md
++++ b/PROJECT_GUIDE.md
+@@ -25,7 +25,7 @@ Sample app demonstrating architecture patterns and guidelines for working in **R
+ - Async-first, concurrency-safe code (Swift 6)
+ - Unidirectional data flow via **Darwin Relux** (Swift Relux)
+ 
+-A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, SampleApp, Auth and Notes modules with a shared Store and RootSaga.
++A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, Auth and Notes modules with a shared Store and RootSaga.
+ 
+ ---
+ 
+@@ -61,7 +61,6 @@ Detailed documentation in `Docs/Patterns/`:
+ ```
+ Packages/
+   Auth/                       ← Domain package (6 products)
+-  AuthUI/                     ← UI package (2 products)
+   TestInfrastructure/         ← Shared test utilities
+ 
+ relux_sample/
+@@ -69,10 +68,8 @@ relux_sample/
+     App/                      ← Root app module
+     Notes/                    ← Notes domain
+     Navigation/               ← Navigation state
+-    Account/                  ← Account UI
+     ErrorHandling/            ← Error tracking
+     Logger/                   ← Relux logger
+-  Adapters/                   ← Domain router adapters
+   Utils/                      ← Shared utilities
+   IoC/                        ← Dependency registration
+ 
+@@ -84,6 +81,10 @@ Docs/
+ 
+ ---
+ 
++## Launch and note access
++
++The root opens Notes directly. Its toolbar pushes Settings, which links to Account information; neither screen signs in or logs out. Auth is requested only by Unlock Note. See [note protection](Docs/Patterns/NOTE_PROTECTION.md) for provider ownership, editor redaction and background revocation.
++
+ ## Key Principles
+ 
+ ### Dependency Direction
+@@ -104,7 +105,7 @@ App composition → Implementations (injected behind interfaces)
+ 
+ - **BusinessState**: Notes uses an actor to own domain truth; the protocol itself requires Sendable reference semantics and async reduction/cleanup
+ - **UIState**: MainActor-isolated, derives UI data; Combine delivery is asynchronous
+-- **HybridState**: Combined approach for simpler domains
++- **Auth**: Result-bearing Flow with no global login state; Notes owns per-note grants
+ 
+ ### Side Effects
+ 
+@@ -129,7 +130,7 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
+ ### Container/View Separation (ReluxUI)
+ 
+ **Containers** (`Relux.UI.Container`): Bridge between Relux and UI layer
+-- Access environment state (`@EnvironmentObject` for Notes, observable environment for Auth)
++- Access environment state (`@EnvironmentObject` for Notes)
+ - **All Relux action dispatching MUST be defined here** — never in views
+ - Extract and transform data for child views
+ - Pass actions as callbacks to views
+@@ -307,6 +308,5 @@ Subject line must complete: "If applied, this commit will **[subject]**"
+ |------|---------|
+ | `relux_sample/App.swift` | App entry point, Relux initialization |
+ | `relux_sample/IoC/IoC.swift` | Dependency registration |
+-| `relux_sample/Adapters/` | Domain router adapters |
+ | `Packages/Auth/` | Extracted Auth domain (reference implementation) |
+ | `Docs/Patterns/` | Architecture pattern documentation |
+diff --git a/README.md b/README.md
+index 6e034e7..63c97d3 100644
+--- a/README.md
++++ b/README.md
+@@ -67,7 +67,7 @@ Use a simulator name installed on your host. Dependency updates must update exac
+ 
+ ## Documentation
+ 
+-Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, session-safe provider reset, or CLI executable; those are proposed exercises.
++Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, timed access expiry, or CLI executable; those are proposed exercises.
+ 
+ | Document | Purpose |
+ |----------|---------|
+@@ -86,7 +86,7 @@ Start with the [learning exercises](Docs/LearningExercises.md) and [diagram inde
+ The app opens in Notes without sign-in or a system authentication prompt. Open
+ Settings from the Notes toolbar to find Account and the architecture information.
+ Open a note and choose Lock Note. Unlock Note uses device-owner authentication
+-(biometry or the system device credential). An unlocked protected note offers
++(`deviceOwnerAuthentication`: biometry with system device passcode or macOS password fallback). An unlocked protected note offers
+ Relock and Remove Lock in its Protection menu. Titles remain visible; locked
+ bodies are excluded from previews, body search, details and editing.
+ 
+@@ -98,7 +98,7 @@ and older snapshots cannot restore revoked access. Ordinary notes need no auth.
+ 
+ This is an in-memory sample access lock, **not encryption or persistent storage**.
+ Plaintext exists in process memory; notes and protection reset on restart. Read
+-[the protection contract](.spec/note-protection.md) for boundaries and verification.
++[the protection pattern](Docs/Patterns/NOTE_PROTECTION.md) for boundaries and verification.
+ The focused `NoteProtectionTests` and `AuthBehaviorTests` are Swift unit tests.
+ System prompt behavior and visual appearance have not been UI-tested.
+ 
+diff --git a/diagrams/README.md b/diagrams/README.md
+index 4257a48..e6ba31d 100644
+--- a/diagrams/README.md
++++ b/diagrams/README.md
+@@ -4,9 +4,9 @@ Each source covers one question, checked against the application composition and
+ 
+ | Source | Question | Implementation anchors |
+ | --- | --- | --- |
+-| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift), [AuthUI manifest](../Packages/AuthUI/Package.swift) |
++| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift) |
+ | [Notes upsert](plantuml/sequence/notes-upsert.puml) | How does a draft become domain state? | [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [UI projection](../relux_sample/Modules/Notes/UI/Notes+UI+State.swift) |
+-| [Logout orchestration](plantuml/sequence/logout-orchestration.puml) | How do independent subscribers coordinate cleanup and routing? | [App saga](../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift), [Auth saga](../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift) |
++| [Note unlock](plantuml/sequence/note-unlock.puml) | Who owns authentication and per-note access? | [Protection pattern](../Docs/Patterns/NOTE_PROTECTION.md) |
+ 
+ ## Render locally
+ 
+@@ -25,6 +25,6 @@ The command exits nonzero on a source error. Open each PNG and check labels, arr
+ 
+ ![Notes save flow](rendered/notes-upsert.svg)
+ 
+-![Logout orchestration](rendered/logout-orchestration.svg)
++![Per-note unlock](rendered/note-unlock.svg)
+ 
+ Start the learning path at [LearningExercises.md](../Docs/LearningExercises.md). Dependency arrows and runtime messages have different meanings; read each diagram's title and legend before combining them.
+diff --git a/diagrams/plantuml/component/auth-dependencies.puml b/diagrams/plantuml/component/auth-dependencies.puml
+index 2eb0d37..f273f8f 100644
+--- a/diagrams/plantuml/component/auth-dependencies.puml
++++ b/diagrams/plantuml/component/auth-dependencies.puml
+@@ -2,17 +2,11 @@
+ !theme plain
+ left to right direction
+ title Auth production target dependencies
+-component AuthUI
+-component AuthUIAPI
+ component AuthReluxImpl
+ component AuthReluxInt
+ component AuthServiceImpl
+ component AuthServiceInt
+ component AuthModels
+-AuthUI --> AuthUIAPI
+-AuthUI --> AuthReluxInt
+-AuthUIAPI --> AuthReluxInt
+-AuthUIAPI --> AuthModels
+ AuthReluxImpl --> AuthReluxInt
+ AuthReluxImpl --> AuthServiceInt
+ AuthReluxImpl --> AuthModels
+@@ -21,13 +15,13 @@ AuthServiceImpl --> AuthServiceInt
+ AuthServiceImpl --> AuthModels
+ AuthServiceInt --> AuthModels
+ note bottom of AuthReluxImpl
+-App IoC supplies the service factory and router.
++App IoC supplies the service instance.
++Notes receives an Auth Flow callback.
+ No dependency on AuthServiceImpl.
+ end note
+ legend bottom
+ Arrow = direct local target dependency.
+ External libraries and test targets omitted.
+ Auth: six products in one package, including AuthTestSupport.
+-AuthUI: two products in a separate package.
+ endlegend
+ @enduml
+diff --git a/diagrams/plantuml/sequence/logout-orchestration.puml b/diagrams/plantuml/sequence/logout-orchestration.puml
+deleted file mode 100644
+index 3210ab1..0000000
+--- a/diagrams/plantuml/sequence/logout-orchestration.puml
++++ /dev/null
+@@ -1,32 +0,0 @@
+-@startuml
+-!theme plain
+-hide footbox
+-title Logout: two subscribers, no ordering guarantee
+-participant "Account.Container" as C
+-participant "Dispatcher / RootSaga" as D
+-participant "Auth Saga" as A
+-participant "Auth router adapter / UI" as R
+-participant "Auth Service" as S
+-participant "SampleApp Saga" as App
+-participant "Relux Store" as Store
+-C -> D : Auth.Effect.logout
+-D -> A : apply(logout)
+-A -> R : dispatch setAuth(.logoutFlow)
+-R -> D : LogoutFlow.Container task:\nEffect.runLogoutFlow
+-par Auth subscriber
+- D -> A : apply(runLogoutFlow)
+- A -> S : recreateLAContext()
+- S --> A : returns
+- A -> R : dispatch setAuth(.localAuth)
+- A -> D : Action.logOutSucceed
+-else app subscriber
+- D -> App : apply(runLogoutFlow)
+- App -> Store : cleanup(exclusions: [AppRouter.self])
+- Store --> App : returns
+-end
+-note over A,Store
+-Neither registration order nor serial actions order subscribers.
+-Store cleanup does not erase Notes Fetcher's dictionary.
+-Late-result rejection / session-safe provider reset is an exercise.
+-end note
+-@enduml
+diff --git a/diagrams/plantuml/sequence/note-unlock.puml b/diagrams/plantuml/sequence/note-unlock.puml
+new file mode 100644
+index 0000000..2c3cfa7
+--- /dev/null
++++ b/diagrams/plantuml/sequence/note-unlock.puml
+@@ -0,0 +1,33 @@
++@startuml
++!theme plain
++hide footbox
++title Unlock one note: authentication outcome and access lifetime
++participant "Details.Container" as UI
++participant "Notes Flow / Service" as N
++participant "Notes Provider" as P
++participant "Injected Auth Flow" as A
++participant "Auth Service / OS" as OS
++UI -> N : Effect.unlock(noteId) via dispatcher
++N -> P : unlock(noteId)
++P -> P : revoke prior grant; capture generation
++P -> A : authenticate callback
++A -> OS : runLocalAuth()
++OS -> OS : fresh LAContext\nevaluate deviceOwnerAuthentication
++OS --> A : true / false / error
++A --> P : callback Boolean
++alt authorized, current generation, protected, not cancelled
++ P -> P : grant only this note
++ P --> N : success
++else denied or superseded
++ P --> N : authenticationDenied
++end
++N -> P : snapshot()
++P --> N : revision + notes; locked bodies empty
++N -> N : dispatch snapshot; reducer rejects older revisions
++N --> UI : operation result (UI projection is asynchronous)
++note over P,OS
++Relock/background advances generations and removes grants.
++A late authentication result cannot restore revoked access.
++Device passcode/macOS password fallback is system-owned.
++end note
++@enduml
+diff --git a/diagrams/plantuml/sequence/notes-upsert.puml b/diagrams/plantuml/sequence/notes-upsert.puml
+index 4b5f4fc..2f32cda 100644
+--- a/diagrams/plantuml/sequence/notes-upsert.puml
++++ b/diagrams/plantuml/sequence/notes-upsert.puml
+@@ -17,8 +17,11 @@ D -> F : apply(effect) via RootSaga
+ F -> S : upsert(note)
+ alt accepted by service
+  S --> F : success
+- F -> D : Action.upsertNoteSuccess(note)
++ F -> S : getSnapshot()
++ S --> F : revisioned, body-redacted snapshot
++ F -> D : Action.snapshot(snapshot)
+  D -> B : reduce(action)
++ B -> B : accept only newer revision
+  B --> D : reduction returns
+  par scheduled UI delivery
+   B ->> U : Combine projection on main queue
+@@ -29,7 +32,7 @@ alt accepted by service
+   D --> C : success
+   C -> Page : dismiss
+  end
+-else invalid content or service failure
++else invalid content, locked note or service failure
+  S --> F : failure(err)
+  F -> D : upsertNoteFail + track(error) concurrently
+  D -> B : failure action (keeps existing notes)
+task-board version 0.24.3-330-g5ec20de4 (commit 5ec20de4, built 2026-09-08T22:19:10Z)
+git version 2.50.1 (Apple Git-155)
+ripgrep 15.2.0 (rev e89fff89ac)
+
+features:+pcre2
+simd(compile):+NEON
+simd(runtime):+NEON
+
+PCRE2 10.45 is available (JIT is available)
+Python 3.14.7
+/opt/homebrew/bin/plantuml
+
+codex
+Кандидат включает уже принятую реализацию; отдельная дельта документации меняет только Markdown, PlantUML и SVG. Проверяю ссылки, повторный рендер и точность последовательностей, включая отказ в unlock и фоновую блокировку.
+
+exec
+/bin/zsh -lc "cat relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
+cat Docs/Patterns/RELUX_FLOW_VS_SAGA.md Docs/Patterns/RELUX_MODULAR.md
+ task-board q 'schema(operation=get)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+// Relux Flow it's an entity which returns a specific Result
+// to define has the flow completed successfully or failed
+// during the all effects hierarchy
+
+extension Notes.Business {
+    protocol IFlow: Relux.Flow {}
+}
+
+extension Notes.Business {
+
+    actor Flow {
+        private typealias Model = Notes.Business.Model
+        let dispatcher: Relux.Dispatcher
+        private let svc: Notes.Business.IService
+
+        init(
+            dispatcher: Relux.Dispatcher? = .none,
+            svc: Notes.Business.IService
+        ) async {
+            // Resolve the global dispatcher only when no explicit dependency was supplied.
+            if let dispatcher {
+                self.dispatcher = dispatcher
+            } else {
+                self.dispatcher = await Self.defaultDispatcher
+            }
+            self.svc = svc
+        }
+    }
+
+}
+
+extension Notes.Business.Flow: Notes.Business.IFlow {
+    func apply(_ effect: any Relux.Effect) async -> Relux.Flow.Result {
+        switch effect as? Notes.Business.Effect {
+            case .none: .success
+            case let .setProtection(id, protected): await updateProtection(id, protected: protected)
+            case let .unlock(id): await unlock(id)
+            case let .relock(id): await relock(id)
+            case .obtainNotes: await obtainNotes()
+            case let .upsert(note): await upsert(note)
+            case let .delete(note): await delete(note)
+        }
+    }
+}
+
+extension Notes.Business.Flow {
+    private func obtainNotes() async -> Relux.Flow.Result {
+        // this flow returns it's result based on inner actions result
+        switch await svc.getSnapshot() {
+            case let .success(snapshot):
+                // await for result
+                await actions {
+                    Notes.Business.Action.snapshot(snapshot)
+                }
+                return .success
+            case let .failure(err):
+                // await for result
+                await actions(.concurrently) {
+                    Notes.Business.Action.obtainNotesFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // Logging the error does not turn the failed operation into a successful flow.
+                return .failure(err)
+        }
+    }
+
+    private func upsert(_ note: Model.Note) async -> Relux.Flow.Result {
+        switch await svc.upsert(note: note) {
+            case .success:
+                return await obtainNotes()
+            case let .failure(err):
+                await actions(.concurrently) {
+                    Notes.Business.Action.upsertNoteFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // here we decided to fail flow with specific error
+                return .failure(err)
+        }
+    }
+
+    private func delete(_ note: Model.Note) async -> Relux.Flow.Result {
+        switch await svc.delete(noteId: note.id) {
+            case .success:
+                return await obtainNotes()
+            case let .failure(err):
+                await actions(.concurrently) {
+                    Notes.Business.Action.deleteNoteFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // here we decided to fail flow with specific error
+                return .failure(err)
+        }
+    }
+}
+
+extension Notes.Business.Flow {
+    private func updateProtection(_ id: Model.Note.Id, protected: Bool) async -> Relux.Flow.Result {
+        let result = await svc.setProtection(noteId: id, protected: protected)
+        return await publishProtection(result)
+    }
+    private func unlock(_ id: Model.Note.Id) async -> Relux.Flow.Result {
+        let result = await svc.unlock(noteId: id)
+        return await publishProtection(result)
+    }
+    private func relock(_ id: Model.Note.Id?) async -> Relux.Flow.Result {
+        await svc.relock(noteId: id)
+        return await obtainNotes()
+    }
+    private func publishProtection(_ result: Swift.Result<Void, Notes.Business.Err>) async -> Relux.Flow.Result {
+        let refresh = await obtainNotes()
+        switch result {
+        case .success: return refresh
+        case .failure(let error): return .failure(error)
+        }
+    }
+}
+extension Notes.Data.Api {
+    struct Snapshot: Sendable {
+        let revision: UInt64
+        let notes: [DTO.Note]
+    }
+
+    protocol IFetcher: Sendable {
+        typealias Err = Notes.Business.Err
+        typealias DTO = Notes.Data.Api.DTO
+        func snapshot() async -> Snapshot
+        func upsert(note: DTO.Note) async -> Result<Void, Err>
+        func deletetNote(by id: DTO.Note.Id) async -> Result<Void, Err>
+        func setProtection(noteId: DTO.Note.Id, protected: Bool) async -> Result<Void, Err>
+        func unlock(noteId: DTO.Note.Id) async -> Result<Void, Err>
+        func relock(noteId: DTO.Note.Id?) async
+    }
+
+    actor Fetcher {
+        private let authenticate: @Sendable () async -> Bool
+        private var grants: Set<DTO.Note.Id> = []
+        private var generations: [DTO.Note.Id: UInt64] = [:]
+        private var revision: UInt64 = 0
+
+        init(authenticate: @escaping @Sendable () async -> Bool = { false }) {
+            self.authenticate = authenticate
+        }
+        private var notes: Dictionary<DTO.Note.Id, DTO.Note> = [
+            .init(id: .init(), date: .now, title: "Welcome to Notes",
+                  content: "Capture an idea, edit it, then try searching for a word in its title or body. Changes stay in memory and reset when the app restarts."),
+            .init(id: .init(), date: .now.add(days: -1), title: "Weekend checklist",
+                  content: "Pick up coffee beans\nTake a walk by the river\nBring a notebook"),
+            .init(id: .init(), date: .now.add(days: -2), title: "How this demo works",
+                  content: "A container dispatches an effect. The Notes flow calls a service, then dispatches an action. The reducer updates business state and the UI projection refreshes the screen.")
+        ].keyed(by: \.id)
+    }
+}
+
+extension Notes.Data.Api.Fetcher: Notes.Data.Api.IFetcher {
+    func snapshot() -> Notes.Data.Api.Snapshot {
+        revision += 1
+        let projected = notes.values.map { note in
+            let locked = note.isProtected && !grants.contains(note.id)
+            return DTO.Note(id: note.id, date: note.date, title: note.title,
+                            content: locked ? "" : note.content,
+                            isProtected: note.isProtected, isLocked: locked)
+        }
+        return .init(revision: revision, notes: projected)
+    }
+
+    func upsert(note: DTO.Note) -> Result<Void, Err> {
+        guard canAccess(note.id) else { return .failure(.locked) }
+        // Existing provider metadata wins over stale or forged editor metadata.
+        notes[note.id] = DTO.Note(id: note.id, date: note.date, title: note.title, content: note.content,
+                                  isProtected: notes[note.id]?.isProtected ?? false)
+        return .success(())
+    }
+
+    func deletetNote(by id: DTO.Note.Id) -> Result<Void, Err> {
+        guard canAccess(id) else { return .failure(.locked) }
+        revoke(id)
+        notes.removeValue(forKey: id)
+        return .success(())
+    }
+
+    func setProtection(noteId: DTO.Note.Id, protected: Bool) -> Result<Void, Err> {
+        guard var note = notes[noteId] else { return .failure(.notFound) }
+        guard canAccess(noteId) else { return .failure(.locked) }
+        note.isProtected = protected
+        notes[noteId] = note
+        revoke(noteId)
+        return .success(())
+    }
+
+    func unlock(noteId: DTO.Note.Id) async -> Result<Void, Err> {
+        guard let note = notes[noteId] else { return .failure(.notFound) }
+        guard note.isProtected else { return .success(()) }
+        revoke(noteId)
+        let generation = generations[noteId, default: 0]
+        let authorized = await authenticate()
+        guard authorized, !Task.isCancelled,
+              generations[noteId, default: 0] == generation,
+              notes[noteId]?.isProtected == true else { return .failure(.authenticationDenied) }
+        grants.insert(noteId)
+        return .success(())
+    }
+
+    func relock(noteId: DTO.Note.Id?) {
+        if let noteId { revoke(noteId) }
+        else { for id in notes.keys { revoke(id) } }
+    }
+
+    private func canAccess(_ id: DTO.Note.Id) -> Bool {
+        notes[id]?.isProtected != true || grants.contains(id)
+    }
+
+    private func revoke(_ id: DTO.Note.Id) {
+        generations[id, default: 0] += 1
+        grants.remove(id)
+    }
+}
+import SwiftUI
+
+extension SampleApp.UI.Root {
+    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+    struct Container: Relux.UI.Container {
+        // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
+        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
+        // If it’s declared using the @Observable macro, it’s available via @Environment.
+        @EnvironmentObject var appRouter: AppRouter
+        @Environment(ModalRouter.self) private var modalRouter
+
+        @Environment(\.scenePhase) private var scenePhase
+        @EnvironmentObject private var notesState: Notes.UI.State
+        @State private var pendingRevocations = 0
+        let relux: Relux
+
+        var body: some View {
+            content
+                // simple way to centralised control of app modals
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .background {
+                        pendingRevocations += 1
+                        notesState.hideProtectedContent()
+                        Task {
+                            await actions { Notes.Business.Effect.relock(noteId: nil) }
+                            notesState.hideProtectedContent()
+                            pendingRevocations -= 1
+                        }
+                    }
+                }
+                .sheet(item: modalRouter.binding.modalSheet, content: modalPage)
+        }
+
+        @ViewBuilder
+        private var content: some View {
+            // Destroy presentation drafts while background revocation is in flight.
+            if scenePhase == .background || pendingRevocations > 0 {
+                Color.clear
+            } else {
+                NavigationStack(path: $appRouter.path) {
+                    Notes.UI.List.Container()
+                        .navigationDestination(for: AppPage.self, destination: SampleApp.UI.Root.handleRoute)
+                }
+            }
+        }
+
+    }
+}
+
+// modal pages
+extension SampleApp.UI.Root.Container {
+    private func modalPage(for item: Navigation.Business.Model.ModalPage) -> some View {
+        Group {
+            switch item {
+                case .debug: debugModal
+            }
+        }
+        // we have to pass states into env to each modal, due to it's outside of our rootView hierarchy
+        .passingObservableToEnvironment(fromStore: relux.store)
+    }
+
+    private var debugModal: some View {
+        NavigationStack {
+            Form {
+                Section("Notes data flow") {
+                    Text("Container → Effect → Flow → Service → Action → Reducer → UI projection")
+                    Text("Views receive values and callbacks. Business state owns the notes; the service uses an in-memory data provider.")
+                }
+            }
+            .navigationTitle("Architecture")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { Task { await actions { ModalRouter.Action.dismiss } } }
+                }
+            }
+        }
+    }
+}
+import SwiftUI
+
+extension Notes.UI.Edit.Container {
+    struct Props: Relux.UI.ViewProps { let id: Notes.Business.Model.Note.Id }
+}
+
+extension Notes.UI.Edit {
+    struct Container: Relux.UI.Container {
+        typealias Note = Notes.Business.Model.Note
+        @EnvironmentObject private var notesState: Notes.UI.State
+        @Environment(\.scenePhase) private var scenePhase
+        let props: Props
+        @Environment(\.dismiss) private var dismiss
+        @State private var errorMessage: String?
+
+        var body: some View {
+            Group {
+                if let note = notesState.note(by: props.id).value.flatMap({ $0 })?.editableNote {
+                    Page(props: .init(note: note, errorMessage: errorMessage),
+                         actions: .init(onSave: ViewInputCallback(upsert), onCancel: ViewCallback(close)))
+                } else {
+                    ContentUnavailableView("Note Locked or Unavailable", systemImage: "lock")
+                }
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .background { dismiss() }
+            }
+        }
+
+        private func upsert(_ note: Note) async {
+            switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
+            case .success: dismiss()
+            case .failure: errorMessage = "Couldn’t save changes. Your draft is safe. Try again."
+            }
+        }
+
+        private func close() async { dismiss() }
+    }
+}
+# Flow versus Saga
+
+| Contract | Flow | Saga |
+| --- | --- | --- |
+| `apply` result | `Relux.Flow.Result` (ActionResult) | `Void` |
+| Caller gets operation success/failure | Yes | Observe domain state/actions instead |
+| Async work awaited | Yes | Yes; Void does not mean detached |
+| State mutation | Dispatch actions to reducers | Dispatch actions to reducers |
+| Current example | Notes operations and Auth authentication | Error tracking |
+
+## Notes: return the operation outcome
+
+[Notes.Business.Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift) calls an injected service. A successful upsert fetches a provider snapshot and dispatches `Action.snapshot`; the reducer accepts only a newer revision. The Flow returns the refresh outcome. Failure dispatches `upsertNoteFail` and error tracking concurrently, then returns `.failure(err)`. Logging never converts failure into success. The service rejects blank titles/content before writing to the provider.
+
+[Create.Container](../../relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift) awaits `actions(actions: { Notes.Business.Effect.upsert(note: note) })`; success dismisses the editor, failure sets an error message while preserving its local draft. Views invoke callbacks; they do not dispatch Relux actions.
+
+See the [upsert sequence](../../diagrams/plantuml/sequence/notes-upsert.puml). Awaiting reduction is not a guarantee that Combine's scheduled main-queue projection or SwiftUI rendering has already occurred.
+
+## Auth: return a reusable authentication outcome
+
+[Auth.Business.Flow](../../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Flow.swift) accepts only `.success(true)` from `runLocalAuth`. False becomes `authenticationRejected`; service errors and cancellation remain failures. It returns an outcome without navigation or global login actions. App IoC adapts that result to the Notes provider's authentication callback.
+
+The provider decides whether the requested note may receive a grant after the await. See [note protection](NOTE_PROTECTION.md) and [composition](RELUX_ORCHESTRATION.md). Auth proves device-owner authentication; Notes owns access lifetime.
+
+## Validate both sides
+
+Assert returned Flow results as well as actions and state. For Auth, exercise true, false and error service outcomes through registered module dispatch. Existing examples are linked in [Testing Strategy](TESTING_STRATEGY.md); a logged success-path action is not sufficient evidence of failure handling.
+# Relux modular architecture
+
+Auth demonstrates six library products within [one package](../../Packages/Auth/Package.swift). Notes stays inside the app until reuse or ownership justifies extraction. Six products are a boundary example, not a minimum size for every feature.
+
+| Auth product | Responsibility | Direct local target dependencies |
+| --- | --- | --- |
+| AuthModels | Namespace, data, errors | None |
+| AuthReluxInt | Authentication effect and Flow contract | AuthModels |
+| AuthServiceInt | Service contract | AuthModels |
+| AuthServiceImpl | LocalAuthentication implementation | AuthModels, AuthServiceInt |
+| AuthReluxImpl | Result-bearing Flow and module | AuthModels, AuthReluxInt, AuthServiceInt |
+| AuthTestSupport | Domain test helpers | AuthModels, AuthServiceInt, AuthReluxInt |
+
+External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. Auth has no UI package or login state. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
+
+## Composition root
+
+[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(service:)` and injects its `flow.authenticate()` through a callback into Notes. AuthReluxImpl does not import AuthServiceImpl or app navigation. Swap the service at this construction boundary.
+
+Use target names for dependencies within a package and product dependencies across packages. Use automatic library linkage. Do not add a self-package dependency or manually embed every product: duplicate static Relux ownership caused runtime duplicate-class warnings in the [architecture audit](../ArchitectureAudit.md). TestSupport belongs to testing consumers, not the app's production dependency graph. There is no installed import-lint gate; manifests, compilation and review enforce the current boundaries.
+
+## State sizing
+
+Auth returns an authentication outcome without maintaining global state. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
+
+[Notes.Module](../../relux_sample/Modules/Notes/Notes+Module.swift) constructs both states, a flow, a service and an in-memory fetcher. Its current wiring is not a headless package. Extract a business-only composition when undertaking the [CLI exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli).
+
+## Add a boundary when it earns its cost
+
+1. Identify independent reuse, ownership or build needs.
+2. Define model and interface targets without UI or concrete service imports.
+3. Implement services and reducers behind those contracts.
+4. Inject implementations and router adapters from the app.
+5. Add focused Swift Testing coverage and register the module before dispatching work.
+6. Update the dependency diagram and dependency locks when the graph changes.
+{"description":"Get a single element by ID","examples":["get(TASK-XX) { overview }"],"kind":"operation","name":"get","parameters":[{"name":"id","type":"string","optional":false,"description":"Element ID"}],"signature":"get(id:string)","syntax":"OPERATION(element-or-identifier, key=value, key=\"quoted string\") { field preset }; statements separated by ';'; the first bare positional value is the element/identifier argument; remaining arguments use key=value (no operators or lists); string escapes: \\\" \\\\ \\n \\t"}
+
+exec
+/bin/zsh -lc 'plantuml -version > .temp/review-gqutty/plantuml-version.log 2>&1
+dot -V > .temp/review-gqutty/dot-version.log 2>&1
+plantuml -failfast2 -tsvg -o "$PWD/.temp/review-gqutty" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml > .temp/review-gqutty/render.log 2>&1
+python3 .temp/TASK-260909-gqutty/check-links.py > .temp/review-gqutty/links.log
+git diff --check 6e19864ce5449d0d9ec720bb1384a28b71470070 134761f76d253a767ffa2277e8efffcb9337bb34 > .temp/review-gqutty/diff-check.log' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 1647ms:
+exec
+/bin/zsh -lc 'task-board resource get TASK-260909-gqutty TASK-260909-gqutty_results.md --out .temp/review-gqutty/producer.md
+cat .temp/review-gqutty/producer.md
+cat relux_sample/IoC/IoC.swift Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
+ git diff --name-only 6e19864ce5449d0d9ec720bb1384a28b71470070 134761f76d253a767ffa2277e8efffcb9337bb34' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+unknown flag: --out
+Usage:
+  task-board [command]
+
+Available Commands:
+  admin                  Server administration (users, tokens, access)
+  boards                 List boards accessible to the current user (remote mode)
+  claude                 Launch Claude through the Task-board Session Manager
+  codex                  Attach Codex to the Task-board Session Manager
+  completion             Generate the autocompletion script for the specified shell
+  export                 Export current board into a tar.gz archive
+  goal                   Read and align the board-scoped parent primary goal
+  grep                   Full-text search across board files
+  handoff                Verify role handoff evidence and move to the role end status
+  help                   Help about any command
+  import                 Import a tar.gz archive into the current board
+  limits                 Inspect and control provider rate-limit state
+  login                  Store a token for the current remote
+  logout                 Remove active user's token for current remote
+  m                      Execute a mutation (write operation)
+  migrate-keychain       Import legacy remote credentials into macOS Keychain
+  migrate-project-config Preview or apply guarded deprecated project-config alias migration
+  plan                   Show execution plan with phases and critical path
+  q                      Query the board with a mini DSL
+  repair-links           List or remove unsupported container dependency links
+  resource               Upload, update, download, and delete board resources
+  self-update            Update task-board to the latest version
+  session                Inspect and stop Task-board Session Manager sessions
+  spawn                  Queue an agent spawn run for a board task
+  switch-user            Switch active user for current remote
+  tree                   Show board as hierarchical tree
+  tui                    Launch interactive TUI
+  validate               Validate board structure
+  whoami                 Show current remote and active user
+  worktree               Inspect and repair managed Story workspaces
+
+Flags:
+      --board-dir string         Path to the board directory (overrides TASK_BOARD_DIR and config local.board_dir) (default ".task-board")
+      --context-profile string   Agent context profile override: full or lite
+      --insecure                 Skip TLS certificate verification (for self-signed certs)
+      --json                     Output in JSON format
+      --no-update-check          Disable automatic update check
+      --remote string            Remote board server URL (overrides TASK_BOARD_REMOTE)
+      --remote-board string      Remote board ID (overrides TASK_BOARD_ID)
+
+Use "task-board [command] --help" for more information about a command.
+cat: .temp/review-gqutty/producer.md: No such file or directory
+import AuthModels
+import AuthReluxInt
+import AuthReluxImpl
+import AuthServiceInt
+import AuthServiceImpl
+import SwiftIoC
+
+extension SampleApp {
+    // the Registry entity is created for the app purposes
+    // we store ioc container with all resolvers in a static field
+    // also we put all our builders into its namespace
+    @MainActor
+    enum Registry {
+        static let ioc = IoC(logger: IoC.Logger(enabled: false))
+    }
+}
+
+// config
+extension SampleApp.Registry {
+    static func configure() {
+        // relux
+        ioc.register(Relux.self, lifecycle: .container, resolver: Self.buildRelux)
+        ioc.register(Relux.Store.self, lifecycle: .container, resolver: Self.buildReluxStore)
+        ioc.register(Relux.RootSaga.self, lifecycle: .container, resolver: Self.buildReluxRootSaga)
+        ioc.register(Relux.Logger.self, lifecycle: .container, resolver: Self.buildReluxLogger)
+
+
+        ioc.register(ErrorHandling.Module.self, lifecycle: .container, resolver: Self.buildErrHandlingModule)
+        ioc.register(Navigation.Module.self, lifecycle: .container, resolver: Self.buildNavigationModule)
+        ioc.register(Auth.Module.self, lifecycle: .container, resolver: Self.buildAuthModule)
+        ioc.register(Notes.Module.self, lifecycle: .container, resolver: Self.buildNotesModule)
+    }
+}
+
+// module builders
+extension SampleApp.Registry {
+    private static func buildRelux() async -> Relux {
+        await Relux.init(
+            logger: resolve(Relux.Logger.self),
+            appStore: resolve(Relux.Store.self),
+            // Modules and the dispatcher share the container-owned root saga.
+            rootSaga: resolve(Relux.RootSaga.self)
+        )
+        .register { @MainActor in
+            resolve(ErrorHandling.Module.self)
+            resolve(Navigation.Module.self)
+            resolve(Auth.Module.self)
+            await resolveAsync(Notes.Module.self)
+        }
+    }
+
+
+    private static func buildReluxStore() -> Relux.Store {
+        Relux.Store()
+    }
+
+    private static func buildReluxRootSaga() -> Relux.RootSaga {
+        Relux.RootSaga()
+    }
+
+    private static func buildReluxLogger() -> Relux.Logger {
+        Logger()
+    }
+
+    private static func buildErrHandlingModule() -> ErrorHandling.Module {
+        ErrorHandling.Module()
+    }
+
+    private static func buildNavigationModule() -> Navigation.Module {
+        Navigation.Module()
+    }
+
+    private static func buildAuthModule() -> Auth.Module {
+        Auth.Module(service: Auth.Business.Service())
+    }
+
+    private static func buildNotesModule() async -> Notes.Module {
+        let auth = resolve(Auth.Module.self).flow
+        return await Notes.Module(authenticate: {
+            switch await auth.authenticate() {
+            case .success: return true
+            case .failure: return false
+            }
+        })
+    }
+
+}
+
+// resolvers
+extension SampleApp.Registry {
+    static func optionalResolveAsync<T: Sendable>(_ type: T.Type) async -> T? where T.Type: Sendable {
+        await ioc.getAsync(by: type)
+    }
+
+    static func optionalResolve<T>(_ type: T.Type) -> T? {
+        ioc.get(by: type)
+    }
+
+    static func resolveAsync<T: Sendable>(_ type: T.Type) async -> T {
+        await ioc.getAsync(by: type)!
+    }
+
+    static func resolve<T>(_ type: T.Type) -> T {
+        ioc.get(by: type)!
+    }
+}
+import LocalAuthentication
+import AuthModels
+import AuthServiceInt
+
+extension Auth.Business {
+    public actor Service: IService {
+        private let contextFactory: @Sendable () -> LAContext
+
+        public init() { self.contextFactory = { LAContext() } }
+
+        // Internal seam for deterministic policy tests; public construction always uses the system context.
+        init(contextFactory: @escaping @Sendable () -> LAContext) {
+            self.contextFactory = contextFactory
+        }
+
+        public func runLocalAuth() async -> Result<Bool, Err> {
+            guard !Task.isCancelled else { return .failure(.cancelled) }
+            // Each request owns a fresh context; no previous note's credential reuse.
+            let context = contextFactory()
+            defer { context.invalidate() }
+            var error: NSError?
+            guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+                return .failure(.unavailable)
+            }
+            do {
+                let authorized = try await context.evaluatePolicy(
+                    .deviceOwnerAuthentication, localizedReason: "Unlock this note."
+                )
+                guard !Task.isCancelled else { return .failure(.cancelled) }
+                return .success(authorized)
+            } catch let error as LAError {
+                switch error.code {
+                case .userCancel, .appCancel, .systemCancel: return .failure(.cancelled)
+                default: return .failure(.evaluationFailed)
+                }
+            } catch {
+                return .failure(.evaluationFailed)
+            }
+        }
+    }
+}
+Docs/ArchitectureAudit.md
+Docs/LearningExercises.md
+Docs/Patterns/DOMAIN_TEST_SUPPORT.md
+Docs/Patterns/NOTE_PROTECTION.md
+Docs/Patterns/RELUX_FLOW_VS_SAGA.md
+Docs/Patterns/RELUX_MODULAR.md
+Docs/Patterns/RELUX_ORCHESTRATION.md
+Docs/Patterns/TESTING_STRATEGY.md
+PROJECT_GUIDE.md
+README.md
+diagrams/README.md
+diagrams/plantuml/component/auth-dependencies.puml
+diagrams/plantuml/sequence/logout-orchestration.puml
+diagrams/plantuml/sequence/note-unlock.puml
+diagrams/plantuml/sequence/notes-upsert.puml
+diagrams/rendered/auth-dependencies.svg
+diagrams/rendered/logout-orchestration.svg
+diagrams/rendered/note-unlock.svg
+diagrams/rendered/notes-upsert.svg
+
+exec
+/bin/zsh -lc "task-board resource get --help
+rg -n 'AuthUI|HybridState|logout|logOut|runLogout' README.md PROJECT_GUIDE.md Docs diagrams --glob '"'!*.svg'"'
+cat .temp/review-gqutty/links.log
+python3 - <<'PY'
+from pathlib import Path
+import subprocess
+candidate='134761f76d253a767ffa2277e8efffcb9337bb34'
+paths=subprocess.check_output(['git','diff','--name-only','6e19864ce5449d0d9ec720bb1384a28b71470070',candidate],text=True).splitlines()
+for p in paths:
+ r=subprocess.run(['git','show',f'{candidate}:{p}'],capture_output=True)
+ assert (Path(p).read_bytes()==r.stdout) if r.returncode==0 else not Path(p).exists(), p
+for p in Path('.temp/review-gqutty').glob('*.svg'):
+ assert p.read_bytes()==(Path('diagrams/rendered')/p.name).read_bytes(), p
+print('19/19 delta paths match candidate; 3/3 rendered SVGs byte-identical')
+PY" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 292ms:
+19/19 delta paths match candidate; 3/3 rendered SVGs byte-identical
+
+exec
+/bin/zsh -lc 'task-board resource get TASK-260909-gqutty TASK-260909-gqutty_results.md -o .temp/review-gqutty/producer.md
+cat .temp/review-gqutty/producer.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+.temp/review-gqutty/producer.md
+# Documentation review handoff
+
+Candidate is uncommitted in the assigned Story worktree, based on accepted implementation HEAD 7fff2e23445ca5446ce037a94f6fe00b2ae85c54. HEAD..main count: 0. Parent owns publication and landing.
+
+Updated README, PROJECT_GUIDE, modular/Flow/orchestration/testing documentation and exercises; added NOTE_PROTECTION.md. Replaced obsolete logout diagram with per-note unlock, corrected Auth dependency and Notes snapshot/upsert diagrams, and rendered three linked SVG assets. Historical dependency audit is explicitly labeled as pre-protection behavior. No app code, dependencies or tests changed.
+
+Source review traced IoC callback, Auth service/Flow, Notes provider/service/Flow/reducer, details callbacks, editor, root background handling and Settings/Account routes. Documented title-visible/body-redacted locked notes, provider mutation guards, metadata ownership, per-note grant lifetime, generation and snapshot revision checks, system device credential fallback, and in-memory plaintext limits.
+
+## Validation personally run
+
+| Command / check | Exit | Result |
+| --- | ---: | --- |
+| plantuml -version; dot -V (readiness) | 0 | Available; logs under worktree .temp/TASK-260909-gqutty |
+| Initial PlantUML SVG render | 200 | Failed: literal newline in sequence message; corrected to escaped newline |
+| plantuml -failfast2 -tsvg -o "$PWD/diagrams/rendered" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml | 0 | 3/3 sources rendered |
+| plantuml -failfast2 -tpng -o "$PWD/.temp/TASK-260909-gqutty" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml | 0 | 3/3 previews rendered and visually inspected; readable labels/arrows, no clipping |
+| Initial local file-link check | 1 | 110/112; two removed Auth helper targets found and corrected |
+| python3 .temp/TASK-260909-gqutty/check-links.py | 0 | 110/110 local file targets resolve across README, guide, diagram index, top-level Docs and pattern docs |
+| git diff --check | 0 | No whitespace errors |
+
+Bound: local file existence only; remote URLs and Markdown fragment resolution were not automatically checked. Existing section fragments in current changed docs were inspected against headings. No app builds, unit tests, UI tests or mutation tests were run, as explicitly required by this documentation-only assignment. No prior runtime test results are represented as newly run evidence.
+
+## Logbook
+
+- Obsolete references described removed AuthUI, global state, logout orchestration and direct upsert success actions. Replaced current claims; retained dependency audit as explicitly historical.
+- Existing domain-support prose linked removed model/assertion helpers and described an obsolete unsafe mock. Corrected to the actual actor ServiceMock.
+- Initial diagram syntax and file-link failures were fixed and rerun green before handoff.
+
+exec
+/bin/zsh -lc "python3 - <<'PY' > .temp/review-gqutty/verification.log
+from pathlib import Path
+import re, subprocess, urllib.parse
+files=[Path('README.md'),Path('PROJECT_GUIDE.md'),Path('diagrams/README.md'),*Path('Docs').glob('*.md'),*Path('Docs/Patterns').glob('*.md')]
+fragments=[]
+for p in files:
+ for t in re.findall(r'\\]\\((["'^)]+)'"\\)',p.read_text()):
+  if '://' in t or '#' not in t: continue
+  path,frag=urllib.parse.unquote(t).split('#',1)
+  dest=p.parent/path if path else p
+  headings=re.findall(r'"'^#+'"\\s+(.+)"'$'"',dest.read_text(),re.M)
+  anchors=[re.sub(r'["'^'"\\w\\- ]','',h.lower()).replace(' ','-') for h in headings]
+  assert frag in anchors,(p,t,anchors)
+  fragments.append(t)
+print(f'{len(fragments)}/{len(fragments)} Markdown fragment targets resolve')
+# Attack the existing file-link check with a token-preserving broken target in an in-memory read.
+source=Path('.temp/TASK-260909-gqutty/check-links.py').read_text()
+original=Path.read_text
+for target in ['Docs/Patterns/NOTE_PROTECTION.md','diagrams/rendered/note-unlock.svg']:
+ def mutated(self,*a,**kw):
+  value=original(self,*a,**kw)
+  return value.replace(target,target+'.missing')
+ Path.read_text=mutated
+ try:
+  exec(compile(source,'check-links.py','exec'),{})
+ except SystemExit as e:
+  assert e.code==1,(target,e.code)
+  print('REJECTED broken target:',target)
+ finally: Path.read_text=original
+print('2/2 broken-target probes rejected; candidate files never changed')
+PY
+cat .temp/review-gqutty/verification.log
+cat relux_sample/Modules/App/UI/Root/App+UI+Root+Router.swift relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 0ms:
+Traceback (most recent call last):
+  File "<stdin>", line 24, in <module>
+  File "check-links.py", line 12, in <module>
+SystemExit: False
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 26, in <module>
+AssertionError: ('diagrams/rendered/note-unlock.svg', False)
+9/9 Markdown fragment targets resolve
+107/110 local file targets resolve; URL and fragment validation excluded
+README.md: Docs/Patterns/NOTE_PROTECTION.md.missing
+PROJECT_GUIDE.md: Docs/Patterns/NOTE_PROTECTION.md.missing
+diagrams/README.md: ../Docs/Patterns/NOTE_PROTECTION.md.missing
+REJECTED broken target: Docs/Patterns/NOTE_PROTECTION.md
+110/110 local file targets resolve; URL and fragment validation excluded
+
+import SwiftUI
+
+@MainActor
+extension SampleApp.UI.Root {
+    @ViewBuilder
+    static func handleRoute(for page: AppPage) -> some View {
+        switch page {
+        case let .notes(page): Notes.UI.handleRoute(for: page)
+        case .settings: SettingsContainer()
+        case .account: Account.UI.Container()
+        }
+    }
+}
+
+extension SampleApp.UI.Root {
+    struct SettingsContainer: Relux.UI.Container {
+        var body: some View {
+            SettingsPage(props: .init(), actions: .init(onAccount: ViewCallback(openAccount)))
+        }
+        private func openAccount() async { await actions { AppRouter.Action.push(.account) } }
+    }
+
+    struct SettingsPage: Relux.UI.View {
+        struct Props: Relux.UI.ViewProps {}
+        struct Actions: Relux.UI.ViewCallbacks { let onAccount: ViewCallback<Void> }
+        let props: Props
+        let actions: Actions
+        var body: some View {
+            Form {
+                Section {
+                    AsyncButton(action: actions.onAccount) { Label("Account", systemImage: "person.crop.circle") }
+                }
+                Section("Note Protection") {
+                    Text("Locked notes use your device’s authentication. Titles remain visible. Notes and locks reset when the app restarts.")
+                }
+            }
+            .navigationTitle("Settings")
+        }
+    }
+}
+import SwiftUI
+
+extension Notes.UI.Details.Container {
+    struct Props: Relux.UI.ViewProps { let id: Notes.UI.State.Note.Id }
+}
+
+extension Notes.UI.Details {
+    struct Container: Relux.UI.Container {
+        typealias Note = Notes.Business.Model.Note
+        @EnvironmentObject private var notesState: Notes.UI.State
+        @State private var showEditor = false
+        @State private var errorMessage: String?
+        let props: Props
+
+        var body: some View {
+            Page(props: .init(note: notesState.note(by: props.id), errorMessage: errorMessage),
+                 actions: .init(onEdit: ViewInputCallback(openEdit), onRemove: ViewInputCallback(remove),
+                                onReload: ViewCallback(reload), onUnlock: ViewCallback(unlock),
+                                onProtect: ViewCallback(protect), onRelock: ViewCallback(relock),
+                                onRemoveLock: ViewCallback(removeLock)))
+                .task { if case .initial = notesState.notes { await reload() } }
+                .sheet(isPresented: $showEditor) {
+                    NavigationStack { Notes.UI.Edit.Container(props: .init(id: props.id)) }
+                }
+        }
+
+        private func reload() async { await actions { Notes.Business.Effect.obtainNotes } }
+        private func openEdit(_ note: Note) async { if note.editableNote != nil { showEditor = true } }
+        private func unlock() async { await protection(.unlock(noteId: props.id)) }
+        private func protect() async { await protection(.setProtection(noteId: props.id, protected: true)) }
+        private func relock() async { await protection(.relock(noteId: props.id)) }
+        private func removeLock() async { await protection(.setProtection(noteId: props.id, protected: false)) }
+        private func protection(_ effect: Notes.Business.Effect) async {
+            switch await actions(actions: { effect }) {
+            case .success: errorMessage = nil
+            case .failure: errorMessage = "Couldn’t change access. Unlock this note using device authentication and try again."
+            }
+        }
+
+        private func remove(_ note: Note) async {
+            switch await actions(actions: { Notes.Business.Effect.delete(note: note) }) {
+            case .success: await actions { AppRouter.Action.removeLast() }
+            case .failure: errorMessage = "Couldn’t delete this note. Try again."
+            }
+        }
+    }
+}
+
+codex
+Блокирующих замечаний нет: 110/110 файловых ссылок и 9/9 якорей разрешаются, все три SVG воспроизводятся побайтно. Документация соответствует реализации; оформляю verdict и передаю принятую ревизию на интеграцию.
+
+exec
+/bin/zsh -lc "python3 - <<'PY' > .temp/review-gqutty/negative-links.log
+from pathlib import Path
+source=Path('.temp/TASK-260909-gqutty/check-links.py').read_text(); original=Path.read_text
+for target in ['Docs/Patterns/NOTE_PROTECTION.md','rendered/note-unlock.svg']:
+ hits=[0]
+ def mutated(self,*a,**kw):
+  value=original(self,*a,**kw); hits[0]+=value.count(target)
+  return value.replace(target,target+'.missing')
+ Path.read_text=mutated
+ try: exec(compile(source,'check-links.py','exec'),{})
+ except SystemExit as e:
+  assert hits[0]>0 and e.code==1,(target,hits,e.code)
+  print('REJECTED',target,'replacements',hits[0])
+ finally: Path.read_text=original
+print('2/2 token-preserving broken-target probes rejected')
+PY
+cat > .temp/review-gqutty/TASK-260909-gqutty_review-verdict-rev1.md <<'EOF'
+# TASK-260909-gqutty review verdict — revision 1
+
+Verdict: accepted. No blocking findings.
+CR-TASK-260909-gqutty-1 revision 1, candidate tree 134761f76d253a767ffa2277e8efffcb9337bb34.
+Repository delta: present. The full 100-path snapshot includes previously accepted implementation tree 6e19864ce5449d0d9ec720bb1384a28b71470070. The incremental documentation scope is 19 paths, all Markdown, PlantUML or SVG; no functional edits. All 19 working paths match the candidate, including deletions.
+
+## AC coverage
+
+1/1 stated documentation AC covered by three named checks: source-contract trace, local-reference check, and diagram reproducibility/visual review. This leaf introduces no runtime authorization gate. Runtime tests and mutation results belong to the accepted implementation review and were not rerun or claimed here, per explicit no-build/no-test scope.
+
+- Source-contract trace: README, guide, pattern docs and exercises checked against IoC, Auth service/Flow, Notes provider/Flow/reducer, details callbacks, root, editor and Settings/Account routes. Notes-first launch, callback injection, title visibility/body redaction, mutation authority, grant lifetime, background destruction of drafts, late-result generations and snapshot revisions match. System credential fallback and plaintext/in-memory limits are explicit. Historical AuthUI/logout claims are labeled historical.
+- Local-reference check: reran producer checker, 110/110 local file references resolve. Independently checked all 9/9 Markdown fragment references in its scope. Remote URLs excluded. Scope: README, PROJECT_GUIDE, diagram index, top-level Docs and pattern docs; historical evidence subdirectory not recursively scanned.
+- Diagram check: PlantUML -failfast2 -tsvg rendered 3/3 sources successfully into .temp/review-gqutty. All three output SVGs are byte-identical to candidate assets. Inspected producer PNG previews: readable, no clipping, focused dependencies/upsert/unlock sequences. Runtime sequence abstraction omits early nonprotected/missing-note exits and generic snapshot failure detail; it accurately describes the normal protected-note path.
+- git diff --check of the incremental documentation delta passed.
+
+## Negative evidence and limits
+
+Attacked the actual producer local-link checker by substituting nonexistent targets while preserving the original path tokens and Markdown link syntax in in-memory reads; candidate files were never changed. Both a pattern-document link and a rendered SVG link were rejected: 2/2 probes. This proves those broken-file classes are detected, not semantic correctness of prose. An initial SVG probe used a prefix absent from the source and made no replacement; it was invalid, corrected to the actual relative target, and rerun with an explicit positive replacement-count assertion. No passing nonexistent mutation is claimed.
+
+Diagram syntax failures and link failures in producer evidence were disclosed and corrected. This reviewer independently reproduced the final render/link results. No app build, unit/UI test, dependency modification, commit or branch mutation occurred. The accepted runtime review remains the source of behavioral test evidence.
+
+Artifacts: .temp/review-gqutty contains readiness, render, link, fragment and negative-link logs. Initial unsupported CLI queries were corrected; no failed read was treated as absence. Reviewer spawn goal query returned none (not goal-bound).
+
+Acceptance uses accept_cr; integration and signed hosted delivery remain with the assigned producer/parent workflow.
+EOF
+task-board resource add TASK-260909-gqutty .temp/review-gqutty/TASK-260909-gqutty_review-verdict-rev1.md --type outcome --name TASK-260909-gqutty_review-verdict-rev1.md -d 'Accepted documentation review, source trace and bounded negative checks'
+task-board m 'check_item(TASK-260909-gqutty, item=5); check_item(TASK-260909-gqutty, item=6); check_item(TASK-260909-gqutty, item=7); check_item(TASK-260909-gqutty, item=8); check_item(TASK-260909-gqutty, item=9)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 885ms:
+Attached TASK-260909-gqutty_review-verdict-rev1.md on TASK-260909-gqutty as outcome
+[{"ok":true,"result":{"checked":true,"id":"TASK-260909-gqutty","item":5,"text":"Implementation matches AC"}},{"ok":true,"result":{"checked":true,"id":"TASK-260909-gqutty","item":6,"text":"Solution fits project architecture"}},{"ok":true,"result":{"checked":true,"id":"TASK-260909-gqutty","item":7,"text":"Tests green"}},{"ok":true,"result":{"checked":true,"id":"TASK-260909-gqutty","item":8,"text":"Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted"}},{"ok":true,"result":{"checked":true,"id":"TASK-260909-gqutty","item":9,"text":"If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches"}}]
+
+exec
+/bin/zsh -lc "tar -czf .temp/TASK-260909-gqutty_review-evidence-rev1.tar.gz -C .temp review-gqutty
+task-board resource add TASK-260909-gqutty .temp/TASK-260909-gqutty_review-evidence-rev1.tar.gz --type outcome --name TASK-260909-gqutty_review-evidence-rev1.tar.gz -d 'Reviewer render and link verification logs'
+task-board m 'accept_cr(TASK-260909-gqutty, revision=1, evidence=TASK-260909-gqutty_review-verdict-rev1.md)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-zr4s7z/worktree
+ succeeded in 10318ms:
+Attached TASK-260909-gqutty_review-evidence-rev1.tar.gz on TASK-260909-gqutty as outcome
+{"ok":true,"result":{"cr_id":"CR-TASK-260909-gqutty-1","cr_state":"accepted","evidence":"TASK-260909-gqutty_review-verdict-rev1.md","id":"TASK-260909-gqutty","next":"route a new integration run using the accepted revision's bound producer role and archetype","primary":{"action":"status_changed","element_id":"TASK-260909-gqutty","field":"status","new_value":"integrating","old_value":"reviewing"},"producer_archetype":"implementer","producer_role":"developer","repository_delta":"present","reviewer_run_id":"RUN-260908-326075","revision":1,"status":"integrating"}}
+
+codex
+Ревизия 1 принята, задача переведена в `integrating`.
+
+Проверено: 110/110 ссылок, 9/9 якорей, 3/3 SVG воспроизводятся побайтно. Блокирующих замечаний нет. Verdict и evidence прикреплены к задаче. Код не менял, сборки и тесты не запускал.
+tokens used
+77,469
+Ревизия 1 принята, задача переведена в `integrating`.
+
+Проверено: 110/110 ссылок, 9/9 якорей, 3/3 SVG воспроизводятся побайтно. Блокирующих замечаний нет. Verdict и evidence прикреплены к задаче. Код не менял, сборки и тесты не запускал.
