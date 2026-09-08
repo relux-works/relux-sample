@@ -1,0 +1,17 @@
+{
+  "old_tree": "17dc14ef98318d74b0dd4772f83e8cbba537b222",
+  "candidate_tree": "99cb44b484ec9b843136f1ed54ad1b31c6571b65",
+  "changed_paths": [
+    "Docs/ArchitectureAudit.md"
+  ],
+  "declared_effects": [
+    "checkAuthContext",
+    "obtainAvailableBiometryType",
+    "authorizeWithBiometry",
+    "logout",
+    "runLogoutFlow"
+  ],
+  "dispatch_coverage": "5 of 5",
+  "source_test_config_lockfiles": "identical between revisions",
+  "diff_check_exit": 0
+}

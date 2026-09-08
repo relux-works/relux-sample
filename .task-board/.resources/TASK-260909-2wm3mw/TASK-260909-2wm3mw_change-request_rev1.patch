@@ -1,0 +1,2967 @@
+diff --git a/.gitignore b/.gitignore
+index 4f14175..05c9793 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -20,9 +20,8 @@ Carthage/Build
+ .build
+ .swiftpm
+ .idea
+-*.resolved
+ .gitrelease
+- *.pbxproj
+ gitrelease
+ 
+-DerivedData/
+\ No newline at end of file
++DerivedData/
++.temp/
+diff --git a/.planning/260909_004430_epic-260909-1h8p6e.md b/.planning/260909_004430_epic-260909-1h8p6e.md
+new file mode 100644
+index 0000000..8d6cdc0
+--- /dev/null
++++ b/.planning/260909_004430_epic-260909-1h8p6e.md
+@@ -0,0 +1,15 @@
++# Plan: EPIC-260909-1h8p6e: refresh-relux-sample
++
++Generated: 2026-09-09T00:44:30+04:00
++Mode: children
++Elements: 2
++Phases: 2
++
++## Phase 1 (no dependencies)
++- STORY-260909-q49ois: modernize-working-demo
++
++## Phase 2
++- STORY-260909-3g9457: publish-learning-guide (blocked by: STORY-260909-q49ois)
++
++## Critical Path
++STORY-260909-q49ois -> STORY-260909-3g9457 (2 phases)
+diff --git a/.spec/refresh-sample.md b/.spec/refresh-sample.md
+new file mode 100644
+index 0000000..eca8a1a
+--- /dev/null
++++ b/.spec/refresh-sample.md
+@@ -0,0 +1,11 @@
++# Refresh Relux Sample
++
++## Current delivery: TASK-260909-3hzrc3
++
++Refresh every direct and transitive dependency to the latest stable tagged release verified from upstream source. Pin the resulting graph, repair project configuration and demonstrated architecture defects, and preserve iOS 17/macOS 14 deployment compatibility. Add Swift Testing regression coverage before behavioral refactors and verify the app on the iOS simulator. Record exact source revisions, contracts, validation, and remaining bounds in `Docs/ArchitectureAudit.md`.
++
++The sample retains its existing screens and in-memory Notes data. Platform-specific navigation modifiers may be repaired to compile on both supported platforms. No UI redesign belongs to this task.
++
++## Follow-up scope
++
++The parent owns the remaining demo UI work in STORY-260909-q49ois and the learning guide in STORY-260909-3g9457. The saved phase plan is in `.planning/260909_004430_epic-260909-1h8p6e.md`. The parent owns signed integration, pull-request review, publication, and landing; this producer hands off an uncommitted candidate.
+diff --git a/Docs/ArchitectureAudit.md b/Docs/ArchitectureAudit.md
+new file mode 100644
+index 0000000..806c33f
+--- /dev/null
++++ b/Docs/ArchitectureAudit.md
+@@ -0,0 +1,76 @@
++# Dependency and Architecture Audit
++
++Task: TASK-260909-3hzrc3 (`refresh-dependencies-and-patterns`), 2026-09-09.
++Baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`; the Story worktree was 0 commits behind local main. Parent verified this was current origin/main before creating the worktree. This producer leaves the candidate uncommitted for review.
++
++## Verified dependency graph
++
++Queried `git ls-remote --tags` for all five repositories, selected the highest stable semantic version (excluding prerelease/suffixed tags), cloned each exact tag, and inspected its manifest and implementation. The revisions below are peeled commit IDs, not annotated tag object IDs. Web release-page fetches were inconclusive; release claims here mean verified stable Git tags, not GitHub release-page metadata.
++
++| Dependency | Previous requirement | Selected stable tag | Exact revision | Verified minimum / tools |
++| --- | --- | --- | --- | --- |
++| [swift-relux](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Package.swift) | 9.0.0..<10 | 9.2.0 | `483a0f2b6c97721ecb651516e9db9fb83c90cd69` | iOS 13, macOS 10.15; Swift 6.0 |
++| [swiftui-relux](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Package.swift) | 8.0.0..<9 | 9.0.0 | `ac791a9a3f84c2db0b0f874622728a7efff37e01` | iOS 16, macOS 13; Swift 6.0 |
++| [swiftui-reluxrouter](https://github.com/relux-works/swiftui-reluxrouter/blob/cb80d2b5422a2329701d6e450815ba565b396b6d/Package.swift) | transitive; baseline resolved 11.0.3 | 12.1.0 | `cb80d2b5422a2329701d6e450815ba565b396b6d` | iOS 16, macOS 13; Swift 6.0 |
++| [swift-ioc](https://github.com/relux-works/swift-ioc/blob/95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd/Package.swift) | 1.0.1..<2 | 1.0.3 | `95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd` | iOS 13, macOS 10.15; Swift 6.0 |
++| [swift-log](https://github.com/apple/swift-log/blob/9c6fb14227f55d8f711ce3847dc2f419fb0ecacb/Package.swift) | 1.6.3..<2 | 1.15.1 | `9c6fb14227f55d8f711ce3847dc2f419fb0ecacb` | No platform floor in manifest; Swift 6.2 |
++
++SwiftUIRelux 9.0.0 requires Relux >=9.2.0 and Router >=12.1.0 within their current major versions; Router requires Relux >=9.2.0. Relux, SwiftIoC, and swift-log have no external package dependencies at these tags. These five repositories are the entire external graph; the three local packages are Auth, AuthUI, and TestInfrastructure. There is no HttpClient dependency: the root manifest described nonexistent `Sources` and `TestsSupport` directories and was accidental debris.
++
++Direct requirements are now exact in the local manifests and Xcode project. Four checked-in lockfiles cover the app and each independently resolvable package. Router's transitive revision is fixed by those lockfiles. Re-resolution with Xcode's `-onlyUsePackageVersionsFromResolvedFile` and `-disableAutomaticPackageResolution` succeeded; all 4 of 4 lockfile SHA-256 values remained unchanged. SwiftPM validation uses `--force-resolved-versions`. This demonstrates resolution at the audited revisions; it does not promise continued network availability or immutable upstream tags without the locks.
++
++## Contracts verified from implementation
++
++- **Module ownership:** [Relux.swift](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux.swift) recursively retains dependencies and connects each module once by `moduleKey`. [Module](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Module/Relux+Module.swift) defaults the key to concrete type identity, not instance identity. Unregister releases owners and cleans up disconnected state. The app registers its actual modules; SessionOrchestration and DataOrchestration packages mentioned in the old guide do not exist.
++- **State isolation:** [State protocols](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Store/Relux+State.swift) make UIState and HybridState MainActor-isolated. BusinessState requires Sendable reference semantics and async reduction/cleanup; it does not itself require an actor. Auth uses an observable HybridState; Notes uses an actor BusinessState and a MainActor ObservableObject projection. The Auth registered-module test exercises dispatch, reduction, unregister, and cleanup together.
++- **Saga versus Flow:** [Saga](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Saga/Relux+Saga.swift) is an Actor with `apply` returning Void; [Flow](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Saga/Relux+Flow.swift) returns ActionResult and bridges to the Saga signature. [Dispatcher](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Dispatcher/Relux+Dispatcher.swift) awaits subscribers and logs outcomes; serial actions do not imply serial subscribers. A handled/logged failure is still a failed operation.
++- **DI lifecycles:** [IoC.swift](https://github.com/relux-works/swift-ioc/blob/95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd/Sources/IoC.swift) has distinct sync and async registrations. Sync access to an async resolver traps; `getAsync` can use either map. The app keeps async module resolution and now passes the registered RootSaga into Relux instead of creating an unrelated instance. Notes resolves its default dispatcher only when none was injected.
++- **UI boundaries:** [View](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/Protocols/Relux+UI+View.swift) is Equatable with equality based on props; [ViewCallback](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/Relux+UI+ViewCallback.swift) equality is call-site identity, not captured-value equality. Keep model-changing values in props, dispatch in containers, and edits local until callbacks commit them. [Resolver](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/View+ReluxResolver.swift) provides both the Relux environment value and observable state injection.
++- **Navigation:** [ProjectingRouter](https://github.com/relux-works/swiftui-reluxrouter/blob/cb80d2b5422a2329701d6e450815ba565b396b6d/SDK/Sources/Routers/ProjectedRouter/Relux+Navigation+ProjectingRouter.swift) remains ObservableObject with a mutable native NavigationPath. The app's native NavigationStack binding is the upstream supported system-navigation boundary. Path projection uses upstream reflection; this audit does not claim a stable Apple serialization format or exhaustive navigation coverage.
++- **Authentication boundary:** AuthServiceInt now exposes only domain outcomes; LocalAuthentication and LAContext stay in AuthServiceImpl. The saga accepts only `.success(true)`. `.success(false)` emits `authenticationRejected`; service errors emit failure without main navigation. The policy remains `.deviceOwnerAuthentication`, which permits system credential fallback: the existing “biometry” names do not imply biometric-only security. Physical authentication behavior is outside the automated fixture's bound.
++
++## Repairs and tests-first evidence
++
++1. Replaced the broken XCTest test importing nonexistent `Auth` / `AuthImplementation` with Swift Testing tests against actual package products. Before the production refactor, `authorizationFalseNeverRoutesToMain` failed through `Relux.Dispatcher.actions -> registered Auth.Module -> Saga.apply`, demonstrating an actual authorization routing defect.
++2. Baseline automatic dependency resolution reached current Relux but the self-referencing dynamic Auth products embedded its static runtime repeatedly. The baseline emitted duplicate-class warnings. Removed the self-dependency and forced dynamic linkage, preserving six separate products and their layer boundaries with normal target dependencies. The subsequent package and app runs have no duplicate Relux class warnings. Updated the modular pattern template to match.
++3. Removed obsolete Auth embed entries, duplicate product/framework links, null framework entries, the local sibling SwiftUIRelux reference, and a Downloads-relative test plan / nonexistent UI-test reference. These were configuration repairs, not regenerated project output.
++4. Strengthened all six existing Notes flow outcome tests to inspect returned ActionResult as well as dispatched actions. `obtainNotes_Failure` failed before its refactor because the flow returned success. The correction preserves error tracking and returns failure. Upsert and delete retain their existing outcomes.
++5. Kept iOS 17 and restored the app's documented macOS 14 deployment target. Guarded iOS-only navigation presentation, moved legacy trailing controls to standard toolbar items, and replaced the only UIKit rounded-corner call with the native SwiftUI RoundedRectangle. No screen redesign or new navigation destination was introduced.
++
++## Measured coverage and bounds
++
++Acceptance criteria are split into their three stated rows:
++
++| AC row | Evidence entry point | Named test coverage / bound |
++| --- | --- | --- |
++| iOS simulator build and relevant Swift tests pass | `xcodebuild build/test`; Auth package `Auth-Package` test scheme | `AuthBehaviorTests` (7 tests) and `NotesTests` (14 tests); build itself is compiler evidence rather than a unit test |
++| Dependencies reproducibly resolve | Xcode package resolver and SwiftPM, with lock enforcement | Direct command evidence and unchanged hashes for 4 of 4 locks; no unit test substitutes for the real resolver |
++| Audit documents actual verified contracts and changes | Exact-tag source inspection and this document | Manual source/diff review; documentation truth is not attested by a token-search test |
++
++**1 of 3 AC rows driven by named behavioral tests; 3 of 3 rows validated by their appropriate test, command, or source-review entry point.** Two rows are explicitly outside behavioral-test coverage. New Auth test sources are handed off in the uncommitted candidate; the parent owns the commit.
++
++Auth tests drive **5 of 5 declared effects** through registered production module dispatch: `checkAuthContext` and `logout` in `authContextAndLogoutChooseTheirRoutes`, `obtainAvailableBiometryType` in `registeredModuleReducesBiometryAndCleansUp`, `authorizeWithBiometry` in the three `authorization*` tests, and `runLogoutFlow` in `logoutRecreatesContextBeforeRoutingToLocalAuth`. They cover all **3 of 3 authorization outcome classes** (true, false, error). `registeredModuleReducesBiometryAndCleansUp` also verifies state ownership. The logout-flow test checks the reset occurred and routing/action outcomes, but does not claim independently measured interleaving order. Notes tests drive **6 of 6 success/failure operation rows** via the production `Notes.Business.Flow.apply` used by RootSaga. Existing reducer and UI projection tests remain enabled. The Notes flow tests use its injected dispatcher; they do not independently prove absence of a global singleton or drive the whole GUI. The lazy fallback and RootSaga identity corrections were inspected and exercised by app startup, without a dedicated identity assertion.
++
++No source-scanning gate was added. Physical LocalAuthentication, actual iOS 17/macOS 14 runtime execution, screenshots, exhaustive UI navigation, and a complete audit of unchanged historical test helpers are not claimed. Compilation targets iOS 17/macOS 14 using the installed newer SDK/runtime. Existing app-hosted Notes tests were retained; new Auth tests are in a dedicated package target. Broad extraction of Notes is deferred to avoid changing architecture and UI simultaneously.
++
++## Narrowing mutants
++
++| Mutant | What it narrows failure handling to | Named failing test | Real exit | Survival bound |
++| --- | --- | --- | ---: | --- |
++| Auth false-result admission | Service errors still refuse; only `.success(false)` is admitted to main | `AuthBehaviorTests.authorizationFalseNeverRoutesToMain` | 1 | Killed; no survivor |
++| Notes obtain-error admission | Errors still fail except `.obtainFailed`; upsert/delete failure handling remains present | `NotesTests.Business.Saga.Obtain.obtainNotes_Failure` | 65 | Killed; no survivor |
++
++Both were behavioral runs, not deleted checks. The Auth mutant preserved the `.success(true)` token and changed the false branch's actions; the Notes mutant retained `return .failure(err)` and added one admitted error case. Sources were restored byte-for-byte from task-local copies before green reruns. **2 of 2 mutants killed; 0 survivors.** This scope does not constitute mutation coverage of every unchanged upstream or application gate.
++
++## Verification environment and logbook
++
++Xcode 26.5 (`17F42`), Apple Swift 6.3.2, Apple Silicon host; iOS 26.5 simulator iPhone 17 (`46491660-E76A-40D1-9AD8-1CEA45C1F685`). All commands ran in this Story worktree unless the Auth package directory is stated. Raw logs and tag/source evidence are attached to the task; local copies are under `.temp/TASK-260909-3hzrc3/`. No dependency installs outside SwiftPM/Xcode resolution were required.
++
++- Baseline Auth command failed with exit 1 due to obsolete module imports. An initial fixture revision also failed with exit 1 because the original protocol leaked non-Sendable LAContext; that compile error was corrected before recording the behavioral red test. Tests-first Auth run then failed with exit 1 specifically on false-result authorization.
++- First iOS build failed with exit 65 on stale dynamic embed copies. One intermediate project edit caused a parse error (exit 74); the project was reconstructed from the clean baseline plus scoped edits, then built successfully. No broken intermediate project was retained.
++- First AuthUI macOS build failed with exit 1 on an iOS-only navigation modifier. Mac app builds failed with exit 65 on UIKit and navigation-bar APIs until the platform fixes; subsequent macOS app and standalone AuthUI builds passed.
++- Existing Notes suite initially passed (14 tests). Added outcome assertions produced the expected red run (exit 65, `obtainNotes_Failure`), then all 14 passed after correction. Narrowing mutants above produced real non-zero exits; they are not reported as successful tests.
++- Final locked Auth macOS suite: exit 0, 7 tests. Final locked iOS Auth suite: exit 0, 7 tests. Final locked iOS app suite: exit 0, 14 tests. macOS app build: exit 0. Standalone locked AuthUI build: exit 0. Locked Xcode resolution: exit 0. Whitespace check: exit 0. No repository-specific lint configuration exists; whitespace/Swift compiler validation is the stated lint bound.
++- Xcode emits a metadata-extraction warning because the sample has no AppIntents framework. This is build-tool metadata output, not a source compiler warning. No new unchecked Sendable conformance or warning-suppression flag was introduced. The pre-existing Combine retroactive unchecked conformances remain; broad concurrency redesign is outside the tested delta.
++
++The attached outcome contains the exact command-to-log and exit-code matrix, source-tag evidence, and review handoff. There are no unresolved external blockers for this scope.
+diff --git a/Docs/Patterns/RELUX_MODULAR.md b/Docs/Patterns/RELUX_MODULAR.md
+index 95456b3..0b5a544 100644
+--- a/Docs/Patterns/RELUX_MODULAR.md
++++ b/Docs/Patterns/RELUX_MODULAR.md
+@@ -8,7 +8,7 @@ Domain decomposition pattern for scalable iOS/macOS applications.
+ 
+ - Scale from MVP to 1000+ module apps
+ - Fast incremental builds via isolated recompilation
+-- Explicit dynamic linkage with predictable layering
++- Explicit module boundaries with predictable layering
+ - Clear seams for implementation swapping via DI
+ - Repeatable pattern across all domains
+ 
+@@ -16,7 +16,7 @@ Domain decomposition pattern for scalable iOS/macOS applications.
+ 
+ ## Package Layout
+ 
+-Single package, multiple dynamic products per domain:
++Single package, multiple library products per domain:
+ 
+ | Product | Contents | Dependencies |
+ |---------|----------|--------------|
+@@ -27,7 +27,7 @@ Single package, multiple dynamic products per domain:
+ | `<Domain>ReluxImpl` | State, reducer, saga/flow, module wiring | Models, ReluxInt, ServiceInt, ServiceImpl, SwiftIoC, Relux |
+ | `<Domain>TestSupport` | Mocks, stubs, test helpers (static library) | Models, ReluxInt, ServiceInt, TestInfrastructure |
+ 
+-All products except TestSupport are `type: .dynamic`.
++Use automatic library linkage. Static upstream dependencies must have one owner in the final process; see [the verified architecture audit](../ArchitectureAudit.md).
+ 
+ ---
+ 
+@@ -67,18 +67,16 @@ let package = Package(
+     name: "<Domain>",
+     platforms: [.iOS(.v17), .macOS(.v14)],
+     products: [
+-        .library(name: "<Domain>Models", type: .dynamic, targets: ["<Domain>Models"]),
+-        .library(name: "<Domain>ReluxInt", type: .dynamic, targets: ["<Domain>ReluxInt"]),
+-        .library(name: "<Domain>ServiceInt", type: .dynamic, targets: ["<Domain>ServiceInt"]),
+-        .library(name: "<Domain>ServiceImpl", type: .dynamic, targets: ["<Domain>ServiceImpl"]),
+-        .library(name: "<Domain>ReluxImpl", type: .dynamic, targets: ["<Domain>ReluxImpl"]),
++        .library(name: "<Domain>Models", targets: ["<Domain>Models"]),
++        .library(name: "<Domain>ReluxInt", targets: ["<Domain>ReluxInt"]),
++        .library(name: "<Domain>ServiceInt", targets: ["<Domain>ServiceInt"]),
++        .library(name: "<Domain>ServiceImpl", targets: ["<Domain>ServiceImpl"]),
++        .library(name: "<Domain>ReluxImpl", targets: ["<Domain>ReluxImpl"]),
+         .library(name: "<Domain>TestSupport", targets: ["<Domain>TestSupport"]),
+     ],
+     dependencies: [
+-        // Self-reference forces dynamic linkage within package
+-        .package(name: "<Domain>-Self", path: "."),
+-        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
+-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
++        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
++        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
+         .package(path: "../TestInfrastructure"),
+     ],
+     targets: [
+@@ -89,30 +87,30 @@ let package = Package(
+         .target(
+             name: "<Domain>ReluxInt",
+             dependencies: [
+-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
++                "<Domain>Models",
+                 .product(name: "Relux", package: "swift-relux"),
+             ]
+         ),
+         .target(
+             name: "<Domain>ServiceInt",
+             dependencies: [
+-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
++                "<Domain>Models",
+             ]
+         ),
+         .target(
+             name: "<Domain>ServiceImpl",
+             dependencies: [
+-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
++                "<Domain>Models",
++                "<Domain>ServiceInt",
+             ]
+         ),
+         .target(
+             name: "<Domain>ReluxImpl",
+             dependencies: [
+-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ReluxInt", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ServiceImpl", package: "<Domain>-Self"),
++                "<Domain>Models",
++                "<Domain>ReluxInt",
++                "<Domain>ServiceInt",
++                "<Domain>ServiceImpl",
+                 .product(name: "SwiftIoC", package: "swift-ioc"),
+                 .product(name: "Relux", package: "swift-relux"),
+             ]
+@@ -120,9 +118,9 @@ let package = Package(
+         .target(
+             name: "<Domain>TestSupport",
+             dependencies: [
+-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ReluxInt", package: "<Domain>-Self"),
+-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
++                "<Domain>Models",
++                "<Domain>ReluxInt",
++                "<Domain>ServiceInt",
+                 .product(name: "TestInfrastructure", package: "TestInfrastructure"),
+             ]
+         ),
+@@ -153,16 +151,9 @@ let package = Package(
+ 
+ ---
+ 
+-## Dynamic Linking Guardrails
++## Linking Boundaries
+ 
+-SwiftPM/Xcode quirks require careful handling:
+-
+-1. **Use product dependencies** (not target deps) inside the same package
+-2. **Self-reference trick**: Declare `.package(name: "<Domain>-Self", path: ".")` and reference products via that package to force dynamic linkage
+-3. **All products `type: .dynamic`** except TestSupport
+-4. **App/test targets must link AND embed** all dynamic products
+-
+-If SwiftPM behavior regresses, fallback: split into two packages (`<Domain>Interfaces` and `<Domain>Implementations`).
++Use ordinary target dependencies within one package and product dependencies across packages. Keep library products automatic unless a measured deployment requirement needs dynamic linkage. Do not self-reference the package to force dynamic products: this sample reproduced duplicate Relux runtime classes when multiple Auth libraries embedded the same static upstream dependency. Xcode links the automatic products without manual Embed Frameworks entries.
+ 
+ ---
+ 
+@@ -300,6 +291,6 @@ public struct <Domain>UIRouter: <Domain>UIProviding {
+ | Concern | Mitigation |
+ |---------|------------|
+ | Multiple dylibs increase launch time | Monitor on device; merge impl products per domain if needed |
+-| SwiftPM dynamic-in-one-package is brittle | Fallback: split into Interface/Implementation packages |
++| Duplicate runtime classes from forced dynamic products | Use automatic linkage with ordinary target dependencies |
+ | Verbose imports | Optional facade product (`<Domain>Kit`) for simple consumers |
+ | 6 products per domain seems heavy | Start with HybridState in ReluxImpl; split when complexity grows |
+diff --git a/PROJECT_GUIDE.md b/PROJECT_GUIDE.md
+index 9f6dbf8..6e45fdd 100644
+--- a/PROJECT_GUIDE.md
++++ b/PROJECT_GUIDE.md
+@@ -4,6 +4,8 @@ Entry point for developers and AI agents working with this codebase.
+ 
+ ---
+ 
++Current verified contracts and dependency pins: [ArchitectureAudit.md](Docs/ArchitectureAudit.md).
++
+ ## Quick Start
+ 
+ 1. Read this file for project overview and conventions
+@@ -46,7 +48,7 @@ Detailed documentation in `Docs/Patterns/`:
+ 
+ | Pattern | Document | Purpose |
+ |---------|----------|---------|
+-| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 dynamic products |
++| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 library products |
+ | Orchestration | [RELUX_ORCHESTRATION.md](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination without coupling |
+ | Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
+ | Testing Strategy | [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+@@ -60,8 +62,6 @@ Detailed documentation in `Docs/Patterns/`:
+ Packages/
+   Auth/                       ← Domain package (6 products)
+   AuthUI/                     ← UI package (2 products)
+-  SessionOrchestration/       ← Cross-domain coordinator
+-  DataOrchestration/          ← Cross-domain coordinator
+   TestInfrastructure/         ← Shared test utilities
+ 
+ relux_sample/
+diff --git a/Package.swift b/Package.swift
+deleted file mode 100644
+index a1ad7d5..0000000
+--- a/Package.swift
++++ /dev/null
+@@ -1,35 +0,0 @@
+-// swift-tools-version: 6.0
+-import PackageDescription
+-
+-let package = Package(
+-    name: "swift-httpclient",
+-    platforms: [
+-        .iOS(.v15),
+-        .watchOS(.v8),
+-        .macOS(.v12),
+-        .tvOS(.v15),
+-    ],
+-    products: [
+-        .library(
+-            name: "HttpClient",
+-            targets: ["HttpClient"]
+-        ),
+-        // Test-only helpers (static by default)
+-        .library(
+-            name: "HttpClientTestSupport",
+-            targets: ["HttpClientTestSupport"]
+-        ),
+-    ],
+-    targets: [
+-        .target(
+-            name: "HttpClient",
+-            dependencies: [],
+-            path: "Sources"
+-        ),
+-        .target(
+-            name: "HttpClientTestSupport",
+-            dependencies: ["HttpClient"],
+-            path: "TestsSupport"
+-        )
+-    ]
+-)
+diff --git a/Packages/Auth/Package.resolved b/Packages/Auth/Package.resolved
+new file mode 100644
+index 0000000..e323c6a
+--- /dev/null
++++ b/Packages/Auth/Package.resolved
+@@ -0,0 +1,24 @@
++{
++  "originHash" : "caf93ef70e814675f5846b76d9566c094057d8462d4e508bb8b93f63f1241c5a",
++  "pins" : [
++    {
++      "identity" : "swift-ioc",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-ioc.git",
++      "state" : {
++        "revision" : "95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd",
++        "version" : "1.0.3"
++      }
++    },
++    {
++      "identity" : "swift-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-relux.git",
++      "state" : {
++        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
++        "version" : "9.2.0"
++      }
++    }
++  ],
++  "version" : 3
++}
+diff --git a/Packages/Auth/Package.swift b/Packages/Auth/Package.swift
+index 8b2d014..4210523 100644
+--- a/Packages/Auth/Package.swift
++++ b/Packages/Auth/Package.swift
+@@ -8,19 +8,17 @@ let package = Package(
+         .macOS(.v14)
+     ],
+     products: [
+-        .library(name: "AuthModels", type: .dynamic, targets: ["AuthModels"]),
+-        .library(name: "AuthReluxInt", type: .dynamic, targets: ["AuthReluxInt"]),
+-        .library(name: "AuthReluxImpl", type: .dynamic, targets: ["AuthReluxImpl"]),
+-        .library(name: "AuthServiceInt", type: .dynamic, targets: ["AuthServiceInt"]),
+-        .library(name: "AuthServiceImpl", type: .dynamic, targets: ["AuthServiceImpl"]),
++        .library(name: "AuthModels", targets: ["AuthModels"]),
++        .library(name: "AuthReluxInt", targets: ["AuthReluxInt"]),
++        .library(name: "AuthReluxImpl", targets: ["AuthReluxImpl"]),
++        .library(name: "AuthServiceInt", targets: ["AuthServiceInt"]),
++        .library(name: "AuthServiceImpl", targets: ["AuthServiceImpl"]),
+         // Test-only helpers (static is fine)
+         .library(name: "AuthTestSupport", targets: ["AuthTestSupport"]),
+     ],
+     dependencies: [
+-        // Dev note: self-reference forces dynamic linkage across products.
+-        .package(name: "Auth-Self", path: "."),
+-        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
+-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "9.0.0"),
++        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
++        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
+         .package(path: "../TestInfrastructure"),
+     ],
+     targets: [
+@@ -31,29 +29,29 @@ let package = Package(
+         .target(
+             name: "AuthReluxInt",
+             dependencies: [
+-                .product(name: "AuthModels", package: "Auth-Self"),
++                "AuthModels",
+                 .product(name: "Relux", package: "swift-relux"),
+             ]
+         ),
+         .target(
+             name: "AuthServiceInt",
+             dependencies: [
+-                .product(name: "AuthModels", package: "Auth-Self"),
++                "AuthModels",
+             ]
+         ),
+         .target(
+             name: "AuthServiceImpl",
+             dependencies: [
+-                .product(name: "AuthModels", package: "Auth-Self"),
+-                .product(name: "AuthServiceInt", package: "Auth-Self"),
++                "AuthModels",
++                "AuthServiceInt",
+             ]
+         ),
+         .target(
+             name: "AuthReluxImpl",
+             dependencies: [
+-                .product(name: "AuthModels", package: "Auth-Self"),
+-                .product(name: "AuthReluxInt", package: "Auth-Self"),
+-                .product(name: "AuthServiceInt", package: "Auth-Self"),
++                "AuthModels",
++                "AuthReluxInt",
++                "AuthServiceInt",
+                 .product(name: "SwiftIoC", package: "swift-ioc"),
+                 .product(name: "Relux", package: "swift-relux"),
+             ]
+@@ -61,9 +59,9 @@ let package = Package(
+         .target(
+             name: "AuthTestSupport",
+             dependencies: [
+-                .product(name: "AuthModels", package: "Auth-Self"),
+-                .product(name: "AuthServiceInt", package: "Auth-Self"),
+-                .product(name: "AuthReluxInt", package: "Auth-Self"),
++                "AuthModels",
++                "AuthServiceInt",
++                "AuthReluxInt",
+                 .product(name: "Relux", package: "swift-relux"),
+                 .product(name: "TestInfrastructure", package: "TestInfrastructure"),
+             ]
+@@ -73,7 +71,9 @@ let package = Package(
+             dependencies: [
+                 "AuthReluxImpl",
+                 "AuthReluxInt",
+-                "AuthModels"
++                "AuthModels",
++                "AuthServiceInt",
++                .product(name: "Relux", package: "swift-relux")
+             ]
+         )
+     ]
+diff --git a/Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift b/Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift
+index 5cff751..5cf1a69 100644
+--- a/Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift
++++ b/Packages/Auth/Sources/AuthModels/Auth+Business+Err.swift
+@@ -1,5 +1,6 @@
+ extension Auth.Business {
+     public enum Err: Error {
++        case authenticationRejected
+         case failedToAuthWithBiometry_localAuthWithBiometryIsNotSupported
+         case failedToAuthWithBiometry(cause: Error)
+     }
+diff --git a/Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift b/Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift
+index e197e71..e7646ae 100644
+--- a/Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift
++++ b/Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift
+@@ -47,11 +47,16 @@ extension Auth.Business.Saga {
+ 
+     private func authorizeWithBiometry() async {
+         switch await svc.runLocalAuth() {
+-            case .success:
++            // A completed evaluation is not necessarily an authorized user.
++            case .success(true):
+                 await actions {
+                     Auth.Business.Action.authSucceed
+                     router.pushMain()
+                 }
++            case .success(false):
++                await actions {
++                    Auth.Business.Action.authFailed(err: .authenticationRejected)
++                }
+             case let .failure(err):
+                 await actions {
+                     Auth.Business.Action.authFailed(err: err)
+diff --git a/Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift b/Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
+index 3269467..d1db2b9 100644
+--- a/Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
++++ b/Packages/Auth/Sources/AuthServiceImpl/Auth+Business+Service.swift
+@@ -1,4 +1,4 @@
+-@preconcurrency import LocalAuthentication
++import LocalAuthentication
+ import AuthModels
+ import AuthServiceInt
+ 
+@@ -14,14 +14,14 @@ extension Auth.Business {
+ }
+ 
+ extension Auth.Business.Service: Auth.Business.IService {
+-    public var laContext: LAContext { get async { laCtx } }
++    // LAContext remains owned by this actor; interfaces expose domain values only.
+ 
+     public var availableBiometry: Model.BiometryType { get async {
+ 
+         var error: NSError?
+-        let allowed = await laContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
++        let allowed = laCtx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+ 
+-        return switch await laContext.biometryType {
++        return switch laCtx.biometryType {
+             case .none: .other(allowed: allowed)
+             case .touchID: .touch(allowed: allowed)
+             case .faceID: .face(allowed: allowed)
+@@ -31,7 +31,7 @@ extension Auth.Business.Service: Auth.Business.IService {
+     }}
+ 
+     public func runLocalAuth() async -> Result<Bool, Auth.Business.Err> {
+-        let laContext = await self.laContext
++        let laContext = self.laCtx
+         return await withCheckedContinuation { ctx in
+             var error: NSError?
+             if laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+diff --git a/Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift b/Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift
+index 6a7a13d..e8e373a 100644
+--- a/Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift
++++ b/Packages/Auth/Sources/AuthServiceInt/AuthServiceInterface.swift
+@@ -1,12 +1,10 @@
+ import AuthModels
+-import LocalAuthentication
+ 
+ extension Auth.Business {
+     public protocol IService: Sendable {
+         typealias Err = Auth.Business.Err
+         typealias Model = Auth.Business.Model
+ 
+-        var laContext: LAContext { get async }
+         var availableBiometry: Model.BiometryType { get async }
+         func runLocalAuth() async -> Result<Bool, Err>
+         func recreateLAContext() async
+diff --git a/Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift b/Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift
+index acf429d..77499f9 100644
+--- a/Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift
++++ b/Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift
+@@ -1,6 +1,5 @@
+ import AuthModels
+ import AuthServiceInt
+-import LocalAuthentication
+ 
+ extension Auth.Business {
+     public final class ServiceMock: IService, @unchecked Sendable {
+@@ -11,7 +10,6 @@ extension Auth.Business {
+ 
+         public init() {}
+ 
+-        public var laContext: LAContext { fatalError("Use handler or avoid LAContext in tests") }
+ 
+         public var availableBiometry: Model.BiometryType {
+             get async { availableBiometryHandler?() ?? .face(allowed: true) }
+diff --git a/Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift b/Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
+index b01d4ee..b8269ae 100644
+--- a/Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
++++ b/Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
+@@ -1,10 +1,118 @@
+-import XCTest
+-@testable import Auth
+-@testable import AuthImplementation
++import Testing
++import AuthModels
++import AuthReluxInt
++import AuthReluxImpl
++import AuthServiceInt
++import Relux
+ 
+-final class AuthBasicsTests: XCTestCase {
+-    func testBiometryAllowedPropertyReflectsAssociatedValue() {
+-        XCTAssertTrue(Auth.Business.Model.BiometryType.face(allowed: true).allowed)
+-        XCTAssertFalse(Auth.Business.Model.BiometryType.touch(allowed: false).allowed)
++@Suite(.serialized)
++@MainActor
++struct AuthBehaviorTests {
++    @Test(arguments: [true, false])
++    func biometryReflectsAvailability(allowed: Bool) {
++        #expect(Auth.Business.Model.BiometryType.face(allowed: allowed).allowed == allowed)
++        #expect(Auth.Business.Model.BiometryType.touch(allowed: allowed).allowed == allowed)
++        #expect(Auth.Business.Model.BiometryType.other(allowed: allowed).allowed == allowed)
+     }
++
++    @Test
++    func authorizationTrueRoutesToMain() async {
++        let logger = await authorize(.success(true))
++        #expect(logger.actions.contains { ($0 as? Route) == .main })
++        #expect(logger.actions.contains { if case .authSucceed = $0 as? Auth.Business.Action { true } else { false } })
++    }
++
++    @Test
++    func authorizationFalseNeverRoutesToMain() async {
++        let logger = await authorize(.success(false))
++        #expect(!logger.actions.contains { ($0 as? Route) == .main })
++        #expect(!logger.actions.contains { if case .authSucceed = $0 as? Auth.Business.Action { true } else { false } })
++        #expect(logger.actions.contains { if case .authFailed = $0 as? Auth.Business.Action { true } else { false } })
++    }
++
++    @Test
++    func authorizationFailureNeverRoutesToMain() async {
++        let logger = await authorize(.failure(.failedToAuthWithBiometry_localAuthWithBiometryIsNotSupported))
++        #expect(!logger.actions.contains { ($0 as? Route) == .main })
++        #expect(logger.actions.contains { if case .authFailed = $0 as? Auth.Business.Action { true } else { false } })
++    }
++
++    @Test
++    func registeredModuleReducesBiometryAndCleansUp() async throws {
++        let service = Service(result: .success(true))
++        let module = Auth.Module(router: Router(), serviceFactory: { service })
++        let relux = await Relux(logger: Relux.Testing.Logger())
++        defer { Relux.shared = nil }
++        relux.register(module)
++        await relux.dispatcher.actions { Auth.Business.Effect.obtainAvailableBiometryType }
++        let state = try #require(module.states.first as? Auth.Business.State)
++        #expect(state.availableBiometryType == .face(allowed: false))
++        await relux.unregister(module)
++        #expect(state.availableBiometryType == nil)
++    }
++
++    @Test
++    func logoutRecreatesContextBeforeRoutingToLocalAuth() async {
++        let service = Service(result: .success(true))
++        let logger = Relux.Testing.Logger()
++        let relux = await Relux(logger: logger)
++        defer { Relux.shared = nil }
++        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
++        await relux.dispatcher.actions { Auth.Business.Effect.runLogoutFlow }
++        #expect(await service.resetCount == 1)
++        #expect(logger.actions.contains { ($0 as? Route) == .localAuth })
++        #expect(logger.actions.contains { if case .logOutSucceed = $0 as? Auth.Business.Action { true } else { false } })
++    }
++
++    @Test
++    func authContextAndLogoutChooseTheirRoutes() async {
++        let service = Service(result: .success(true))
++        let logger = Relux.Testing.Logger()
++        let relux = await Relux(logger: logger)
++        defer { Relux.shared = nil }
++        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
++        await relux.dispatcher.actions { Auth.Business.Effect.checkAuthContext }
++        #expect(logger.actions.contains { ($0 as? Route) == .localAuth })
++        await relux.dispatcher.actions { Auth.Business.Effect.logout }
++        #expect(logger.actions.contains { ($0 as? Route) == .logout })
++        #expect(await service.authCount == 0)
++    }
++
++    private func authorize(_ result: Result<Bool, Auth.Business.Err>) async -> Relux.Testing.Logger {
++        let service = Service(result: result)
++        let logger = Relux.Testing.Logger()
++        let relux = await Relux(logger: logger)
++        defer { Relux.shared = nil }
++        relux.register(Auth.Module(router: Router(), serviceFactory: { service }))
++        await relux.dispatcher.actions { Auth.Business.Effect.authorizeWithBiometry }
++        #expect(await service.authCount == 1)
++        return logger
++    }
++}
++
++private enum Route: Relux.Action, Equatable {
++    case main, localAuth, logout
++}
++
++private struct Router: Auth.Business.IRouter {
++    func pushMain() -> any Relux.Action { Route.main }
++    func setAuth(page: Auth.UI.Model.Page) -> any Relux.Action {
++        switch page {
++        case .localAuth: Route.localAuth
++        case .logoutFlow: Route.logout
++        }
++    }
++}
++
++private actor Service: Auth.Business.IService {
++    let result: Result<Bool, Auth.Business.Err>
++    var authCount = 0
++    var resetCount = 0
++    init(result: Result<Bool, Auth.Business.Err>) { self.result = result }
++    var availableBiometry: Auth.Business.Model.BiometryType { .face(allowed: false) }
++    func runLocalAuth() -> Result<Bool, Auth.Business.Err> {
++        authCount += 1
++        return result
++    }
++    func recreateLAContext() { resetCount += 1 }
+ }
+diff --git a/Packages/AuthUI/Package.resolved b/Packages/AuthUI/Package.resolved
+new file mode 100644
+index 0000000..b652086
+--- /dev/null
++++ b/Packages/AuthUI/Package.resolved
+@@ -0,0 +1,42 @@
++{
++  "originHash" : "00a0b8bbca091d29338403424a61bd74d2035ca4b93ea0f7fae49dbe667d59c6",
++  "pins" : [
++    {
++      "identity" : "swift-ioc",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-ioc.git",
++      "state" : {
++        "revision" : "95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd",
++        "version" : "1.0.3"
++      }
++    },
++    {
++      "identity" : "swift-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-relux.git",
++      "state" : {
++        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
++        "version" : "9.2.0"
++      }
++    },
++    {
++      "identity" : "swiftui-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swiftui-relux.git",
++      "state" : {
++        "revision" : "ac791a9a3f84c2db0b0f874622728a7efff37e01",
++        "version" : "9.0.0"
++      }
++    },
++    {
++      "identity" : "swiftui-reluxrouter",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swiftui-reluxrouter.git",
++      "state" : {
++        "revision" : "cb80d2b5422a2329701d6e450815ba565b396b6d",
++        "version" : "12.1.0"
++      }
++    }
++  ],
++  "version" : 3
++}
+diff --git a/Packages/AuthUI/Package.swift b/Packages/AuthUI/Package.swift
+index 77a85cc..fcca8bc 100644
+--- a/Packages/AuthUI/Package.swift
++++ b/Packages/AuthUI/Package.swift
+@@ -13,7 +13,7 @@ let package = Package(
+     ],
+     dependencies: [
+         .package(path: "../Auth"),
+-        .package(url: "https://github.com/relux-works/swiftui-relux.git", from: "8.0.0")
++        .package(url: "https://github.com/relux-works/swiftui-relux.git", exact: "9.0.0")
+     ],
+     targets: [
+         .target(
+diff --git a/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift b/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift
+index 0b159b0..4fabae0 100644
+--- a/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift
++++ b/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Auth+UI+LocalAuth+Container.swift
+@@ -9,7 +9,9 @@ extension Auth.UI.LocalAuth {
+         var body: some View {
+             content
+                 .navigationBarBackButtonHidden()
+-                .navigationBarHidden(true)
++                #if os(iOS)
++                .toolbar(.hidden, for: .navigationBar)
++                #endif
+         }
+ 
+         private var content: some View {
+diff --git a/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift b/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift
+index 37a3d2a..2dab9dc 100644
+--- a/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift
++++ b/Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift
+@@ -8,17 +8,21 @@ extension Auth.UI.LocalAuth.Container {
+         let actions: Actions
+ 
+         var body: some View {
+-            content
+-        }
+-
+-        private var content: some View {
+-            VStack {
+-                Text("Local auth page")
+-
+-                AsyncButton(action: actions.onTryLocalAuth) {
+-                    Text("Authorize")
++            ScrollView {
++                VStack(alignment: .leading, spacing: 24) {
++                    Image(systemName: "lock.shield").font(.largeTitle).foregroundStyle(.tint).accessibilityHidden(true)
++                    Text("Your Local Session").font(.largeTitle).bold()
++                    Text("Use system authentication to open the demo. Your notes stay on this device, in memory, until the app restarts.")
++                        .foregroundStyle(.secondary)
++                    AsyncButton(action: actions.onTryLocalAuth) {
++                        Label("Unlock Demo", systemImage: "lock.open")
++                    }
++                    .buttonStyle(.borderedProminent)
++                    Text("If authentication is canceled, you can try again here.").font(.footnote).foregroundStyle(.secondary)
+                 }
++                .frame(maxWidth: 520, alignment: .leading).padding(24)
+             }
++            .navigationTitle("Welcome")
+         }
+     }
+ }
+diff --git a/Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift b/Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift
+index ea10d69..4506776 100644
+--- a/Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift
++++ b/Packages/AuthUI/Sources/AuthUI/UI/LogoutFlow/Auth+UI+LogoutFlow+Container.swift
+@@ -9,7 +9,9 @@ extension Auth.UI.Initial {
+         var body: some View {
+             ProgressView()
+                 .navigationBarBackButtonHidden()
+-                .navigationBarHidden(true)
++                #if os(iOS)
++                .toolbar(.hidden, for: .navigationBar)
++                #endif
+                 .task { await runLogoutFlow() }
+         }
+     }
+diff --git a/Packages/TestInfrastructure/Package.resolved b/Packages/TestInfrastructure/Package.resolved
+new file mode 100644
+index 0000000..cdcda61
+--- /dev/null
++++ b/Packages/TestInfrastructure/Package.resolved
+@@ -0,0 +1,15 @@
++{
++  "originHash" : "e5c2dd41cd7340c0799023a85c6bada37a9b29aa1e90014b9f57509a2b8a56a0",
++  "pins" : [
++    {
++      "identity" : "swift-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-relux.git",
++      "state" : {
++        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
++        "version" : "9.2.0"
++      }
++    }
++  ],
++  "version" : 3
++}
+diff --git a/Packages/TestInfrastructure/Package.swift b/Packages/TestInfrastructure/Package.swift
+index c2d582c..61517ff 100644
+--- a/Packages/TestInfrastructure/Package.swift
++++ b/Packages/TestInfrastructure/Package.swift
+@@ -11,7 +11,7 @@ let package = Package(
+         .library(name: "TestInfrastructure", targets: ["TestInfrastructure"]),
+     ],
+     dependencies: [
+-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "9.0.0"),
++        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
+     ],
+     targets: [
+         .target(
+diff --git a/README.md b/README.md
+index 32796ad..54bcca3 100644
+--- a/README.md
++++ b/README.md
+@@ -1,9 +1,9 @@
+ # Relux SwiftUI Sample
+ 
+-[![Swift 6.0+](https://img.shields.io/badge/Swift-6.0+-red?logo=swift)](https://swift.org/download/)
++[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-red?logo=swift)](https://swift.org/download/)
+ [![Platform](https://img.shields.io/badge/platform-iOS%2017%2B%20%7C%20macOS%2014%2B-blue)]()
+ 
+-Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Split into small domain packages (Auth, Notes) to demonstrate scaling from MVP to large apps while keeping builds fast and boundaries clear.
++Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Auth is split into domain and UI packages; Notes remains an app module to demonstrate scaling from MVP to large apps while keeping boundaries clear.
+ 
+ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for workspace layout, patterns, and conventions.
+ 
+@@ -41,20 +41,27 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
+ ---
+ 
+ ## Quick Start
+-```bash
+-# Clone
+-git clone <repo-url>
+-cd relux-sample
+ 
+-# Open in Xcode
+-open relux_sample.xcodeproj
++Use Xcode 26 or newer with Swift 6.2+ (required by swift-log 1.15.1).
++Open `relux_sample.xcodeproj`, select `relux_sample`, and choose an iOS simulator.
++The app supports iOS 17+ and macOS 14+. There is no root Swift package; package commands must specify a package directory.
+ 
+-# Build & run
+-# Select relux_sample scheme → Run (Cmd+R)
++See [ArchitectureAudit.md](Docs/ArchitectureAudit.md) for pinned revisions, verified contracts, regression evidence, and validation bounds.
+ 
+-# Run tests
+-# Product → Test (Cmd+U)
+-```
++## Tools and Validation
++
++| Tool | Purpose | Command / entry point | Outputs |
++| --- | --- | --- | --- |
++| Xcode / xcodebuild | Resolve and build the iOS app | `xcodebuild build -project relux_sample.xcodeproj -scheme relux_sample -destination 'generic/platform=iOS Simulator' -derivedDataPath .temp/DerivedData -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData`, Xcode configured build products |
++| xcrun simctl | Find an installed test destination | `xcrun simctl list devices available` | Terminal |
++| xcodebuild | Existing Notes Swift Testing suite | `xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData/Logs/Test` |
++| SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
++| xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
++| SwiftPM | Standalone UI package compilation | `swift build --package-path Packages/AuthUI --force-resolved-versions` | `Packages/AuthUI/.build` |
++| Git | Patch whitespace validation | `git diff --check` | Terminal; no separate lint configuration is installed |
++| task-board | Task evidence and producer handoff | `task-board resource add TASK-ID /path/to/artifact --type outcome --name TASK-ID_results.md`; `task-board handoff TASK-ID --role developer` | Authoritative board resources |
++
++Use a simulator name installed on your host. Dependency updates must update exact manifest/project requirements and the checked-in `Package.resolved` files together. Tests use Swift Testing; the Notes suite retains its existing app-hosted target, while Auth tests live in the Auth package. Store temporary logs and audit clones under `.temp/`.
+ 
+ ---
+ 
+diff --git a/relux_sample.xcodeproj/project.pbxproj b/relux_sample.xcodeproj/project.pbxproj
+index f22cc7b..0d4d25e 100644
+--- a/relux_sample.xcodeproj/project.pbxproj
++++ b/relux_sample.xcodeproj/project.pbxproj
+@@ -8,31 +8,18 @@
+ 
+ /* Begin PBXBuildFile section */
+ 		7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CB2D9169E300BE2349 /* SwiftUIRelux */; };
+-		704F5C342E168CBD00FCAE62 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C332E168CBD00FCAE62 /* Relux */; };
+-		704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C362E168D3500FCAE62 /* SwiftUIRelux */; };
+ 		70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
+-		70992C1E2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CA2D93062700BC99C2 /* Relux */; };
+-		70992C1F2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A39F1E2DBAB02600112F5E /* Relux */; };
+ 		70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 70992D3E2DDDFE8E007767C7 /* Logging */; };
+ 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
+ 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
+ 		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
+ 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
+-		AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+-		AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+-		AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+-		AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+ 		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
+ 		AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; };
+ 		AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; };
+ 		AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; };
+ 		AA5CB2C52EE8E0FC0077BFF8 /* AuthServiceInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; };
+ 		AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; };
+-		AA5CB2C92EE8E11D0077BFF8 /* AuthModels in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+-		AA5CB2CA2EE8E1220077BFF8 /* AuthReluxInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+-		AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+-		AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+-		AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXContainerItemProxy section */
+@@ -52,11 +39,6 @@
+ 			dstPath = "";
+ 			dstSubfolderSpec = 10;
+ 			files = (
+-				AA5CB2C92EE8E11D0077BFF8 /* AuthModels in Embed Frameworks */,
+-				AA5CB2CA2EE8E1220077BFF8 /* AuthReluxInt in Embed Frameworks */,
+-				AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */,
+-				AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */,
+-				AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */,
+ 			);
+ 			name = "Embed Frameworks";
+ 			runOnlyForDeploymentPostprocessing = 0;
+@@ -66,8 +48,6 @@
+ /* Begin PBXFileReference section */
+ 		70A603AB2D8ECD6900BE2349 /* relux_sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = relux_sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+ 		70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = relux_sampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+-		AA5A934E2EE8FB650049F50D /* swiftui-relux */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swiftui-relux"; path = "../swiftui-relux"; sourceTree = SOURCE_ROOT; };
+-		AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = relux_sample.xctestplan; path = ../../../../Downloads/relux_sample.xctestplan; sourceTree = "<group>"; };
+ /* End PBXFileReference section */
+ 
+ /* Begin PBXFileSystemSynchronizedRootGroup section */
+@@ -88,13 +68,9 @@
+ 			isa = PBXFrameworksBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
+-				70992C1F2DDDFDA6007767C7 /* Relux in Frameworks */,
+-				70992C1E2DDDFDA6007767C7 /* Relux in Frameworks */,
+ 				70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */,
+-				704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */,
+ 				7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */,
+ 				70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */,
+-				704F5C342E168CBD00FCAE62 /* Relux in Frameworks */,
+ 				AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */,
+ 				AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */,
+ 				AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */,
+@@ -112,10 +88,6 @@
+ 			buildActionMask = 2147483647;
+ 			files = (
+ 				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */,
+-				AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */,
+-				AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */,
+-				AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */,
+-				AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+@@ -125,12 +97,10 @@
+ 		70A603A22D8ECD6900BE2349 = {
+ 			isa = PBXGroup;
+ 			children = (
+-				AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */,
+ 				70A603AD2D8ECD6900BE2349 /* relux_sample */,
+ 				70A603BF2D8ECD6D00BE2349 /* relux_sampleTests */,
+ 				70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */,
+ 				70A603AC2D8ECD6900BE2349 /* Products */,
+-				AA5A934E2EE8FB650049F50D /* swiftui-relux */,
+ 			);
+ 			sourceTree = "<group>";
+ 		};
+@@ -175,11 +145,7 @@
+ 				70A604BA2D8F401600BE2349 /* Relux */,
+ 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
+ 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
+-				701F04CA2D93062700BC99C2 /* Relux */,
+-				70A39F1E2DBAB02600112F5E /* Relux */,
+ 				70992D3E2DDDFE8E007767C7 /* Logging */,
+-				704F5C332E168CBD00FCAE62 /* Relux */,
+-				704F5C362E168D3500FCAE62 /* SwiftUIRelux */,
+ 				70E0BEEF2E00000100000013 /* AuthUIAPI */,
+ 				70E0BEEF2E00000100000014 /* AuthUI */,
+ 				AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */,
+@@ -454,7 +420,7 @@
+ 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
+ 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
+-				MACOSX_DEPLOYMENT_TARGET = 15.1;
++				MACOSX_DEPLOYMENT_TARGET = 14.0;
+ 				MARKETING_VERSION = 1.0;
+ 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+@@ -496,7 +462,7 @@
+ 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
+ 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
+-				MACOSX_DEPLOYMENT_TARGET = 15.1;
++				MACOSX_DEPLOYMENT_TARGET = 14.0;
+ 				MARKETING_VERSION = 1.0;
+ 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+@@ -519,7 +485,7 @@
+ 				DEAD_CODE_STRIPPING = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+-				MACOSX_DEPLOYMENT_TARGET = 15.1;
++				MACOSX_DEPLOYMENT_TARGET = 14.0;
+ 				MARKETING_VERSION = 1.0;
+ 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+@@ -542,7 +508,7 @@
+ 				DEAD_CODE_STRIPPING = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+-				MACOSX_DEPLOYMENT_TARGET = 15.1;
++				MACOSX_DEPLOYMENT_TARGET = 14.0;
+ 				MARKETING_VERSION = 1.0;
+ 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+@@ -604,42 +570,26 @@
+ 			isa = XCRemoteSwiftPackageReference;
+ 			repositoryURL = "https://github.com/apple/swift-log.git";
+ 			requirement = {
+-				kind = upToNextMajorVersion;
+-				minimumVersion = 1.6.3;
++				kind = exactVersion;
++				version = 1.15.1;
+ 			};
+ 		};
+ 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
+ 			isa = XCRemoteSwiftPackageReference;
+ 			repositoryURL = "https://github.com/relux-works/swift-ioc.git";
+ 			requirement = {
+-				kind = upToNextMajorVersion;
+-				minimumVersion = 1.0.1;
++				kind = exactVersion;
++				version = 1.0.3;
+ 			};
+ 		};
+ /* End XCRemoteSwiftPackageReference section */
+ 
+ /* Begin XCSwiftPackageProductDependency section */
+-		701F04CA2D93062700BC99C2 /* Relux */ = {
+-			isa = XCSwiftPackageProductDependency;
+-			productName = Relux;
+-		};
+-		704F5C332E168CBD00FCAE62 /* Relux */ = {
+-			isa = XCSwiftPackageProductDependency;
+-			productName = Relux;
+-		};
+-		704F5C362E168D3500FCAE62 /* SwiftUIRelux */ = {
+-			isa = XCSwiftPackageProductDependency;
+-			productName = SwiftUIRelux;
+-		};
+ 		70992D3E2DDDFE8E007767C7 /* Logging */ = {
+ 			isa = XCSwiftPackageProductDependency;
+ 			package = 70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */;
+ 			productName = Logging;
+ 		};
+-		70A39F1E2DBAB02600112F5E /* Relux */ = {
+-			isa = XCSwiftPackageProductDependency;
+-			productName = Relux;
+-		};
+ 		70A603E62D8ED02000BE2349 /* SwiftIoC */ = {
+ 			isa = XCSwiftPackageProductDependency;
+ 			package = 70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */;
+diff --git a/relux_sample.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved b/relux_sample.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+new file mode 100644
+index 0000000..618a2b6
+--- /dev/null
++++ b/relux_sample.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+@@ -0,0 +1,51 @@
++{
++  "originHash" : "8c48054f4efc13588561f23a5d0e6c26aee59a1f91591713cec3a455b9b8b484",
++  "pins" : [
++    {
++      "identity" : "swift-ioc",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-ioc.git",
++      "state" : {
++        "revision" : "95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd",
++        "version" : "1.0.3"
++      }
++    },
++    {
++      "identity" : "swift-log",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/apple/swift-log.git",
++      "state" : {
++        "revision" : "9c6fb14227f55d8f711ce3847dc2f419fb0ecacb",
++        "version" : "1.15.1"
++      }
++    },
++    {
++      "identity" : "swift-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swift-relux.git",
++      "state" : {
++        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
++        "version" : "9.2.0"
++      }
++    },
++    {
++      "identity" : "swiftui-relux",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swiftui-relux.git",
++      "state" : {
++        "revision" : "ac791a9a3f84c2db0b0f874622728a7efff37e01",
++        "version" : "9.0.0"
++      }
++    },
++    {
++      "identity" : "swiftui-reluxrouter",
++      "kind" : "remoteSourceControl",
++      "location" : "https://github.com/relux-works/swiftui-reluxrouter.git",
++      "state" : {
++        "revision" : "cb80d2b5422a2329701d6e450815ba565b396b6d",
++        "version" : "12.1.0"
++      }
++    }
++  ],
++  "version" : 3
++}
+diff --git a/relux_sample.xcodeproj/xcshareddata/xcschemes/relux_sample.xcscheme b/relux_sample.xcodeproj/xcshareddata/xcschemes/relux_sample.xcscheme
+index 3684340..f7c0658 100644
+--- a/relux_sample.xcodeproj/xcshareddata/xcschemes/relux_sample.xcscheme
++++ b/relux_sample.xcodeproj/xcshareddata/xcschemes/relux_sample.xcscheme
+@@ -28,12 +28,6 @@
+       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+       shouldUseLaunchSchemeArgsEnv = "YES">
+-      <TestPlans>
+-         <TestPlanReference
+-            reference = "container:../../../../Downloads/relux_sample.xctestplan"
+-            default = "YES">
+-         </TestPlanReference>
+-      </TestPlans>
+       <Testables>
+          <TestableReference
+             skipped = "NO"
+@@ -46,17 +40,6 @@
+                ReferencedContainer = "container:relux_sample.xcodeproj">
+             </BuildableReference>
+          </TestableReference>
+-         <TestableReference
+-            skipped = "NO"
+-            parallelizable = "YES">
+-            <BuildableReference
+-               BuildableIdentifier = "primary"
+-               BlueprintIdentifier = "70A603C52D8ECD6D00BE2349"
+-               BuildableName = "relux_sampleUITests.xctest"
+-               BlueprintName = "relux_sampleUITests"
+-               ReferencedContainer = "container:relux_sample.xcodeproj">
+-            </BuildableReference>
+-         </TestableReference>
+       </Testables>
+    </TestAction>
+    <LaunchAction
+diff --git a/relux_sample/IoC/IoC.swift b/relux_sample/IoC/IoC.swift
+index 0811dc0..bffd306 100644
+--- a/relux_sample/IoC/IoC.swift
++++ b/relux_sample/IoC/IoC.swift
+@@ -43,7 +43,8 @@ extension SampleApp.Registry {
+         await Relux.init(
+             logger: resolve(Relux.Logger.self),
+             appStore: resolve(Relux.Store.self),
+-            rootSaga: .init()
++            // Modules and the dispatcher share the container-owned root saga.
++            rootSaga: resolve(Relux.RootSaga.self)
+         )
+         .register { @MainActor in
+             resolve(ErrorHandling.Module.self)
+diff --git a/relux_sample/Modules/Account/UI/Account+UI+Container.swift b/relux_sample/Modules/Account/UI/Account+UI+Container.swift
+index ae08cad..7bd0539 100644
+--- a/relux_sample/Modules/Account/UI/Account+UI+Container.swift
++++ b/relux_sample/Modules/Account/UI/Account+UI+Container.swift
+@@ -8,7 +8,9 @@ extension Account.UI {
+         var body: some View {
+             content
+                 .navigationTitle("Account")
++                #if os(iOS)
+                 .navigationBarTitleDisplayMode(.inline)
++                #endif
+         }
+ 
+         private var content: some View {
+diff --git a/relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift b/relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift
+index 461c69e..8e32e9b 100644
+--- a/relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift
++++ b/relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift
+@@ -4,27 +4,25 @@ extension Account.UI.Container {
+     struct Page: Relux.UI.View {
+         let props: Props
+         let actions: Actions
++        @State private var confirmLogout = false
+ 
+         var body: some View {
+-            content
+-        }
+-
+-        private var content: some View {
+-            VStack {
+-                debug
+-                logout
++            Form {
++                Section("Local demo session") {
++                    Label("On this device", systemImage: "person.crop.circle")
++                    Text("Authentication uses your device’s system authentication. Notes stay in memory until the app restarts.")
++                        .foregroundStyle(.secondary)
++                }
++                Section("Developer tools") {
++                    AsyncButton(action: actions.onOpenDebug) { Label("About the Architecture", systemImage: "curlybraces") }
++                }
++                Section {
++                    Button("Log Out", role: .destructive) { confirmLogout = true }
++                }
+             }
+-        }
+-
+-        private var debug: some View {
+-            AsyncButton(action: actions.onOpenDebug) {
+-                Text("Open Debug")
+-            }
+-        }
+-
+-        private var logout: some View {
+-            AsyncButton(action: actions.onLogout) {
+-                Text("Logout")
++            .confirmationDialog("Log out?", isPresented: $confirmLogout, titleVisibility: .visible) {
++                Button("Log Out", role: .destructive) { Task { await actions.onLogout() } }
++                Button("Cancel", role: .cancel) { }
+             }
+         }
+     }
+diff --git a/relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift b/relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift
+index 745715f..7180fc7 100644
+--- a/relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift
++++ b/relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift
+@@ -1,22 +1,18 @@
+ import SwiftUI
+ 
+ extension SampleApp.UI.Main {
+-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+     struct Container: Relux.UI.Container {
+         var body: some View {
+-            content
+-                .navBar(trailing: accountBtn)
+-                .navigationBarHidden(true)
++            Page(props: .init(), actions: .init(onOpenNotes: ViewCallback(openNotes),
++                                                onOpenAccount: ViewCallback(openAccount)))
+         }
+ 
+-        private var content: some View {
+-            Page(props: Page.Props())
++        private func openNotes() async {
++            await actions { AppRouter.Action.push(.app(page: .notes(.list))) }
+         }
+ 
+-        private var accountBtn: some View {
+-            Relux.NavigationLink(page: .app(page: .account)) {
+-                Text("Account")
+-            }.padding(.horizontal)
++        private func openAccount() async {
++            await actions { AppRouter.Action.push(.app(page: .account)) }
+         }
+     }
+ }
+diff --git a/relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift b/relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift
+index 31343ea..a29eabb 100644
+--- a/relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift
++++ b/relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift
+@@ -2,32 +2,29 @@ import SwiftUI
+ 
+ extension SampleApp.UI.Main.Container {
+     struct Page: Relux.UI.View {
+-        struct Props: Relux.UI.ViewProps {
+-            
++        struct Props: Relux.UI.ViewProps { }
++        struct Actions: Relux.UI.ViewCallbacks {
++            let onOpenNotes: ViewCallback<Void>
++            let onOpenAccount: ViewCallback<Void>
+         }
+         let props: Props
+-        
+-        init(props: Props) {
+-            self.props = props
+-        }
+-        
+-        var body: some View {
+-            content
+-        }
+-    }
+-}
++        let actions: Actions
+ 
+-extension SampleApp.UI.Main.Container.Page {
+-    private var content: some View {
+-        ScrollView {
+-            VStack {
+-                notesWidget
+-                Spacer()
++        var body: some View {
++            List {
++                Section {
++                    AsyncButton(action: actions.onOpenNotes) { Label("Notes", systemImage: "note.text") }
++                    AsyncButton(action: actions.onOpenAccount) { Label("Account", systemImage: "person.crop.circle") }
++                } header: { Text("Explore") } footer: {
++                    Text("Create, edit, and search notes while exploring Relux’s unidirectional data flow.")
++                }
++                Section("About this demo") {
++                    Label("Stored in memory", systemImage: "memorychip")
++                    Text("Notes reset when the app restarts. No account server, sync, or network connection is used.")
++                        .foregroundStyle(.secondary)
++                }
+             }
++            .navigationTitle("Relux Sample")
+         }
+     }
+-
+-    private var notesWidget: some View {
+-        Notes.UI.Widget.Container()
+-    }
+ }
+diff --git a/relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift b/relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift
+index a43b00a..d219df0 100644
+--- a/relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift
++++ b/relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift
+@@ -52,6 +52,19 @@ extension SampleApp.UI.Root.Container {
+     }
+ 
+     private var debugModal: some View {
+-        Text("Debug page")
++        NavigationStack {
++            Form {
++                Section("Notes data flow") {
++                    Text("Container → Effect → Flow → Service → Action → Reducer → UI projection")
++                    Text("Views receive values and callbacks. Business state owns the notes; the service uses an in-memory data provider.")
++                }
++            }
++            .navigationTitle("Architecture")
++            .toolbar {
++                ToolbarItem(placement: .confirmationAction) {
++                    Button("Done") { Task { await actions { ModalRouter.Action.dismiss } } }
++                }
++            }
++        }
+     }
+ }
+diff --git a/relux_sample/Modules/App/UI/Root/App+UI+Root+Splash.swift b/relux_sample/Modules/App/UI/Root/App+UI+Root+Splash.swift
+index 7b9a5e0..19652dd 100644
+--- a/relux_sample/Modules/App/UI/Root/App+UI+Root+Splash.swift
++++ b/relux_sample/Modules/App/UI/Root/App+UI+Root+Splash.swift
+@@ -10,7 +10,9 @@ extension SampleApp.UI.Root {
+         var body: some View {
+             ProgressView()
+                 .navigationBarBackButtonHidden()
+-                .navigationBarHidden(true)
++                #if os(iOS)
++                .toolbar(.hidden, for: .navigationBar)
++                #endif
+         }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift b/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
+index 3bed431..54b5338 100644
+--- a/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
++++ b/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
+@@ -17,8 +17,12 @@ extension Notes.Business {
+             dispatcher: Relux.Dispatcher? = .none,
+             svc: Notes.Business.IService
+         ) async {
+-            let defaultDispatcher =  await Self.defaultDispatcher
+-            self.dispatcher = dispatcher ?? defaultDispatcher
++            // Resolve the global dispatcher only when no explicit dependency was supplied.
++            if let dispatcher {
++                self.dispatcher = dispatcher
++            } else {
++                self.dispatcher = await Self.defaultDispatcher
++            }
+             self.svc = svc
+         }
+     }
+@@ -52,7 +56,8 @@ extension Notes.Business.Flow {
+                     Notes.Business.Action.obtainNotesFail(err: err)
+                     ErrorHandling.Business.Effect.track(error: err)
+                 }
+-                return .success
++                // Logging the error does not turn the failed operation into a successful flow.
++                return .failure(err)
+         }
+     }
+ 
+diff --git a/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift b/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
+index 6f66dd3..51fe9fc 100644
+--- a/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
++++ b/relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
+@@ -34,10 +34,10 @@ extension Notes.Business.Service: Notes.Business.IService {
+     }
+     
+     func upsert(note: Notes.Business.Model.Note) async -> Result<Void, Notes.Business.Err> {
+-        await self.fetcher.upsert(note: note.asDto)
+-
+-        // uncomment this to check "Notes.Flow.upsert" result completeness
+-//        return .failure(.notImplemented)
++        guard Note.hasValidContent(title: note.title, content: note.content) else {
++            return .failure(.invalidContent)
++        }
++        return await self.fetcher.upsert(note: note.asDto)
+     }
+     
+     func delete(noteId: Notes.Business.Model.Note.Id) async -> Result<Void, Notes.Business.Err> {
+diff --git a/relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift b/relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
+index a9f0c78..663e4cf 100644
+--- a/relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
++++ b/relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
+@@ -9,6 +9,14 @@ extension Notes.Business.Model {
+     }
+ }
+ 
++extension Notes.Business.Model.Note {
++    // The service and editor share the same content rule; the domain has no UI dependency.
++    static func hasValidContent(title: String, content: String) -> Bool {
++        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
++        !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
++    }
++}
++
+ extension Notes.Business.Model.Note {
+     init(from apiModel: Notes.Data.Api.DTO.Note) {
+         self.id = apiModel.id
+diff --git a/relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift b/relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
+index 5483e79..76f4065 100644
+--- a/relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
++++ b/relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
+@@ -11,12 +11,14 @@ extension Notes.Data.Api {
+ 
+ extension Notes.Data.Api {
+     actor Fetcher {
++        // Each service lifetime starts with these examples. Nothing is persisted or sent over a network.
+         private var notes: Dictionary<DTO.Note.Id, DTO.Note> = [
+-            .init(id: .init(), date: .now, title: "title 1", content: "content 1"),
+-            .init(id: .init(), date: .now.add(minutes: -1), title: "title 2", content: "content 2"),
+-            .init(id: .init(), date: .now.add(days: -1), title: "title 3", content: "content 3"),
+-            .init(id: .init(), date: .now.add(days: -2), title: "title 4", content: "content 4"),
+-            .init(id: .init(), date: .now.add(days: -2).add(hours: -2).add(minutes: -2), title: "title 5", content: "content 5"),
++            .init(id: .init(), date: .now, title: "Welcome to Notes",
++                  content: "Capture an idea, edit it, then try searching for a word in its title or body. Changes stay in memory and reset when the app restarts."),
++            .init(id: .init(), date: .now.add(days: -1), title: "Weekend checklist",
++                  content: "Pick up coffee beans\nTake a walk by the river\nBring a notebook"),
++            .init(id: .init(), date: .now.add(days: -2), title: "How this demo works",
++                  content: "A container dispatches an effect. The Notes flow calls a service, then dispatches an action. The reducer updates business state and the UI projection refreshes the screen.")
+         ].keyed(by: \.id)
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/Err/Notes+Business+Err.swift b/relux_sample/Modules/Notes/Err/Notes+Business+Err.swift
+index 8efc44e..3a35f2b 100644
+--- a/relux_sample/Modules/Notes/Err/Notes+Business+Err.swift
++++ b/relux_sample/Modules/Notes/Err/Notes+Business+Err.swift
+@@ -1,6 +1,7 @@
+ extension Notes.Business {
+     enum Err: Error, Sendable {
+         case notImplemented
++        case invalidContent
+         case obtainFailed(cause: Error)
+         case upsertFailed(note: Model.Note, cause: Error)
+         case deleteFailed(noteId: Model.Note.Id, cause: Error)
+diff --git a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Note.swift b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Note.swift
+index b265914..4ec368b 100644
+--- a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Note.swift
++++ b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Note.swift
+@@ -38,7 +38,7 @@ extension Notes.UI.Component.EditForm.Note {
+ 
+ extension Notes.UI.Component.EditForm.Note {
+     var valid: Bool {
+-        self.title.isNotEmpty && self.content.isNotEmpty
++        Notes.Business.Model.Note.hasValidContent(title: title, content: content)
+     }
+ }
+ 
+diff --git a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Props.swift b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Props.swift
+index a33c89e..00d7083 100644
+--- a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Props.swift
++++ b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Props.swift
+@@ -1,22 +1,14 @@
+ import SwiftUI
+ 
+ extension Notes.UI.Component.EditForm {
+-    struct Props: ViewProps {
++    struct Props: Relux.UI.ViewProps {
+         let title: String
+-        var note: Binding<Note>
+-        
+-        static func == (lhs: Self, rhs: Self) -> Bool {
+-            lhs.note.wrappedValue == rhs.note.wrappedValue &&
+-            lhs.title == rhs.title
+-        }
+-        
+-        func hash(into hasher: inout Hasher) {
+-            hasher.combine(title)
+-            hasher.combine(note.wrappedValue)
+-        }
++        let note: Notes.Business.Model.Note?
++        var errorMessage: String? = nil
+     }
+ 
+     struct Actions: Relux.UI.ViewCallbacks {
+-       
++        let onSave: ViewInputCallback<Notes.Business.Model.Note>
++        let onCancel: ViewCallback<Void>
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm.swift b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm.swift
+index fc3e820..90c340e 100644
+--- a/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm.swift
++++ b/relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm.swift
+@@ -4,33 +4,120 @@ extension Notes.UI.Component {
+     struct EditForm: Relux.UI.View {
+         let props: Props
+         let actions: Actions
++        @State private var draft: Note
++        @State private var isSaving = false
++        @State private var confirmDiscard = false
++        @FocusState private var focusedField: Field?
++
++        private enum Field: Hashable { case title, body }
++
++        init(props: Props, actions: Actions) {
++            self.props = props
++            self.actions = actions
++            // An editing session owns a local copy. Only Save sends it back through a container.
++            _draft = State(initialValue: props.note.map(Note.init(from:)) ?? Note())
++        }
++
++        private var hasChanges: Bool {
++            if let note = props.note { return draft != Note(from: note) }
++            return !draft.title.isEmpty || !draft.content.isEmpty
++        }
+ 
+         var body: some View {
+-            content
+-                .navigationTitle(props.title)
+-                .navigationBarTitleDisplayMode(.inline)
++            Form {
++                Section("Title") {
++                    TextField("Note title", text: $draft.title)
++                        .accessibilityLabel("Note title")
++                        .focused($focusedField, equals: .title)
++                        .submitLabel(.next)
++                        .onSubmit { focusedField = .body }
++                }
++                Section {
++                    TextEditor(text: $draft.content)
++                        .frame(minHeight: 180)
++                        .accessibilityLabel("Note body")
++                        .focused($focusedField, equals: .body)
++                } header: {
++                    Text("Note")
++                } footer: {
++                    Text("Add a title and some text to save. Notes stay in memory and reset when you restart the app.")
++                }
++                if let message = props.errorMessage {
++                    Section {
++                        Label(message, systemImage: "exclamationmark.triangle")
++                            .foregroundStyle(.red)
++                    }
++                }
++                if isSaving {
++                    Section { ProgressView("Saving note…") }
++                }
++            }
++            .disabled(isSaving)
++            .navigationTitle(props.title)
++            #if os(iOS)
++            .navigationBarTitleDisplayMode(.inline)
++            .scrollDismissesKeyboard(.interactively)
++            #endif
++            .interactiveDismissDisabled(hasChanges || isSaving)
++            .toolbar {
++                ToolbarItem(placement: .cancellationAction) {
++                    Button("Cancel") {
++                        if hasChanges { confirmDiscard = true }
++                        else { Task { await actions.onCancel() } }
++                    }
++                    .disabled(isSaving)
++                }
++                ToolbarItem(placement: .confirmationAction) {
++                    // Pass the current draft as input so a stable callback cannot capture stale text.
++                    SaveButton(props: .init(draft: draft, enabled: draft.valid && !isSaving),
++                               actions: .init(onSave: ViewInputCallback(save)))
++                }
++                #if os(iOS)
++                ToolbarItemGroup(placement: .keyboard) {
++                    Spacer()
++                    Button("Done") { focusedField = nil }
++                }
++                #endif
++            }
++            .confirmationDialog("Discard changes?", isPresented: $confirmDiscard, titleVisibility: .visible) {
++                Button("Discard Changes", role: .destructive) { Task { await actions.onCancel() } }
++                Button("Keep Editing", role: .cancel) { }
++            }
++        }
++
++        private func save(_ draft: Note) async {
++            guard draft.valid, !isSaving else { return }
++            isSaving = true
++            focusedField = nil
++            await actions.onSave(draft.asNote(withId: props.note?.id ?? UUID()))
++            isSaving = false
+         }
+     }
+ }
+ 
+ extension Notes.UI.Component.EditForm {
+-    private var content: some View {
+-        Form {
+-            TextField("Title", text: props.note.title)
+-
+-            TextEditor(text: props.note.content)
+-                .frame(minHeight: 150)
+-                .overlay(
+-                    RoundedRectangle(cornerRadius: 8)
+-                        .stroke(Color.gray.opacity(0.3))
+-                )
+-
+-            DatePicker(
+-                "Created At",
+-                selection: props.note.createdAt,
+-                displayedComponents: [.date]
+-            )
+-            .datePickerStyle(.compact)
++    struct SaveButton: Relux.UI.View {
++        struct Props: Relux.UI.ViewProps {
++            let draft: Notes.UI.Component.EditForm.Note
++            let enabled: Bool
++        }
++        struct Actions: Relux.UI.ViewCallbacks { let onSave: ViewInputCallback<Notes.UI.Component.EditForm.Note> }
++        let props: Props
++        let actions: Actions
++
++        var body: some View {
++            Group {
++                if #available(iOS 26, macOS 26, *) {
++                    Button("Save") { Task { await actions.onSave(props.draft) } }
++                        .buttonStyle(.glassProminent)
++                } else {
++                    Button("Save") { Task { await actions.onSave(props.draft) } }
++                        .buttonStyle(.borderedProminent)
++                }
++            }
++            .disabled(!props.enabled)
++            .keyboardShortcut("s", modifiers: .command)
++            .accessibilityHint("Saves the note for this app session")
+         }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift b/relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift
+index 8868c4a..5836b9e 100644
+--- a/relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift
++++ b/relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift
+@@ -1,42 +1,24 @@
+ import SwiftUI
+ 
+ extension Notes.UI.Create {
+-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+     struct Container: Relux.UI.Container {
+         typealias Note = Notes.Business.Model.Note
+-        
+-        // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
+-        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
+-        // If it’s declared using the @Observable macro, it’s available via @Environment.
+-        @EnvironmentObject private var notesState: Notes.UI.State
++        @Environment(\.dismiss) private var dismiss
++        @State private var errorMessage: String?
+ 
+         var body: some View {
+-            content
++            Page(props: .init(errorMessage: errorMessage),
++                 actions: .init(onCreate: ViewInputCallback(create), onCancel: ViewCallback(close)))
+         }
+ 
+-        private var content: some View {
+-            Page(
+-                props: .init(),
+-                actions: .init(
+-                    onCreate: ViewInputCallback(create)
+-                )
+-            )
++        private func create(_ note: Note) async {
++            // The flow awaits service -> reducer -> UI projection before reporting its outcome.
++            switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
++            case .success: dismiss()
++            case .failure: errorMessage = "Couldn’t save this note. Your draft is safe. Try again."
++            }
+         }
+-    }
+-}
+-
+-// reactions
+-extension Notes.UI.Create.Container {
+-    private func create(_ note: Note) async {
+-        switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
+-            case .success: await close()
+-            case .failure: break
+-        }
+-    }
+ 
+-    private func close() async {
+-        await action {
+-            AppRouter.Action.removeLast()
+-        }
++        private func close() async { dismiss() }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+LS.swift b/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+LS.swift
+deleted file mode 100644
+index 872129f..0000000
+--- a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+LS.swift
++++ /dev/null
+@@ -1,27 +0,0 @@
+-import Combine
+-
+-extension Notes.UI.Create.Container.Page {
+-    @MainActor
+-    final class LocalState: ObservableObject {
+-        typealias FormNote =  Notes.UI.Component.EditForm.Note
+-
+-        @Published var note: FormNote = .init()
+-        @Published private(set) var valid: Bool = false
+-
+-        init() {
+-            initPipelines()
+-        }
+-
+-        private func initPipelines() {
+-            $note
+-                .map(Self.validate)
+-                .receive(on: mainQueue)
+-                .assign(to: &$valid)
+-        }
+-
+-        nonisolated
+-        private static func validate(note: FormNote) -> Bool {
+-            note.valid
+-        }
+-    }
+-}
+diff --git a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+Props.swift b/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+Props.swift
+index ccf0a5b..520f4f8 100644
+--- a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+Props.swift
++++ b/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+Props.swift
+@@ -1,13 +1,12 @@
+ import SwiftUIRelux
+ 
+ extension Notes.UI.Create.Container.Page {
++    struct Props: Relux.UI.ViewProps {
+ 
+-    struct Props: ViewProps {
+-
++        var errorMessage: String? = nil
+     }
+-
+     struct Actions: Relux.UI.ViewCallbacks {
+         let onCreate: ViewInputCallback<Note>
++        let onCancel: ViewCallback<Void>
+     }
+-
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page.swift b/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page.swift
+index 0614949..2f24cb9 100644
+--- a/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page.swift
++++ b/relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page.swift
+@@ -1,56 +1,17 @@
+ import SwiftUI
+ 
+ extension Notes.UI.Create.Container {
+-
+     struct Page: Relux.UI.View {
+         typealias Note = Notes.Business.Model.Note
+-        
+-        @StateObject private var ls: LocalState = .init()
+-
+         let props: Props
+         let actions: Actions
+ 
+         var body: some View {
+-            content
+-                .navBar(middle: createBtn, edge: .bottom)
+-        }
+-
+-        private var content: some View {
+-            form
+-        }
+-    }
+-}
+-
+-
+-// subviews
+-extension Notes.UI.Create.Container.Page {
+-    private var createBtn: some View {
+-        AsyncButton(action: onCreate) {
+-            Text("Create")
++            Notes.UI.Component.EditForm(
++                props: .init(title: "New Note", note: nil,
++                             errorMessage: props.errorMessage),
++                actions: .init(onSave: actions.onCreate, onCancel: actions.onCancel)
++            )
+         }
+-        .buttonStyle(.borderedProminent)
+-        .disabled(ls.valid.not)
+-    }
+-
+-    private var horizontalExtender: some View {
+-        HStack { Spacer() }
+-    }
+-
+-    private var form: some View {
+-        Notes.UI.Component.EditForm(
+-            props: Notes.UI.Component.EditForm.Props(
+-                title: "New Note",
+-                note: $ls.note
+-            ),
+-            actions: Notes.UI.Component.EditForm.Actions()
+-        )
+-    }
+-}
+-
+-// reactions
+-extension Notes.UI.Create.Container.Page {
+-    private func onCreate() async {
+-        guard ls.valid else { return }
+-        await actions.onCreate(ls.note.asNote)
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift b/relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
+index 39203f6..d2ad683 100644
+--- a/relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
++++ b/relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
+@@ -1,53 +1,35 @@
+ import SwiftUI
+ 
+ extension Notes.UI.Details.Container {
+-    struct Props: ViewProps {
+-        let id: Notes.UI.State.Note.Id
+-    }
++    struct Props: Relux.UI.ViewProps { let id: Notes.UI.State.Note.Id }
+ }
+ 
+ extension Notes.UI.Details {
+-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+     struct Container: Relux.UI.Container {
+         typealias Note = Notes.Business.Model.Note
+-
+-        // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
+-        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
+-        // If it’s declared using the @Observable macro, it’s available via @Environment.
+         @EnvironmentObject private var notesState: Notes.UI.State
+-
++        @State private var editingNote: Note?
++        @State private var errorMessage: String?
+         let props: Props
+ 
+         var body: some View {
+-            content
+-                .task { await loadData() }
+-        }
+-
+-        private var content: some View {
+-            Page(
+-                props: Notes.UI.Details.Container.Page.Props(
+-                    note: notesState.note(by: props.id)
+-                ),
+-                actions: Notes.UI.Details.Container.Page.Actions(
+-                    onEdit: ViewInputCallback(openEdit)
+-                )
+-            )
++            Page(props: .init(note: notesState.note(by: props.id), errorMessage: errorMessage),
++                 actions: .init(onEdit: ViewInputCallback(openEdit), onRemove: ViewInputCallback(remove),
++                                onReload: ViewCallback(reload)))
++                .task { if case .initial = notesState.notes { await reload() } }
++                .sheet(item: $editingNote) { note in
++                    NavigationStack { Notes.UI.Edit.Container(props: .init(note: note)) }
++                }
+         }
+-    }
+-}
+ 
+-// reactions
+-extension Notes.UI.Details.Container {
+-    private func loadData() async {
+-        let note = notesState.notes.value?[props.id]
+-        if note.isNil {
+-            performAsync { Notes.Business.Effect.obtainNotes }
+-        }
+-    }
++        private func reload() async { await actions { Notes.Business.Effect.obtainNotes } }
++        private func openEdit(_ note: Note) async { editingNote = note }
+ 
+-    private func openEdit(note: Note) async {
+-        await actions {
+-            AppRouter.Action.push(.app(page: .notes(.edit(note: note))))
++        private func remove(_ note: Note) async {
++            switch await actions(actions: { Notes.Business.Effect.delete(note: note) }) {
++            case .success: await actions { AppRouter.Action.removeLast() }
++            case .failure: errorMessage = "Couldn’t delete this note. Try again."
++            }
+         }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift b/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift
+index 7abf321..e98c3bf 100644
+--- a/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift	
++++ b/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift	
+@@ -1,12 +1,13 @@
+ import SwiftUIRelux
+ 
+ extension Notes.UI.Details.Container.Page {
+-
+-    struct Props: ViewProps {
++    struct Props: Relux.UI.ViewProps {
+         let note: MaybeData<Note?, Err>
++        var errorMessage: String? = nil
+     }
+-
+     struct Actions: Relux.UI.ViewCallbacks {
+         let onEdit: ViewInputCallback<Note>
++        let onRemove: ViewInputCallback<Note>
++        let onReload: ViewCallback<Void>
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift b/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift
+index 0e2506e..3cb9704 100644
+--- a/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift	
++++ b/relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift	
+@@ -4,86 +4,56 @@ extension Notes.UI.Details.Container {
+     struct Page: Relux.UI.View {
+         typealias Note = Notes.Business.Model.Note
+         typealias Err = Notes.Business.Err
+-
+         let props: Props
+         let actions: Actions
++        @State private var confirmDelete = false
+ 
+         var body: some View {
+-            content
+-                .navigationTitle(title)
+-                .navigationBarTitleDisplayMode(.inline)
+-        }
+-    }
+-}
+-
+-// header
+-extension Notes.UI.Details.Container.Page {
+-    var title: Text {
+-        switch props.note.value {
+-            case .none: Text("Note")
+-            case let .some(data): switch data {
+-                case .none: Text("Note")
+-                case let .some(note): Text(note.title)
+-            }
+-        }
+-    }
+-
+-    @ViewBuilder
+-    private func editBtn(for note: Note) -> some View {
+-        NavBarBtn.iconBtn(systemName: "square.and.pencil") {
+-            await actions.onEdit(note)
+-        }
+-    }
+-}
+-// subviews
+-extension Notes.UI.Details.Container.Page {
+-    private var content: some View {
+-        ScrollView {
+-            switch props.note {
+-                case .initial: progressView
+-                case .failure: failureView
+-                case let .success(note): switch note {
+-                    case .none: emptyView
+-                    case let .some(note): noteView(note)
++            Group {
++                switch props.note {
++                case .initial: ProgressView("Loading note…")
++                case .failure:
++                    ContentUnavailableView {
++                        Label("Couldn’t Load Note", systemImage: "exclamationmark.triangle")
++                    } description: { Text("Try loading your notes again.") } actions: {
++                        AsyncButton(action: actions.onReload) { Text("Try Again") }.buttonStyle(.bordered)
++                    }
++                case .success(nil):
++                    ContentUnavailableView("Note Not Found", systemImage: "note.text",
++                                           description: Text("This note is no longer in your session."))
++                case .success(let note?):
++                    ScrollView {
++                        VStack(alignment: .leading, spacing: 20) {
++                            Text(note.title).font(.title).bold().accessibilityAddTraits(.isHeader)
++                            Text(note.createdAt.formatted(date: .abbreviated, time: .shortened))
++                                .font(.subheadline).foregroundStyle(.secondary)
++                            Text(note.content).textSelection(.enabled)
++                            if let message = props.errorMessage {
++                                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
++                            }
++                        }
++                        .frame(maxWidth: .infinity, alignment: .leading).padding()
++                    }
++                    .toolbar {
++                        ToolbarItem(placement: .primaryAction) {
++                            AsyncButton(action: { await actions.onEdit(note) }) {
++                                Label("Edit Note", systemImage: "square.and.pencil")
++                            }
++                        }
++                        ToolbarItem(placement: .secondaryAction) {
++                            Button("Delete Note", systemImage: "trash", role: .destructive) { confirmDelete = true }
++                        }
++                    }
++                    .confirmationDialog("Delete note?", isPresented: $confirmDelete, titleVisibility: .visible) {
++                        Button("Delete Note", role: .destructive) { Task { await actions.onRemove(note) } }
++                        Button("Cancel", role: .cancel) { }
++                    } message: { Text("“\(note.title)” will be removed from this session.") }
+                 }
+             }
++            .navigationTitle("Note")
++            #if os(iOS)
++            .navigationBarTitleDisplayMode(.inline)
++            #endif
+         }
+     }
+-
+-    private var progressView: some View {
+-        ProgressView()
+-            .extendingContent()
+-    }
+-
+-    private var failureView: some View {
+-        Text("Something went wrong :(")
+-            .extendingContent()
+-    }
+-
+-    private var emptyView: some View {
+-        Text("Note doesn't exist")
+-            .extendingContent()
+-    }
+-
+-    private func noteView(_ note: Note) -> some View {
+-        noteContent(note)
+-            .navigationBarItems(trailing: editBtn(for: note))
+-    }
+-
+-    private func noteContent(_ note: Note) -> some View {
+-        VStack(alignment: .leading, spacing: 32) {
+-            HStack {
+-                Text(note.title)
+-                    .font(.title2)
+-                Spacer()
+-            }
+-            
+-            Text(note.content)
+-                .font(.body)
+-
+-            Text("Created at: \(note.createdAt.formatted(date: .numeric, time: .standard))")
+-                .font(.caption)
+-        }.padding()
+-    }
+ }
+-
+diff --git a/relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift b/relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
+index 001c99e..4c51cba 100644
+--- a/relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
++++ b/relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
+@@ -1,49 +1,28 @@
+ import SwiftUI
+ 
+ extension Notes.UI.Edit.Container {
+-    struct Props: ViewProps {
+-        let note: Notes.Business.Model.Note
+-    }
++    struct Props: Relux.UI.ViewProps { let note: Notes.Business.Model.Note }
+ }
+ 
+ extension Notes.UI.Edit {
+-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+     struct Container: Relux.UI.Container {
+         typealias Note = Notes.Business.Model.Note
+-
+         let props: Props
++        @Environment(\.dismiss) private var dismiss
++        @State private var errorMessage: String?
+ 
+         var body: some View {
+-            content
++            Page(props: .init(note: props.note, errorMessage: errorMessage),
++                 actions: .init(onSave: ViewInputCallback(upsert), onCancel: ViewCallback(close)))
+         }
+ 
+-        private var content: some View {
+-            Page(
+-                props: .init(
+-                    note: props.note
+-                ),
+-                actions: .init(
+-                    onSave: ViewInputCallback(upsert),
+-                    onRemove: ViewCallback { await remove(props.note) }
+-                )
+-            )
++        private func upsert(_ note: Note) async {
++            switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
++            case .success: dismiss()
++            case .failure: errorMessage = "Couldn’t save changes. Your draft is safe. Try again."
++            }
+         }
+-    }
+-}
+ 
+-// reactions
+-extension Notes.UI.Edit.Container {
+-    private func upsert(_ note: Note) async {
+-        await actions {
+-            Notes.Business.Effect.upsert(note: note)
+-            AppRouter.Action.removeLast()
+-        }
+-    }
+-
+-    private func remove(_ note: Note) async {
+-        await actions {
+-            Notes.Business.Effect.delete(note: note)
+-            AppRouter.Action.removeLast(2)
+-        }
++        private func close() async { dismiss() }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+LS.swift b/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+LS.swift
+deleted file mode 100644
+index ac62e28..0000000
+--- a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+LS.swift
++++ /dev/null
+@@ -1,34 +0,0 @@
+-import Combine
+-
+-extension Notes.UI.Edit.Container.Page {
+-    @MainActor
+-    final class LocalState: ObservableObject {
+-        typealias FormNote =  Notes.UI.Component.EditForm.Note
+-        typealias Note =  Notes.Business.Model.Note
+-
+-        @Published private(set) var initialNote: FormNote
+-        @Published var note: FormNote = .init()
+-        @Published private(set) var valid: Bool = false
+-
+-        init(props: Props) {
+-            self.initialNote = .init(from: props.note)
+-            initPipelines()
+-        }
+-
+-        private func initPipelines() {
+-            $initialNote
+-                .receive(on: mainQueue)
+-                .assign(to: &$note)
+-
+-            $note
+-                .map(Self.validate)
+-                .receive(on: mainQueue)
+-                .assign(to: &$valid)
+-        }
+-
+-        nonisolated
+-        private static func validate(note: FormNote) -> Bool {
+-            note.valid
+-        }
+-    }
+-}
+diff --git a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+Props.swift b/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+Props.swift
+index 368f234..48d0d9e 100644
+--- a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+Props.swift
++++ b/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+Props.swift
+@@ -1,13 +1,12 @@
+ import SwiftUIRelux
+ 
+ extension Notes.UI.Edit.Container.Page {
+-
+-    struct Props: ViewProps {
++    struct Props: Relux.UI.ViewProps {
+         let note: Note
++        var errorMessage: String? = nil
+     }
+-
+     struct Actions: Relux.UI.ViewCallbacks {
+         let onSave: ViewInputCallback<Note>
+-        let onRemove: ViewCallback<Void>
++        let onCancel: ViewCallback<Void>
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page.swift b/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page.swift
+index 4d9c393..c20c9c2 100644
+--- a/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page.swift
++++ b/relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page.swift
+@@ -3,67 +3,15 @@ import SwiftUI
+ extension Notes.UI.Edit.Container {
+     struct Page: Relux.UI.View {
+         typealias Note = Notes.Business.Model.Note
+-
+-        @StateObject private var ls: LocalState
+-
+         let props: Props
+-        private let actions: Actions
+-
+-        init(
+-            props: Props,
+-            actions: Actions
+-        ) {
+-            self.props = props
+-            self.actions = actions
+-            self._ls = .init(wrappedValue: .init(props: props))
+-        }
++        let actions: Actions
+ 
+         var body: some View {
+-            content
+-                .navigationBarItems(trailing: removeBtn)
+-                .navBar(middle: createBtn, edge: .bottom)
+-        }
+-    }
+-}
+-
+-// header
+-extension Notes.UI.Edit.Container.Page {
+-    private var removeBtn: some View {
+-        NavBarBtn.iconBtn(
+-            systemName: "trash",
+-            action: actions.onRemove.callAsFunction
+-        )
+-    }
+-}
+-
+-// subviews
+-extension Notes.UI.Edit.Container.Page {
+-    private var createBtn: some View {
+-        AsyncButton(action: onSave) {
+-            Text("Save")
++            Notes.UI.Component.EditForm(
++                props: .init(title: "Edit Note", note: props.note,
++                             errorMessage: props.errorMessage),
++                actions: .init(onSave: actions.onSave, onCancel: actions.onCancel)
++            )
+         }
+-        .buttonStyle(.borderedProminent)
+-        .disabled(ls.valid.not)
+-    }
+-
+-    private var content: some View {
+-        form
+-    }
+-
+-    private var form: some View {
+-        Notes.UI.Component.EditForm(
+-            props: .init(
+-                title: "Edit note",
+-                note: $ls.note
+-            ),
+-            actions: .init()
+-        )
+-    }
+-}
+-
+-// reactions
+-extension Notes.UI.Edit.Container.Page {
+-    private func onSave() async {
+-        await actions.onSave(ls.note.asNote(withId: props.note.id))
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift b/relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift
+index 4287c36..ffc9585 100644
+--- a/relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift
++++ b/relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift
+@@ -1,51 +1,40 @@
+ import SwiftUI
+ 
+ extension Notes.UI.List {
+-    // ReluxContainer separates the Relux-driven business layer from the SwiftUI view layer.
+     struct Container: Relux.UI.Container {
+         typealias Note = Notes.Business.Model.Note
+-
+-        // In SwiftUI-Relux, the Relux resolver injects all UI states into the root view.
+-        // If a state conforms to ObservableObject, it’s accessible via @EnvironmentObject.
+-        // If it’s declared using the @Observable macro, it’s available via @Environment.
+         @EnvironmentObject private var notesState: Notes.UI.State
++        @State private var showCreate = false
++        @State private var errorMessage: String?
+ 
+         var body: some View {
+-            content
++            Page(props: .init(notes: notesState.notesGroupedByDay, errorMessage: errorMessage),
++                 actions: .init(onReload: ViewCallback(reloadNotes), onCreate: ViewCallback(openCreateNote),
++                                onOpen: ViewInputCallback(openNote), onRemove: ViewInputCallback(remove)))
++                .task {
++                    if case .initial = notesState.notes { await reloadNotes() }
++                }
++                .sheet(isPresented: $showCreate) {
++                    NavigationStack { Notes.UI.Create.Container() }
++                }
+         }
+ 
+-        private var content: some View {
+-            Page(
+-                props: .init(
+-                    notes: notesState.notesGroupedByDay
+-                ),
+-                actions: .init(
+-                    onReload: ViewCallback(reloadNotes),
+-                    onCreate: ViewCallback(openCreateNote),
+-                    onRemove: ViewInputCallback(remove)
+-                )
+-            )
++        private func reloadNotes() async {
++            // Await the flow so pull-to-refresh follows the real service lifetime.
++            await actions { Notes.Business.Effect.obtainNotes }
+         }
+-    }
+-}
+ 
+-// reactions
+-extension Notes.UI.List.Container {
+-    private func reloadNotes() async {
+-        performAsync {
+-            Notes.Business.Effect.obtainNotes
+-        }
+-    }
++        private func openCreateNote() async { showCreate = true }
+ 
+-    private func openCreateNote() async {
+-        await actions{
+-            AppRouter.Action.push(.app(page: .notes(.create)))
++        private func openNote(_ id: Note.Id) async {
++            await actions { AppRouter.Action.push(.app(page: .notes(.details(id: id)))) }
+         }
+-    }
+ 
+-    private func remove(_ note: Note) async {
+-        await actions {
+-            Notes.Business.Effect.delete(note: note)
++        private func remove(_ note: Note) async {
++            switch await actions(actions: { Notes.Business.Effect.delete(note: note) }) {
++            case .success: errorMessage = nil
++            case .failure: errorMessage = "Couldn’t delete the note. Try again."
++            }
+         }
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift b/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift
+index a366878..23983c2 100644
+--- a/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift	
++++ b/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift	
+@@ -1,14 +1,23 @@
+ import SwiftUIRelux
+ 
+ extension Notes.UI.List.Container.Page {
+-
+-    struct Props: ViewProps {
++    struct Props: Relux.UI.ViewProps {
+         let notes: MaybeData<[[Note]], Err>
++        var errorMessage: String? = nil
++
++        func groups(matching search: String) -> [[Note]] {
++            let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
++            return (notes.value ?? []).map { group in
++                group.filter { query.isEmpty || $0.title.localizedStandardContains(query) ||
++                    $0.content.localizedStandardContains(query) }
++            }.filter { !$0.isEmpty }
++        }
+     }
+ 
+     struct Actions: Relux.UI.ViewCallbacks {
+         let onReload: ViewCallback<Void>
+         let onCreate: ViewCallback<Void>
++        let onOpen: ViewInputCallback<Note.Id>
+         let onRemove: ViewInputCallback<Note>
+     }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift b/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift
+index de27d57..57e9a84 100644
+--- a/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift	
++++ b/relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift	
+@@ -4,140 +4,124 @@ extension Notes.UI.List.Container {
+     struct Page: Relux.UI.View {
+         typealias Note = Notes.Business.Model.Note
+         typealias Err = Notes.Business.Err
+-
+         let props: Props
+         let actions: Actions
++        @State private var search = ""
++        @State private var noteToDelete: Note?
+ 
+         var body: some View {
+-            content
+-                .navigationTitle("Notes")
+-                .navigationBarTitleDisplayMode(.large)
+-                .navigationBarItems(trailing: createBtn)
+-                .animation(.easeInOut, value: props.notes.asAnimatableValue)
+-                .animation(.easeInOut, value: props.notes.value?.flatCount)
+-                .refreshable(action: actions.onReload.callAsFunction)
+-        }
+-    }
+-}
+-
+-// header
+-extension Notes.UI.List.Container.Page {
+-    private var createBtn: some View {
+-        NavBarBtn.iconBtn(
+-            systemName: "plus",
+-            action: actions.onCreate
+-        )
+-    }
+-}
+-
+-// subviews
+-extension Notes.UI.List.Container.Page {
+-    private var content: some View {
+-        List {
+-            listView(for: props.notes.value)
+-        }.overlay(content: loadingState)
+-    }
+-
+-    @ViewBuilder
+-    private func loadingState() -> some View {
+-        switch props.notes {
+-            case .initial: initialView
+-            case .failure: failureView
+-            case let .success(notes): switch notes.isNotEmpty {
+-                case false: emptyListView
+-                case true: EmptyView()
++            let groups = props.groups(matching: search)
++            List {
++                if let message = props.errorMessage {
++                    Section { Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red) }
++                }
++                ForEach(groups, id: \.id) { group in
++                    Section {
++                        ForEach(group) { note in
++                            Button { Task { await actions.onOpen(note.id) } } label: {
++                                NoteRow(props: .init(title: note.title, content: note.content,
++                                                     date: note.createdAt))
++                            }
++                            .tint(.primary)
++                            .swipeActions(allowsFullSwipe: false) {
++                                Button("Delete", systemImage: "trash", role: .destructive) { noteToDelete = note }
++                            }
++                            .contextMenu {
++                                Button("Delete Note", systemImage: "trash", role: .destructive) { noteToDelete = note }
++                            }
++                        }
++                    } header: {
++                        if let date = group.first?.createdAt {
++                            Text(date.formatted(date: .abbreviated, time: .omitted))
++                        }
++                    }
++                }
++                if !groups.isEmpty {
++                    Section {
++                        Text("In-memory demo. Changes reset when you restart the app.")
++                            .font(.footnote).foregroundStyle(.secondary)
++                    }
++                }
+             }
+-        }
+-    }
+-}
+-
+-// loading overlays
+-extension Notes.UI.List.Container.Page {
+-    private var initialView: some View {
+-        ProgressView("Loading...")
+-            .extendingContent()
+-    }
+-
+-    private var failureView: some View {
+-        Text("Failed to load")
+-            .extendingContent()
+-    }
+-
+-    private var emptyListView: some View {
+-        Text("No notes yet...")
+-            .extendingContent()
+-    }
+-}
+-
+-// list content
+-extension Notes.UI.List.Container.Page {
+-    @ViewBuilder
+-    private func listView(for noteGroups: [[Note]]?) -> some View {
+-        switch noteGroups {
+-            case .none: EmptyView()
+-            case let .some(groups): noteGroupsView(for: groups)
+-        }
+-    }
+-
+-    @ViewBuilder
+-    private func noteGroupsView(for noteGroups: [[Note]]) -> some View {
+-        ForEach(noteGroups, id: \.id) { group in
+-            notesGroupSection(for: group)
+-        }
+-    }
+-
+-    private func notesGroupSection(for group: [Note]) -> some View {
+-        Section(header: notesGroupSectionHeader(for: group.first?.createdAt ?? .now)) {
+-            ForEach(group) { note in
+-                noteRow(for: note)
+-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) { removeSwipeAction(for: note) }
++            .overlay {
++                switch props.notes {
++                case .initial:
++                    ProgressView("Loading notes…")
++                case .failure:
++                    ContentUnavailableView {
++                        Label("Couldn’t Load Notes", systemImage: "exclamationmark.triangle")
++                    } description: {
++                        Text("Try loading your notes again.")
++                    } actions: {
++                        AsyncButton(action: actions.onReload) { Text("Try Again") }.buttonStyle(.bordered)
++                    }
++                case .success:
++                    if groups.isEmpty {
++                        if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
++                            ContentUnavailableView {
++                                Label("Your Notes Start Here", systemImage: "note.text")
++                            } description: {
++                                Text("Capture an idea or make a quick checklist. Notes reset when the app restarts.")
++                            } actions: {
++                                AsyncButton(action: actions.onCreate) { Text("New Note") }.buttonStyle(.bordered)
++                            }
++                        } else {
++                            ContentUnavailableView.search(text: search)
++                        }
++                    }
++                }
++            }
++            .navigationTitle("Notes")
++            #if os(iOS)
++            .navigationBarTitleDisplayMode(.large)
++            .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always),
++                        prompt: "Search titles and text")
++            #else
++            .searchable(text: $search, prompt: "Search titles and text")
++            #endif
++            .refreshable(action: actions.onReload.callAsFunction)
++            .toolbar {
++                ToolbarItem(placement: .primaryAction) {
++                    AsyncButton(action: actions.onCreate) { Label("New Note", systemImage: "square.and.pencil") }
++                        .keyboardShortcut("n", modifiers: .command)
++                }
++            }
++            .confirmationDialog("Delete note?", isPresented: Binding(
++                get: { noteToDelete != nil }, set: { if !$0 { noteToDelete = nil } }
++            ), titleVisibility: .visible, presenting: noteToDelete) { note in
++                Button("Delete Note", role: .destructive) { Task { await actions.onRemove(note) } }
++                Button("Cancel", role: .cancel) { }
++            } message: { note in
++                Text("“\(note.title)” will be removed from this session.")
+             }
+         }
+     }
++}
+ 
+-    private func removeSwipeAction(for note: Note) -> some View {
+-        SwipeButton(
+-            props: .init(
+-                icon: Image(systemName: "trash"),
+-                tint: .red
+-            ),
+-            actions: .init(
+-                action: { await onRemove(note) }
+-            )
+-        )
+-    }
+-
+-    private func notesGroupSectionHeader(for date: Date = .now) -> some View {
+-        Text(date.formatted(dateFormat: .dateAsDDMMMM))
+-    }
+-
+-    private func noteRow(for note: Note) -> some View {
+-        Relux.NavigationLink(page: .app(page: .notes(.details(id: note.id)))) {
+-            noteRowContent(for: note)
++private extension Notes.UI.List.Container.Page {
++    struct NoteRow: Relux.UI.View {
++        struct Props: Relux.UI.ViewProps {
++            let title: String
++            let content: String
++            let date: Date
+         }
+-    }
++        let props: Props
+ 
+-    private func noteRowContent(for note: Note) -> some View {
+-        VStack(alignment: .leading) {
+-            HStack(alignment: .bottom) {
+-                Text(note.title)
+-                Spacer()
+-                Text(note.createdAt.formatted(date: .omitted, time: .shortened))
++        var body: some View {
++            VStack(alignment: .leading, spacing: 4) {
++                Text(props.title).font(.headline)
++                Text(props.content).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
++                Text(props.date.formatted(date: .omitted, time: .shortened))
++                    .font(.caption).foregroundStyle(.secondary)
+             }
+-            Text(note.content)
+-                .lineLimit(2)
++            .padding(.vertical, 4)
++            .frame(maxWidth: .infinity, alignment: .leading)
++            .accessibilityElement(children: .combine)
++            .accessibilityHint("Opens the note")
+         }
+     }
+ }
+ 
+-// reactions
+-extension Notes.UI.List.Container.Page {
+-    private func onRemove(_ note: Note) async {
+-        await actions.onRemove(note)
+-    }
+-}
+-
+-// utils
+ extension Array<Notes.Business.Model.Note> {
+-    public var id: Date? { self.first?.createdAt.startOfDay }
++    public var id: Date? { first?.createdAt.startOfDay }
+ }
+diff --git a/relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift b/relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift
+index c9e63c2..3f4452b 100644
+--- a/relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift
++++ b/relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift
+@@ -28,7 +28,7 @@ extension Notes.UI.Widget {
+ extension Notes.UI.Widget.Container {
+     private func loadData() {
+         if notesState.notesGroupedByDay.value.isNil {
+-            performAsync(delay: 0.5) {
++            performAsync {
+                 Notes.Business.Effect.obtainNotes
+             }
+         }
+diff --git a/relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift b/relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift
+index 8f374a3..02064d8 100644
+--- a/relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift
++++ b/relux_sample/Modules/Notes/UI/Widget/Page/Notes+UI+Widget+Container+Page.swift
+@@ -29,7 +29,7 @@ extension Notes.UI.Widget.Container.Page {
+         .padding()
+         .frame(height: 100)
+         .background(.gray.opacity(0.3))
+-        .cornerRadius(28, corners: .allCorners)
++        .clipShape(RoundedRectangle(cornerRadius: 28))
+     }
+ }
+ 
+diff --git a/relux_sample/Utils/UI/RoundedCorner.swift b/relux_sample/Utils/UI/RoundedCorner.swift
+deleted file mode 100644
+index d273ab7..0000000
+--- a/relux_sample/Utils/UI/RoundedCorner.swift
++++ /dev/null
+@@ -1,37 +0,0 @@
+-//
+-//  RoundedCorner.swift
+-//  relux_sample
+-//
+-//
+-
+-
+-import SwiftUI
+-
+-public struct RoundedCorner: Shape {
+-    var radius: CGFloat = .infinity
+-    var corners: UIRectCorner = .allCorners
+-    
+-    public init(radius: CGFloat, corners: UIRectCorner) {
+-        self.radius = radius
+-        self.corners = corners
+-    }
+-
+-    public func path(in rect: CGRect) -> Path {
+-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+-        return Path(path.cgPath)
+-    }
+-}
+-
+-public extension View {
+-    @ViewBuilder
+-    func cornerRadius(_ radius: CGFloat?, corners: UIRectCorner) -> some View {
+-        switch radius {
+-            case .none: self
+-            case let .some(radius): self.cornerRadius(radius, corners: corners)
+-        }
+-    }
+-
+-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+-        clipShape( RoundedCorner(radius: radius, corners: corners) )
+-    }
+-}
+diff --git a/relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift b/relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift
+index 6cee6da..64d94ac 100644
+--- a/relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift
++++ b/relux_sampleTests/Notes/Business/Saga/Notes+Business+Action+TestableAction.swift
+@@ -1,5 +1,5 @@
+ import Relux
+-import Auth
++import AuthReluxInt
+ @testable import relux_sample
+ 
+ extension Notes.Business.Action {
+diff --git a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift
+index 71cfe8f..2df0539 100644
+--- a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift
++++ b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Delete.swift
+@@ -16,7 +16,11 @@ extension NotesTests.Business.Saga {
+             service.deleteNotesHandler = { _ in .success(()) }
+ 
+                 // Act
+-            _ = await flow.apply(Effect.delete(note: note))
++            let result: Relux.Flow.Result = await flow.apply(Effect.delete(note: note))
++            guard case .success = result else {
++                Issue.record("Expected success flow result")
++                return
++            }
+ 
+                 // Assert
+             let successAction = logger.getAction(Action.deleteNoteSuccess(note: note))
+@@ -24,6 +28,7 @@ extension NotesTests.Business.Saga {
+             #expect(service.deleteNotesCallCount == 1)
+         }
+ 
++
+         @Test func deleteNote_Failure() async throws {
+             // Arrange
+             let logger = Relux.Testing.Logger()
+@@ -37,7 +42,11 @@ extension NotesTests.Business.Saga {
+             service.deleteNotesHandler = { _ in .failure(err) }
+ 
+             // Act
+-            _ = await flow.apply(Effect.delete(note: note))
++            let result: Relux.Flow.Result = await flow.apply(Effect.delete(note: note))
++            guard case .failure = result else {
++                Issue.record("Expected failure flow result")
++                return
++            }
+ 
+             // Assert
+             #expect(service.deleteNotesCallCount == 1)
+diff --git a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift
+index 2ff50a6..d79b8ee 100644
+--- a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift
++++ b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift
+@@ -15,7 +15,11 @@ extension NotesTests.Business.Saga {
+             service.obtainNotesHandler = { .success(notes) }
+ 
+                 // Act
+-            _ = await flow.apply(Effect.obtainNotes)
++            let result: Relux.Flow.Result = await flow.apply(Effect.obtainNotes)
++            guard case .success = result else {
++                Issue.record("Expected success flow result")
++                return
++            }
+ 
+                 // Assert
+             let successAction = logger.getAction(Action.obtainNotesSuccess(notes: notes))
+@@ -23,6 +27,7 @@ extension NotesTests.Business.Saga {
+             #expect(service.obtainNotesCallCount == 1)
+         }
+ 
++
+         @Test func obtainNotes_Failure() async throws {
+                 // Arrange
+             let logger = Relux.Testing.Logger()
+@@ -35,7 +40,11 @@ extension NotesTests.Business.Saga {
+             service.obtainNotesHandler = { .failure(err) }
+ 
+                 // Act
+-            _ = await flow.apply(Effect.obtainNotes)
++            let result: Relux.Flow.Result = await flow.apply(Effect.obtainNotes)
++            guard case .failure = result else {
++                Issue.record("Expected failure flow result")
++                return
++            }
+ 
+                 // Assert
+             let failureAction = logger.getAction(Action.obtainNotesFail(err: err))
+diff --git a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift
+index dc1b1d0..4434a89 100644
+--- a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift
++++ b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift
+@@ -15,7 +15,11 @@ extension NotesTests.Business.Saga {
+             service.upsertNotesHandler = { _ in .success(()) }
+ 
+                 // Act
+-            _ = await flow.apply(Effect.upsert(note: note))
++            let result: Relux.Flow.Result = await flow.apply(Effect.upsert(note: note))
++            guard case .success = result else {
++                Issue.record("Expected success flow result")
++                return
++            }
+ 
+                 // Assert
+             let successAction = logger.getAction(Action.upsertNoteSuccess(note: note))
+@@ -23,6 +27,7 @@ extension NotesTests.Business.Saga {
+             #expect(service.upsertNotesCallCount == 1)
+         }
+ 
++
+         @Test func upsertNote_Failure() async throws {
+                 // Arrange
+             let logger = Relux.Testing.Logger()
+@@ -35,7 +40,11 @@ extension NotesTests.Business.Saga {
+             service.upsertNotesHandler = { _ in .failure(err) }
+ 
+                 // Act
+-            _ = await flow.apply(Effect.upsert(note: note))
++            let result: Relux.Flow.Result = await flow.apply(Effect.upsert(note: note))
++            guard case .failure = result else {
++                Issue.record("Expected failure flow result")
++                return
++            }
+ 
+                 // Assert
+             let failureAction = logger.getAction(Action.upsertNoteFail(err: err))
+diff --git a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga.swift b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga.swift
+index e38c303..d8b9bd6 100644
+--- a/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga.swift
++++ b/relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga.swift
+@@ -1,6 +1,6 @@
+ import Testing
+ import Relux
+-import Auth
++import AuthReluxInt
+ @testable import relux_sample
+ 
+ extension NotesTests.Business.Saga {
+diff --git a/relux_sampleTests/Notes/NotesNativeWorkflowTests.swift b/relux_sampleTests/Notes/NotesNativeWorkflowTests.swift
+new file mode 100644
+index 0000000..8e0990b
+--- /dev/null
++++ b/relux_sampleTests/Notes/NotesNativeWorkflowTests.swift
+@@ -0,0 +1,88 @@
++import Foundation
++import Testing
++@testable import relux_sample
++
++@Suite struct NotesNativeWorkflowTests {
++    typealias Note = Notes.Business.Model.Note
++    typealias Draft = Notes.UI.Component.EditForm.Note
++
++    @Test(arguments: ["", " ", "\n\t"])
++    func blankTitleCannotBeSaved(title: String) {
++        #expect(!Draft(title: title, content: "A useful body").valid)
++    }
++
++    @Test(arguments: ["", " ", "\n\t"])
++    func blankBodyCannotBeSaved(body: String) {
++        #expect(!Draft(title: "A useful title", content: body).valid)
++    }
++
++    @Test func editedDraftPreservesIdentityAndDate() {
++        let original = Note(id: UUID(), createdAt: Date(timeIntervalSince1970: 123),
++                            title: "Original", content: "Before")
++        var draft = Draft(from: original)
++        draft.title = "After"
++        let edited = draft.asNote(withId: original.id)
++        #expect(edited.id == original.id)
++        #expect(edited.createdAt == original.createdAt)
++        #expect(edited.title == "After")
++        #expect(draft.valid)
++    }
++
++    @Test func inMemoryServiceCreateEditDeleteJourney() async throws {
++        let service = Notes.Business.Service(fetcher: Notes.Data.Api.Fetcher())
++        let initial = try await service.getNotes().get()
++        #expect(!initial.isEmpty)
++        let note = Note(id: UUID(), createdAt: Date(timeIntervalSince1970: 123),
++                        title: "Weekend plan", content: "Walk by the river")
++        try await service.upsert(note: note).get()
++        #expect(try await service.getNotes().get().contains(note))
++        let edited = Note(id: note.id, createdAt: note.createdAt, title: "Sunday plan", content: "Pack a picnic")
++        try await service.upsert(note: edited).get()
++        let updated = try await service.getNotes().get()
++        #expect(updated.filter { $0.id == note.id } == [edited])
++        try await service.delete(noteId: note.id).get()
++        #expect(try await service.getNotes().get() == initial)
++    }
++}
++
++extension NotesNativeWorkflowTests {
++    @Test(arguments: [(" ", "Body"), ("\n\t", "Body"), ("Title", " "), ("Title", "\n\t")])
++    func flowRejectsBlankContentWithoutChangingStorage(title: String, body: String) async throws {
++        let logger = Relux.Testing.Logger()
++        let dispatcher = Relux.Dispatcher(logger: logger)
++        let service = Notes.Business.Service(fetcher: Notes.Data.Api.Fetcher())
++        let initial = try await service.getNotes().get()
++        let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
++        let note = Note(id: UUID(), createdAt: Date(timeIntervalSince1970: 123), title: title, content: body)
++        let result: Relux.Flow.Result = await flow.apply(Notes.Business.Effect.upsert(note: note))
++        guard case .failure = result else {
++            Issue.record("Blank content must fail through the production flow and service")
++            return
++        }
++        #expect(logger.getAction(Notes.Business.Action.upsertNoteSuccess(note: note)) == nil)
++        #expect(try await service.getNotes().get() == initial)
++    }
++
++    @Test @MainActor func searchMatchesTitleAndBodyAndRemovesEmptySections() {
++        let date = Date(timeIntervalSince1970: 123)
++        let titleMatch = Note(id: UUID(), createdAt: date, title: "Café checklist", content: "Coffee beans")
++        let bodyMatch = Note(id: UUID(), createdAt: date, title: "Weekend", content: "Visit a café")
++        let excluded = Note(id: UUID(), createdAt: date, title: "Architecture", content: "Reducers")
++        let props = Notes.UI.List.Container.Page.Props(notes: .success([[titleMatch, excluded], [bodyMatch]]))
++        #expect(props.groups(matching: " CAFE ") == [[titleMatch], [bodyMatch]])
++        #expect(props.groups(matching: "reducers") == [[excluded]])
++        #expect(props.groups(matching: "unmatched").isEmpty)
++        #expect(props.groups(matching: " \n ") == [[titleMatch, excluded], [bodyMatch]])
++        #expect(Notes.UI.List.Container.Page.Props(notes: .failure(.notImplemented)).groups(matching: "").isEmpty)
++    }
++}
++
++extension NotesNativeWorkflowTests {
++    @Test @MainActor func saveButtonPropsTrackChangesBetweenValidDrafts() {
++        typealias Props = Notes.UI.Component.EditForm.SaveButton.Props
++        let date = Date(timeIntervalSince1970: 123)
++        let before = Props(draft: Draft(title: "Title", content: "Before", createdAt: date), enabled: true)
++        let after = Props(draft: Draft(title: "Title", content: "After", createdAt: date), enabled: true)
++        #expect(before != after)
++    }
++}
