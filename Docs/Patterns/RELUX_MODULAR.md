@@ -1,296 +1,35 @@
-# Relux Modular Architecture
+# Relux modular architecture
 
-Domain decomposition pattern for scalable iOS/macOS applications.
+Auth demonstrates six library products within [one package](../../Packages/Auth/Package.swift). Notes stays inside the app until reuse or ownership justifies extraction. Six products are a boundary example, not a minimum size for every feature.
 
----
+| Auth product | Responsibility | Direct local target dependencies |
+| --- | --- | --- |
+| AuthModels | Namespace, data, errors | None |
+| AuthReluxInt | Actions, effects, state and router contracts | AuthModels |
+| AuthServiceInt | Service contract | AuthModels |
+| AuthServiceImpl | LocalAuthentication implementation | AuthModels, AuthServiceInt |
+| AuthReluxImpl | State, reducer, saga and module | AuthModels, AuthReluxInt, AuthServiceInt |
+| AuthTestSupport | Domain test helpers | AuthModels, AuthServiceInt, AuthReluxInt |
 
-## Goals
+External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. [AuthUI](../../Packages/AuthUI/Package.swift) has AuthUIAPI and AuthUI targets. UI imports interfaces, not service or Relux implementations. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
 
-- Scale from MVP to 1000+ module apps
-- Fast incremental builds via isolated recompilation
-- Explicit module boundaries with predictable layering
-- Clear seams for implementation swapping via DI
-- Repeatable pattern across all domains
+## Composition root
 
----
+[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(router:serviceFactory:)`. The module resolves an `IService`; it does not import AuthServiceImpl. Swap a service at this construction boundary without changing the saga or view. [AuthRouterAdapter](../../relux_sample/Adapters/AuthRouterAdapter.swift) maps domain navigation needs into app actions so Auth does not import app navigation.
 
-## Package Layout
+Use target names for dependencies within a package and product dependencies across packages. Use automatic library linkage. Do not add a self-package dependency or manually embed every product: duplicate static Relux ownership caused runtime duplicate-class warnings in the [architecture audit](../ArchitectureAudit.md). TestSupport belongs to testing consumers, not the app's production dependency graph. There is no installed import-lint gate; manifests, compilation and review enforce the current boundaries.
 
-Single package, multiple library products per domain:
+## State sizing
 
-| Product | Contents | Dependencies |
-|---------|----------|--------------|
-| `<Domain>Models` | Namespace, data types, errors. No Relux. | — |
-| `<Domain>ReluxInt` | Actions, effects, state/router protocols, UI page enums | Models, Relux |
-| `<Domain>ServiceInt` | Service protocol(s) only | Models |
-| `<Domain>ServiceImpl` | Concrete service implementation | Models, ServiceInt |
-| `<Domain>ReluxImpl` | State, reducer, saga/flow, module wiring | Models, ReluxInt, ServiceInt, ServiceImpl, SwiftIoC, Relux |
-| `<Domain>TestSupport` | Mocks, stubs, test helpers (static library) | Models, ReluxInt, ServiceInt, TestInfrastructure |
+Auth uses an observable MainActor HybridState for a small domain. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
 
-Use automatic library linkage. Static upstream dependencies must have one owner in the final process; see [the verified architecture audit](../ArchitectureAudit.md).
+[Notes.Module](../../relux_sample/Modules/Notes/Notes+Module.swift) constructs both states, a flow, a service and an in-memory fetcher. Its current wiring is not a headless package. Extract a business-only composition when undertaking the [CLI exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli).
 
----
+## Add a boundary when it earns its cost
 
-## Dependency Graph
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         App Host Binary                         │
-│  Links & embeds all domain products                            │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│<Domain>ReluxImpl│   │<Domain>ServiceImpl│ │<Domain>TestSupport│
-└───────────────┘    └───────────────┘    └───────────────┘
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│<Domain>ReluxInt│    │<Domain>ServiceInt│  │TestInfrastructure│
-└───────────────┘    └───────────────┘    └───────────────┘
-        │                     │
-        └──────────┬──────────┘
-                   ▼
-          ┌───────────────┐
-          │ <Domain>Models │
-          └───────────────┘
-```
-
----
-
-## Package.swift Template
-```swift
-// swift-tools-version: 6.0
-import PackageDescription
-
-let package = Package(
-    name: "<Domain>",
-    platforms: [.iOS(.v17), .macOS(.v14)],
-    products: [
-        .library(name: "<Domain>Models", targets: ["<Domain>Models"]),
-        .library(name: "<Domain>ReluxInt", targets: ["<Domain>ReluxInt"]),
-        .library(name: "<Domain>ServiceInt", targets: ["<Domain>ServiceInt"]),
-        .library(name: "<Domain>ServiceImpl", targets: ["<Domain>ServiceImpl"]),
-        .library(name: "<Domain>ReluxImpl", targets: ["<Domain>ReluxImpl"]),
-        .library(name: "<Domain>TestSupport", targets: ["<Domain>TestSupport"]),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
-        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
-        .package(path: "../TestInfrastructure"),
-    ],
-    targets: [
-        .target(
-            name: "<Domain>Models",
-            dependencies: []
-        ),
-        .target(
-            name: "<Domain>ReluxInt",
-            dependencies: [
-                "<Domain>Models",
-                .product(name: "Relux", package: "swift-relux"),
-            ]
-        ),
-        .target(
-            name: "<Domain>ServiceInt",
-            dependencies: [
-                "<Domain>Models",
-            ]
-        ),
-        .target(
-            name: "<Domain>ServiceImpl",
-            dependencies: [
-                "<Domain>Models",
-                "<Domain>ServiceInt",
-            ]
-        ),
-        .target(
-            name: "<Domain>ReluxImpl",
-            dependencies: [
-                "<Domain>Models",
-                "<Domain>ReluxInt",
-                "<Domain>ServiceInt",
-                "<Domain>ServiceImpl",
-                .product(name: "SwiftIoC", package: "swift-ioc"),
-                .product(name: "Relux", package: "swift-relux"),
-            ]
-        ),
-        .target(
-            name: "<Domain>TestSupport",
-            dependencies: [
-                "<Domain>Models",
-                "<Domain>ReluxInt",
-                "<Domain>ServiceInt",
-                .product(name: "TestInfrastructure", package: "TestInfrastructure"),
-            ]
-        ),
-        .testTarget(
-            name: "<Domain>Tests",
-            dependencies: [
-                "<Domain>ReluxImpl",
-                "<Domain>TestSupport",
-            ]
-        ),
-    ]
-)
-```
-
----
-
-## Layering Rules
-
-| Layer | Can Import | Cannot Import |
-|-------|-----------|---------------|
-| UI | ReluxInt, Models | ReluxImpl, ServiceImpl |
-| ReluxImpl | ReluxInt, ServiceInt, ServiceImpl, Models | UI |
-| ServiceImpl | ServiceInt, Models | Relux*, UI |
-| ServiceInt | Models | Everything else |
-| Models | Nothing domain-specific | Everything else |
-
-**Enforcement**: Code review, lint rules, or build-time import checks.
-
----
-
-## Linking Boundaries
-
-Use ordinary target dependencies within one package and product dependencies across packages. Keep library products automatic unless a measured deployment requirement needs dynamic linkage. Do not self-reference the package to force dynamic products: this sample reproduced duplicate Relux runtime classes when multiple Auth libraries embedded the same static upstream dependency. Xcode links the automatic products without manual Embed Frameworks entries.
-
----
-
-## IoC Integration
-```swift
-// <Domain>ReluxImpl/<Domain>+Module.swift
-
-extension <Domain> {
-    @MainActor
-    public struct Module: Relux.Module {
-        private let ioc: IoC
-        
-        public let states: [any Relux.AnyState]
-        public let sagas: [any Relux.Saga]
-        
-        public init(router: <Domain>.Business.IRouter) {
-            self.ioc = Self.buildIoC(router: router)
-            
-            self.states = [
-                ioc.get(by: <Domain>.Business.IState.self)!
-            ]
-            self.sagas = [
-                ioc.get(by: <Domain>.Business.ISaga.self)!
-            ]
-        }
-    }
-}
-
-extension <Domain>.Module {
-    private static func buildIoC(router: <Domain>.Business.IRouter) -> IoC {
-        let ioc = IoC(logger: IoC.Logger(enabled: false))
-        
-        ioc.register(<Domain>.Business.IRouter.self, lifecycle: .container) { router }
-        ioc.register(<Domain>.Business.IState.self, lifecycle: .container) { <Domain>.Business.State() }
-        ioc.register(<Domain>.Business.IService.self, lifecycle: .container) { <Domain>.Business.Service() }
-        ioc.register(<Domain>.Business.ISaga.self, lifecycle: .container) { 
-            <Domain>.Business.Saga(
-                svc: ioc.get(by: <Domain>.Business.IService.self)!,
-                router: ioc.get(by: <Domain>.Business.IRouter.self)!
-            )
-        }
-        
-        return ioc
-    }
-}
-```
-
----
-
-## Router Protocol Pattern
-
-Domains define navigation needs via protocol; app provides implementation:
-```swift
-// <Domain>ReluxInt
-extension <Domain>.Business {
-    public protocol IRouter: Sendable {
-        func set<Domain>Page(_ page: <Domain>.UI.Model.Page) -> any Relux.Action
-        func pushMain() -> any Relux.Action
-    }
-}
-
-// App provides adapter
-struct <Domain>RouterAdapter: <Domain>.Business.IRouter {
-    func set<Domain>Page(_ page: <Domain>.UI.Model.Page) -> any Relux.Action {
-        AppRouter.Action.set([.<domain>(page: page)])
-    }
-    
-    func pushMain() -> any Relux.Action {
-        AppRouter.Action.push(.app(page: .main))
-    }
-}
-```
-
----
-
-## UI Package (Optional)
-
-For domains with views, separate UI package:
-```
-<Domain>UI/
-  Package.swift
-  Sources/
-    <Domain>UIAPI/      ← View provider protocol
-    <Domain>UI/         ← Concrete views
-```
-```swift
-// <Domain>UIAPI
-public protocol <Domain>UIProviding: Sendable {
-    @MainActor
-    func view(for page: <Domain>.UI.Model.Page) -> AnyView
-}
-
-// <Domain>UI
-public struct <Domain>UIRouter: <Domain>UIProviding {
-    @MainActor
-    public func view(for page: <Domain>.UI.Model.Page) -> AnyView {
-        switch page {
-            case .list: AnyView(<Domain>.UI.List.Container())
-            case .details(let id): AnyView(<Domain>.UI.Details.Container(id: id))
-        }
-    }
-}
-```
-
----
-
-## Checklist: New Domain
-
-1. [ ] Create `<Domain>/Package.swift` with 6 products
-2. [ ] Implement `<Domain>Models` — namespace, data types, errors
-3. [ ] Implement `<Domain>ServiceInt` — service protocol
-4. [ ] Implement `<Domain>ServiceImpl` — concrete service
-5. [ ] Implement `<Domain>ReluxInt` — actions, effects, state protocol, router protocol
-6. [ ] Implement `<Domain>ReluxImpl` — state, reducer, saga/flow, module
-7. [ ] Implement `<Domain>TestSupport` — mocks, stubs
-8. [ ] Add tests in `<Domain>Tests`
-9. [ ] Register module in app `IoC.swift`
-10. [ ] Create router adapter in app
-11. [ ] Add to orchestrator if cross-domain coordination needed
-12. [ ] Create `<Domain>UI` package if views needed
-
----
-
-## Benefits
-
-- **Smaller recompilation surface**: Model changes don't touch Relux or services
-- **Clear DI seams**: Swap implementations (mock/real) via IoC
-- **Repeatable**: Clone pattern for any domain
-- **Agent-friendly**: Explicit boundaries prevent accidental coupling
-
----
-
-## Trade-offs
-
-| Concern | Mitigation |
-|---------|------------|
-| Multiple dylibs increase launch time | Monitor on device; merge impl products per domain if needed |
-| Duplicate runtime classes from forced dynamic products | Use automatic linkage with ordinary target dependencies |
-| Verbose imports | Optional facade product (`<Domain>Kit`) for simple consumers |
-| 6 products per domain seems heavy | Start with HybridState in ReluxImpl; split when complexity grows |
+1. Identify independent reuse, ownership or build needs.
+2. Define model and interface targets without UI or concrete service imports.
+3. Implement services and reducers behind those contracts.
+4. Inject implementations and router adapters from the app.
+5. Add focused Swift Testing coverage and register the module before dispatching work.
+6. Update the dependency diagram and dependency locks when the graph changes.

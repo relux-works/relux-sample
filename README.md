@@ -15,13 +15,13 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 |---------|-------------|
 | **Unidirectional data flow** | Relux: Redux/Flux-inspired, Swift Concurrency-native, no functional purism |
 | **Strict modularization** | Models, interfaces, implementations, UI, test-support as separate products within domain boundaries |
-| **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; optimizaed isolated recompilation (fast incremental builds) |
-| **Domain side effects** | Sagas and Flows handle async operations within a domain (API calls, persistence, etc.) |
+| **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; isolated recompilation boundaries |
+| **Domain side effects** | Sagas and Flows handle async domain operations; this demo uses LocalAuthentication and an in-memory Notes provider |
 | **Cross-domain coordination** | Orchestrator sagas handle domain-to-domain communication |
 | **Service-oriented architecture** | Services encapsulated within domain modules; manage API, networking, persistence behind protocols |
 | **Layered testing** | Saga, reducer, service tested in isolation; shared test infrastructure |
 | **Swift 6 concurrency** | Actor-isolation, strict sendability, structured async throughout |
-| **Simpe Async-first DI** | [SwiftIoC](https://github.com/relux-works/swift-ioc) provides async module resolution, async app entry points; implementations swappable at registration |
+| **Simple Async-first DI** | [SwiftIoC](https://github.com/relux-works/swift-ioc) provides async module resolution, async app entry points; implementations swappable at registration |
 
 ---
 
@@ -36,7 +36,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 <Domain>UI            SwiftUI views (imports interfaces only)
 ```
 
-**IoC wiring:** SwiftIoC registers routers, services, modules. Swap implementations by changing registration only.
+**IoC wiring:** SwiftIoC registers routers and modules; the app supplies Auth’s service factory. Notes constructs its service/provider in its module. See the [focused diagrams](diagrams/README.md) and [optional learning exercises](Docs/LearningExercises.md).
 
 ---
 
@@ -58,6 +58,7 @@ See [ArchitectureAudit.md](Docs/ArchitectureAudit.md) for pinned revisions, veri
 | SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
 | xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
 | SwiftPM | Standalone UI package compilation | `swift build --package-path Packages/AuthUI --force-resolved-versions` | `Packages/AuthUI/.build` |
+| PlantUML / Graphviz | Render focused architecture diagrams | `plantuml -failfast2 -tpng -o "$PWD/.temp/diagrams" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml` (create `.temp/diagrams` first; [setup](diagrams/README.md#render-locally)) | `.temp/diagrams`; published SVGs in `diagrams/rendered` |
 | Git | Patch whitespace validation | `git diff --check` | Terminal; no separate lint configuration is installed |
 | task-board | Task evidence and producer handoff | `task-board resource add TASK-ID /path/to/artifact --type outcome --name TASK-ID_results.md`; `task-board handoff TASK-ID --role developer` | Authoritative board resources |
 
@@ -67,12 +68,14 @@ Use a simulator name installed on your host. Dependency updates must update exac
 
 ## Documentation
 
+Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, session-safe provider reset, or CLI executable; those are proposed exercises.
+
 | Document | Purpose |
 |----------|---------|
 | [`PROJECT_GUIDE.md`](./PROJECT_GUIDE.md) | Entry point: layout, conventions, setup |
 | [`RELUX_MODULAR.md`](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition pattern |
 | [`RELUX_ORCHESTRATION.md`](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination |
-| [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
+| [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | Caller outcomes versus observed actions |
 | [`TESTING_STRATEGY.md`](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
 | [`TEST_INFRASTRUCTURE.md`](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
 | [`DOMAIN_TEST_SUPPORT.md`](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
@@ -81,7 +84,7 @@ Use a simulator name installed on your host. Dependency updates must update exac
 
 ## Testing
 
-- **Shared infrastructure:** `Packages/TestInfrastructure`: Relux logger extensions, async helpers, common mocks
+- **Shared infrastructure:** `Packages/TestInfrastructure`: Relux logger extensions, timeout helper, RPC/WebSocket mocks
 - **Domain support:** `<Domain>TestSupport`: domain-specific mocks/stubs
 - **Strategy:** Test saga, reducer, service in isolation; optional smoke tests for wiring
 

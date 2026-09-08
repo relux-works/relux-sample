@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+hide footbox
+title Logout: two subscribers, no ordering guarantee
+participant "Account.Container" as C
+participant "Dispatcher / RootSaga" as D
+participant "Auth Saga" as A
+participant "Auth router adapter / UI" as R
+participant "Auth Service" as S
+participant "SampleApp Saga" as App
+participant "Relux Store" as Store
+C -> D : Auth.Effect.logout
+D -> A : apply(logout)
+A -> R : dispatch setAuth(.logoutFlow)
+R -> D : LogoutFlow.Container task:\nEffect.runLogoutFlow
+par Auth subscriber
+ D -> A : apply(runLogoutFlow)
+ A -> S : recreateLAContext()
+ S --> A : returns
+ A -> R : dispatch setAuth(.localAuth)
+ A -> D : Action.logOutSucceed
+else app subscriber
+ D -> App : apply(runLogoutFlow)
+ App -> Store : cleanup(exclusions: [AppRouter.self])
+ Store --> App : returns
+end
+note over A,Store
+Neither registration order nor serial actions order subscribers.
+Store cleanup does not erase Notes Fetcher's dictionary.
+Late-result rejection / session-safe provider reset is an exercise.
+end note
+@enduml

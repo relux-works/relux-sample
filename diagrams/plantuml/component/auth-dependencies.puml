@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+left to right direction
+title Auth production target dependencies
+component AuthUI
+component AuthUIAPI
+component AuthReluxImpl
+component AuthReluxInt
+component AuthServiceImpl
+component AuthServiceInt
+component AuthModels
+AuthUI --> AuthUIAPI
+AuthUI --> AuthReluxInt
+AuthUIAPI --> AuthReluxInt
+AuthUIAPI --> AuthModels
+AuthReluxImpl --> AuthReluxInt
+AuthReluxImpl --> AuthServiceInt
+AuthReluxImpl --> AuthModels
+AuthReluxInt --> AuthModels
+AuthServiceImpl --> AuthServiceInt
+AuthServiceImpl --> AuthModels
+AuthServiceInt --> AuthModels
+note bottom of AuthReluxImpl
+App IoC supplies the service factory and router.
+No dependency on AuthServiceImpl.
+end note
+legend bottom
+Arrow = direct local target dependency.
+External libraries and test targets omitted.
+Auth: six products in one package, including AuthTestSupport.
+AuthUI: two products in a separate package.
+endlegend
+@enduml

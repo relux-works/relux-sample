@@ -1,87 +1,17 @@
-# Test Infrastructure
+# Shared test infrastructure
 
-Shared test utilities across all domain packages.
+[Packages/TestInfrastructure](../../Packages/TestInfrastructure/Package.swift) provides the TestInfrastructure library. It is a helper dependency, not a runnable root package or a substitute for domain tests.
 
----
+| Existing source | Purpose |
+| --- | --- |
+| [ReluxTestingExtensions.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Helpers/ReluxTestingExtensions.swift) | Logger action/effect lookup and dispatch assertions |
+| [AsyncTestHelpers.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Helpers/AsyncTestHelpers.swift) | `withTimeout(seconds:operation:)` and TimeoutError |
+| [StubError.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Stubs/StubError.swift) | Shared test error |
+| [JSONFixtures.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Stubs/JSONFixtures.swift) | Bundle fixture loading |
+| [DomainMocks](../../Packages/TestInfrastructure/Sources/TestInfrastructure/DomainMocks) | RPC and WebSocket mock utilities |
 
-## Purpose
+The package does not contain the formerly documented APIClientMock, NetworkSessionMock, StorageMock, `waitUntil`, or CombineTestHelpers. Notes' [CombineAsyncStream.swift](../../relux_sampleTests/Notes/Utils/CombineAsyncStream.swift) remains local to its app test target.
 
-Centralized package providing domain-agnostic test utilities:
-- Relux testing extensions
-- Async test helpers
-- Common mocks (API client, network, storage)
-- Stub factories
+A timeout is cooperative: cancelling a child does not force non-cooperative work to stop. Use bounded, cancellation-aware operations and inspect actual emitted values. Logging proves dispatch observation, not successful state reduction or service persistence. Pair logger assertions with result/state checks at the relevant layer.
 
----
-
-## Location
-```
-Packages/TestInfrastructure/
-```
-
----
-
-## When to Add Here
-
-✅ Add to TestInfrastructure:
-- Utilities used by 2+ domains
-- Domain-agnostic mocks (network, storage, keychain)
-- Generic async/Combine test helpers
-- Relux.Testing.Logger extensions
-
-❌ Keep in DomainTestSupport:
-- Domain-specific service mocks
-- Domain model stubs
-- Domain action/effect testable wrappers
-
----
-
-## Key Components
-
-| Component | Purpose |
-|-----------|---------|
-| `ReluxTestingExtensions` | `findAction`, `findEffect`, `assertDispatched` on Logger |
-| `AsyncTestHelpers` | `withTimeout`, `waitUntil` |
-| `CombineTestHelpers` | `Publisher.asyncStream` for testing pipelines |
-| `APIClientMock` | Mock HTTP client with call tracking |
-| `NetworkSessionMock` | Mock URLSession-like interface |
-| `StorageMock` | Mock key-value storage |
-| `StubError` | Generic error for testing failures |
-| `JSONFixtures` | Load test fixtures from bundle |
-
----
-
-## Usage
-```swift
-import Testing
-import TestInfrastructure
-import NotesTestSupport
-
-@Test
-func example() async throws {
-    let logger = Relux.Testing.Logger()
-    
-    // ... trigger effect ...
-    
-    // Find action using TestInfrastructure extension
-    let action = logger.findAction(Notes.Business.Action.self) { 
-        if case .obtainNotesSuccess = $0 { return true }
-        return false
-    }
-    #expect(action != nil)
-    
-    // Timeout helper
-    try await withTimeout(seconds: 1.0) {
-        // async work
-    }
-}
-```
-
----
-
-## Adding New Utilities
-
-1. Confirm it's domain-agnostic
-2. Add to appropriate folder (`Mocks/`, `Helpers/`, `Stubs/`)
-3. Ensure thread-safety
-4. Add brief doc comment with usage example
+Run consuming suites using [README](../../README.md#tools-and-validation). Add reusable helpers only when multiple domains need the same tested contract; keep domain-specific mocks in [domain support](DOMAIN_TEST_SUPPORT.md).

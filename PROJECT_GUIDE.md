@@ -25,7 +25,7 @@ Sample app demonstrating architecture patterns and guidelines for working in **R
 - Async-first, concurrency-safe code (Swift 6)
 - Unidirectional data flow via **Darwin Relux** (Swift Relux)
 
-The ultimate test demonstrating separation: CLI for key user scenarios tied to the same business logic as GUI.
+A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, SampleApp, Auth and Notes modules with a shared Store and RootSaga.
 
 ---
 
@@ -33,7 +33,7 @@ The ultimate test demonstrating separation: CLI for key user scenarios tied to t
 
 | Component | Technology |
 |-----------|------------|
-| Language | Swift 6.0 |
+| Language / toolchain | Swift 6; Swift 6.2+ and Xcode 26+ required by dependencies |
 | Platforms | iOS 17+, macOS 14+ |
 | Architecture | Redux/Flux-like UDF (Darwin Relux) |
 | UI | SwiftUI (business layer is UI-independent) |
@@ -48,9 +48,9 @@ Detailed documentation in `Docs/Patterns/`:
 
 | Pattern | Document | Purpose |
 |---------|----------|---------|
-| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 library products |
+| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Auth’s six-product boundary example |
 | Orchestration | [RELUX_ORCHESTRATION.md](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination without coupling |
-| Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
+| Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | Caller outcomes versus observed actions |
 | Testing Strategy | [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
 | Test Infrastructure | [TEST_INFRASTRUCTURE.md](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
 | Domain Test Support | [DOMAIN_TEST_SUPPORT.md](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
@@ -67,7 +67,6 @@ Packages/
 relux_sample/
   Modules/                    ← App-level modules (not yet extracted)
     App/                      ← Root app module
-    Auth/                     ← Auth (to be extracted)
     Notes/                    ← Notes domain
     Navigation/               ← Navigation state
     Account/                  ← Account UI
@@ -94,23 +93,23 @@ UI Layer (SwiftUI Views/Containers)
     ▼ depends on
 Domain Interfaces (*ReluxInt, *ServiceInt)
     │
-    ▼ implemented by
-Domain Implementations (*ReluxImpl, *ServiceImpl)
-    │
-    ▼ depends on
+    ▼ depend on
 Domain Models (*Models)
+
+Domain Implementations → Interfaces + Models
+App composition → Implementations (injected behind interfaces)
 ```
 
 ### State Management
 
-- **BusinessState**: Actor-isolated, owns domain truth
-- **UIState**: MainActor-isolated, aggregates for UI consumption
+- **BusinessState**: Notes uses an actor to own domain truth; the protocol itself requires Sendable reference semantics and async reduction/cleanup
+- **UIState**: MainActor-isolated, derives UI data; Combine delivery is asynchronous
 - **HybridState**: Combined approach for simpler domains
 
 ### Side Effects
 
 - **Flow**: Returns `Result` — use when caller needs outcome
-- **Saga**: Returns `Void` — fire-and-forget side effects
+- **Saga**: Returns `Void` — awaited side effects without a domain result for the caller
 - **Orchestrator**: Cross-domain Saga — coordinates between domains
 
 ### Core Rules
@@ -130,7 +129,7 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
 ### Container/View Separation (ReluxUI)
 
 **Containers** (`Relux.UI.Container`): Bridge between Relux and UI layer
-- Access `@EnvironmentObject` for state
+- Access environment state (`@EnvironmentObject` for Notes, observable environment for Auth)
 - **All Relux action dispatching MUST be defined here** — never in views
 - Extract and transform data for child views
 - Pass actions as callbacks to views
@@ -164,75 +163,9 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
 - For editing: use local `@State` + dispatch on commit/blur
 - Bindings couple child to parent's exact storage shape — avoid when possible
 
-### Example Structure
-```swift
-// Container: Knows about Relux, extracts data, dispatches actions
-extension Notes.UI.List {
-    struct Container: Relux.UI.Container {
-        @EnvironmentObject private var state: Notes.UI.State
+### Executable examples
 
-        var body: some View {
-            Page(
-                props: .init(notes: state.notesGroupedByDay),
-                actions: .init(
-                    onReload: ViewCallback(reloadNotes),
-                    onCreate: ViewCallback(openCreate)
-                )
-            )
-        }
-
-        private func reloadNotes() async {
-            await actions { Notes.Business.Effect.obtainNotes }
-        }
-        
-        private func openCreate() async {
-            await actions { AppRouter.Action.push(.app(page: .notes(.create))) }
-        }
-    }
-}
-
-// View: Pure presentation, no Relux knowledge
-extension Notes.UI.List.Container {
-    struct Page: Relux.UI.View {
-        let props: Props
-        let actions: Actions
-
-        var body: some View {
-            List {
-                ForEach(props.notes) { note in
-                    NoteRow(note: note)
-                }
-            }
-            .refreshable(action: actions.onReload.callAsFunction)
-        }
-    }
-}
-
-// Props and Actions
-extension Notes.UI.List.Container.Page {
-    struct Props: Relux.UI.ViewProps {
-        let notes: MaybeData<[[Note]], Err>
-    }
-    
-    struct Actions: Relux.UI.ViewCallbacks {
-        let onReload: ViewCallback<Void>
-        let onCreate: ViewCallback<Void>
-    }
-}
-
-// Child views: Atomic data only, nested in parent namespace
-private extension Notes.UI.List.Container.Page {
-    struct NoteRow: View {
-        let note: Note
-        var body: some View {
-            VStack(alignment: .leading) {
-                Text(note.title)
-                Text(note.content).lineLimit(2)
-            }
-        }
-    }
-}
-```
+Read [Notes List.Container](relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift) and its [Page](relux_sample/Modules/Notes/UI/List/Page/Notes+UI+%20List+Container+Page.swift) for props and callback boundaries. Local search and editor drafts are presentation state. Successful mutations flow through effects, services and reducers; the UI projection updates asynchronously. Values that affect rendering belong in props because View equality is props-based; callback equality does not compare captured values.
 
 ---
 
@@ -291,48 +224,29 @@ Test each layer in isolation — see [TESTING_STRATEGY.md](./Docs/Patterns/TESTI
 | Saga/Flow | Service | Actions dispatched |
 | Reducer | None | State values |
 | Service | Fetcher | Transformations |
-| Orchestrator | None | Cross-domain effects |
+| Orchestrator | Injected boundary as needed | State, service and routing outcomes |
 
 ### Test Target Types
 
 - **Hostless tests**: Run without app launch. Use for pure logic in packages.
 - **Hosted tests**: Run inside app process. Use when app context needed.
 
-All tests should live in dedicated Swift package test targets.
+Auth tests live in its Swift package; Notes currently retains an app-hosted target. Prefer package targets for newly extracted business code.
 
 ### Naming Conventions
 
 - Name suites after behavior: `NotesFlowObtainTests`
 - Name test methods as readable sentences: `obtainNotes_success_dispatchesAction`
 
-### Running Tests
+### Running tests
 
-**Xcode**: Cmd+U
-
-**CLI**:
-```bash
-# Build only
-xcodebuild build \
-  -project relux_sample.xcodeproj \
-  -scheme relux_sample \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
-  2>&1 | xcbeautify --quiet
-
-# Run tests
-xcodebuild test \
-  -project relux_sample.xcodeproj \
-  -scheme relux_sample \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
-  2>&1 | xcbeautify
-```
-
-**Note**: Use `xcbeautify --quiet` for builds (only warnings/errors). Always include `2>&1` before pipe to capture stderr.
+Use the exact build/test commands in [README: Tools and Validation](README.md#tools-and-validation). Select an installed iOS simulator with `xcrun simctl list devices available`. Run xcodebuild directly so its real exit status is preserved; keep logs under `.temp/`. A deployment target does not mean tests ran on that oldest runtime.
 
 ---
 
 ## Adding a New Domain
 
-1. Create package following [MODULAR_ARCHITECTURE.md](Docs/Patterns/MODULAR_ARCHITECTURE.md)
+1. When extraction is justified, create a package following [RELUX_MODULAR.md](Docs/Patterns/RELUX_MODULAR.md)
 2. Add `<Domain>TestSupport` product
 3. Register module in `IoC.swift`
 4. Add to relevant orchestrator if cross-domain coordination needed

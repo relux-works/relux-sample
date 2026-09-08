@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+hide footbox
+title Save a note: UDF and operation outcome
+actor User
+participant "Page / EditForm" as Page
+participant "Create.Container" as C
+participant "Relux Dispatcher" as D
+participant "Notes Flow" as F
+participant "Notes Service / Fetcher" as S
+participant "Store / BusinessState" as B
+participant "UIState / List.Container" as U
+User -> Page : Save local draft
+Page -> C : onCreate(note) callback
+C -> D : actions { Effect.upsert(note) }
+D -> F : apply(effect) via RootSaga
+F -> S : upsert(note)
+alt accepted by service
+ S --> F : success
+ F -> D : Action.upsertNoteSuccess(note)
+ D -> B : reduce(action)
+ B --> D : reduction returns
+ par scheduled UI delivery
+  B ->> U : Combine projection on main queue
+  U -> U : list props refresh
+ else operation outcome
+  D --> F : action result
+  F --> D : success
+  D --> C : success
+  C -> Page : dismiss
+ end
+else invalid content or service failure
+ S --> F : failure(err)
+ F -> D : upsertNoteFail + track(error) concurrently
+ D -> B : failure action (keeps existing notes)
+ note over D : ErrorHandling saga tracks the error.
+ D --> F : dispatch returns
+ F --> D : failure(err)
+ D --> C : failure
+ C -> Page : error message; retain draft
+end
+note over B,U
+Reduction is awaited. Combine delivery and SwiftUI rendering
+are asynchronous; flow success is not a screen-render barrier.
+end note
+@enduml
