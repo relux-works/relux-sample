@@ -1,0 +1,16 @@
+{
+  "contract_version": "board-goal-v2",
+  "owner": {
+    "kind": "parent",
+    "id": "primary"
+  },
+  "active_ref": {
+    "id": "PRIMARY-GOAL-260909-2cv53t",
+    "revision": 2
+  },
+  "latest_ref": {
+    "id": "PRIMARY-GOAL-260909-2cv53t",
+    "revision": 2
+  },
+  "native_status": "pending-unbound"
+}

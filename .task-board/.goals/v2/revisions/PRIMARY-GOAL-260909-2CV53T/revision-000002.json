@@ -1,0 +1,46 @@
+{
+  "contract_version": "board-goal-v2",
+  "goal_id": "PRIMARY-GOAL-260909-2cv53t",
+  "revision": 2,
+  "expected_previous_revision": 1,
+  "previous_ref": {
+    "id": "PRIMARY-GOAL-260909-2cv53t",
+    "revision": 1
+  },
+  "owner": {
+    "kind": "parent",
+    "id": "primary"
+  },
+  "kind": "alignment",
+  "objective": "Refresh the Swift Relux sample: latest stable dependencies, verified Relux patterns, simple richer native Apple UI with availability-gated Liquid Glass and older OS support, concise inline documentation, architecture diagrams and self-guided exercises; finish with proportional code/build checks and signed reviewed delivery. UI work is explicitly blind best effort: stop expensive deep UI, screenshot and snapshot testing.",
+  "scope": {
+    "requested_ids": null,
+    "resolved_leaf_items": null
+  },
+  "mutation_authority": "agent_discretion",
+  "success_predicate": "alignment_handled",
+  "provider_condition": "The bound parent session has handled this exact alignment revision.",
+  "native_reflection": "required",
+  "state": "active",
+  "legacy_refs": [
+    {
+      "contract": "primary-goal-v1",
+      "id": "PRIMARY-GOAL-260909-2cv53t",
+      "revision": 2
+    }
+  ],
+  "role_policy": {},
+  "mutation": {
+    "kind": "alignment_realigned",
+    "reason": "User curtailed expensive UI testing and requested best-effort implementation",
+    "actor_context": {
+      "kind": "agent",
+      "actor_id": "iv"
+    },
+    "authority": "agent_discretion"
+  },
+  "created_at": "2026-09-08T20:43:42.116729Z",
+  "updated_at": "2026-09-08T21:41:44.930568Z",
+  "created_by": "iv",
+  "reason": "User curtailed expensive UI testing and requested best-effort implementation"
+}

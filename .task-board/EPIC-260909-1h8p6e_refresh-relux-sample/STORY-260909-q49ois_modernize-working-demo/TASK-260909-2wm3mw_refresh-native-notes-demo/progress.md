@@ -69,6 +69,8 @@ spawn agent resolution: Agent selection: codex via explicit_override
 spawn launch composition: empty; contract=agents-infra.child-launch-composition; provider=codex; schema=1; producer=v1.6.1-128-gab60e0d; diagnostic=launch_composition_empty; no project MCP servers enabled
 spawn queued: [implementer] developer (codex) (run=RUN-260908-c22e23, max_parallel=20)
 spawn run started: [implementer] developer (codex) (run=RUN-260908-c22e23)
+agent completed: [implementer] developer (codex) (exit=0)
+spawn run completed: codex (run=RUN-260908-c22e23, pid=80926, exit=0)
 
 ## Precondition Resources
 - [native-demo-brief.md](file://TASK-260909-2wm3mw/native-demo-brief.md) — Concrete UI direction
@@ -87,12 +89,13 @@ spawn run started: [implementer] developer (codex) (run=RUN-260908-c22e23)
 - [TASK-260909-2wm3mw_spawn-log_-implementer--developer--codex-_RUN-260908-ab8322.log](file://TASK-260909-2wm3mw/TASK-260909-2wm3mw_spawn-log_-implementer--developer--codex-_RUN-260908-ab8322.log) — System spawn log captured by task-board
 - [TASK-260909-2wm3mw_integration-refusal.md](file://TASK-260909-2wm3mw/TASK-260909-2wm3mw_integration-refusal.md) — Local integration refused with validation_not_configured; unchanged source and recovery boundary
 - [TASK-260909-2wm3mw_spawn-log_-implementer--developer--codex-_RUN-260908-c22e23.log](file://TASK-260909-2wm3mw/TASK-260909-2wm3mw_spawn-log_-implementer--developer--codex-_RUN-260908-c22e23.log) — System spawn log captured by task-board
+- [TASK-260909-2wm3mw_local-integration.md](file://TASK-260909-2wm3mw/TASK-260909-2wm3mw_local-integration.md) — Signed local integration receipt, retry evidence, verification and bounds
 
 ## Created
 2026-09-08T20:44:15Z
 
 ## Last Update
-2026-09-08T21:53:06Z
+2026-09-08T21:53:50Z
 
 ## Assigned To
 [implementer] developer (codex)

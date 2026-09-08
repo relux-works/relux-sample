@@ -1,0 +1,986 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08300-e64b-7a63-8e39-660ecbd0a098
+--------
+user
+# Agent Task Assignment
+
+## FIRST — Run Immediately
+
+```bash
+task-board m 'set_status(TASK-260909-2wm3mw, status=integrating)'
+```
+
+## Operational Constraints (Headless Run)
+
+Read this before you run any gate or attach any outcome. A spawned run is
+usually headless: the session ends when your turn ends.
+
+- **Never background a long command and end your turn.** The session terminates
+  with the turn and the process dies with it, while the run is still recorded as
+  completed — a successful-looking run with no evidence attached.
+- **A single shell call is time-bounded (~10 minutes).** Waiting out a longer
+  check inside one call fails too. Split long verification into bounded
+  sequential calls (package subsets, `-run` masks) and state explicitly what you
+  reran yourself versus accepted from already-attached evidence.
+- **Attach evidence before you end the lifecycle, not after.** "I will attach it
+  when the run finishes" is unfulfillable by construction: once your turn ends
+  there is no session left to attach anything.
+
+## Your Role
+# developer
+
+## Description
+
+Writes code — features, bugfixes, refactoring. Writes tests for the code produced.
+
+## Deliverable
+
+Code + tests.
+Outcome resources are named `<ELEMENT-ID>_<slug>.<ext>` — the completion guard matches on that
+ID prefix, and a differently named artifact does not satisfy the handoff. Write the file outside the
+managed worktree, then attach it with `task-board resource add`.
+
+Final human-facing wording must say "ready for review" or "handed off to review", not "done", "complete", "finished", "final", or "готово", when the board status is `to-review`.
+
+## Standing Orders
+
+1. When you change behavior, add or update tests for that scope unless the task explicitly forbids it.
+2. Run the relevant test commands yourself before handoff; do not leave test execution implicit.
+3. Run the relevant build or validation command after changes to confirm the project still compiles.
+4. If a required test or build cannot be run, state exactly what was not run and why.
+5. Stop if the implementation starts depending on a forced fit: a platform/API constraint, product decision, UX state model, ownership boundary, or architecture conflict that would require compensating hacks. Document the constraint and options, then ask or mark the task blocked instead of adding more stubs, flags, priority rules, or tests around a broken assumption.
+6. For board reads, use compact task-specific projections. A concrete assignment does not need routine `summary()`, `plan()`, `schema()`, or `{ full }`; request scoped schema only after an unknown call.
+7. Report mutant evidence as a table: mutant, what it narrows the gate to, the named test that fails, and — for every surviving mutant — the bound that survival states. A mutant with no named failing test is a survivor and must be reported as one.
+
+### Evidence Honesty Contract
+
+1. Run each validation or gate command directly as a standalone process. Do not pipe it through `tee`; do not use a pipe chain unless `pipefail` is enabled and the gate command's real status is preserved.
+2. Report the real exit code of every validation or gate command.
+3. Report expected-red gates truthfully as failing: when a command is expected to fail (for example, `go test` in a package-less module), give its real non-zero exit code and a one-line expected-failure rationale; never present it as passing.
+4. Check a checklist item tied to a command only after that exact command has actually run green with exit code 0. If it did not run or did not exit 0, leave the item unchecked.
+
+## Status Transitions
+
+- **start_status:** `development`
+- **end_status:** `to-review` (review handoff, not accepted done)
+
+## Constraints
+
+Full read/write access does not authorize forced-fit workarounds. Tests and stubs may verify a valid design, but they must not be used to make an invalid product/API model appear acceptable.
+
+## Skills
+
+These role skill references are a lazy catalog, not a mandate to bulk-read every
+body. Before technical work, identify the skills relevant to this task's concrete
+scope and read those full skill bodies. Always read any skill explicitly required
+by the task, user, or project instructions.
+
+- **project-management**: `/Users/iv/.claude/skills/project-management/SKILL.md`
+- **swiftui**: `/Users/iv/.claude/skills/swiftui/SKILL.md`
+- **core-data**: `/Users/iv/.claude/skills/core-data/SKILL.md`
+- **go-testing-tools**: `/Users/iv/.claude/skills/go-testing-tools/SKILL.md`
+- **architecture-diagrams**: `/Users/iv/.claude/skills/architecture-diagrams/SKILL.md`
+
+## Definition of Done
+
+- [ ] Best-effort native UI, availability fallback and architectural separation reviewed in code; relevant build and unit checks pass; no deep UI testing per user
+- [ ] Implementation matches AC
+- [ ] Solution fits project architecture
+- [ ] Tests green
+- [ ] Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted
+- [ ] If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches
+- [ ] Code written per task description and AC
+- [ ] Relevant tests written for new or changed behavior and passing
+- [ ] In a managed Story worktree the candidate is left UNCOMMITTED in the worktree for the handoff to snapshot — never commit on the Story branch. A producer commit moves the branch tip off the recorded checkpoint and the handoff refuses with change_request_candidate_committed_past_checkpoint; repair with `git reset --soft <checkpoint_oid>` before completing again.
+- [ ] Every command, message, state, or refusal named in the AC is driven through the production entry point by a named committed test, or is declared a stated bound. Report coverage as a ratio — `n of m AC rows driven` — and name the production call site for each. Prose in place of the ratio is not evidence.
+- [ ] Gating, refusing, validating, authorizing, or attesting behavior covered by negative tests that fail when the gate admits what it must reject, with the production call site named
+- [ ] Every gate ships at least one NARROWING mutant — the gate stays present and is weakened to admit exactly one member of the class it must reject, and a named test must fail. A delete-only mutant proves only that the gate exists and is not accepted as evidence.
+- [ ] A gate that inspects source text is additionally attacked by a mutant that PRESERVES the searched-for token and changes behavior, and the mutant harness executes the behavioral suite, not only the static checker.
+- [ ] Lint clean
+- [ ] Relevant build/validation commands run after changes and build not broken
+- [ ] New outcome artifact attached on the board with a task-scoped name when the work produces notes, logs, screenshots, or other deliverables
+- [ ] Important findings, decisions, anomalies, or regressions recorded in logbook when relevant
+## Your Task
+
+- **ID**: TASK-260909-2wm3mw
+- **Title**: TASK-260909-2wm3mw: refresh-native-notes-demo
+- **Parent**: STORY-260909-q49ois
+### Description
+
+Improve native SwiftUI notes demo with useful simple functionality, standard Apple components, accessible polished empty/loading/error/editing states, availability-gated latest Liquid Glass APIs and old OS fallback. Follow Relux container dispatch and pure props/callback views; KISS DRY YAGNI SOLID. Keep domain logic UI independent. Inspect new baseline after dependency task.
+### Acceptance Criteria
+
+Native notes workflow is useful and coherent; relevant build and behavioral tests pass. UI implementation is best effort by explicit user instruction; no further deep visual or UI test runs required.
+
+## Instructions
+
+The following instructions have been attached to this task:
+
+### native-demo-brief.md
+> Concrete UI direction
+
+Keep Notes as the main demo. Prefer search, clear note editing and deletion, meaningful seeded notes and a simple pinned/favorite option if it fits the existing service. Use List, Section, Form, toolbar, searchable, system sheets, SF Symbols and semantic typography/colors. No custom design system, gradients or ornamental glass cards. Use glass button style on a meaningful primary control behind iOS/macOS 26 availability, with standard bordered fallback. Local draft/search state may live in presentation; domain mutations dispatch in containers only. Keep data in memory and clearly explain demo behavior rather than adding persistence/network scope. SwiftUI expert latest-apis and liquid-glass references apply. Validate a complete create/edit/search/delete journey visually, including older runtime if installed. Parent observed Notes obtain failure currently returns success; audit task will address upstream patterns first.
+
+
+### review-focus.md
+> Review scope for UI work
+
+Keep this a small teaching app, not a framework exercise. All public prose and code comments English. Preserve iOS 17 and macOS 14 deployments. Latest APIs supported by installed Xcode 26.5 are sufficient; do not target betas. Read current upstream ReluxUI protocols before deciding props/state patterns. Existing main menu/auth/account screens need coherent native styling as well as notes. Verify native accessibility labels, Dynamic Type, and keyboard behavior. Update inline comments where the user learns action -> flow/service -> reducer -> UI projection. Do not add arbitrary delays or testing-only behavior to product logic.
+
+
+### finish-best-effort.md
+> Latest user instruction overrides all visual validation requirements
+
+USER explicitly stopped expensive deep UI testing and authorized blind best-effort implementation. Previous RUN-260908-49aff0 was cancelled solely to stop an ongoing image/simulator test loop; all code remains in the managed worktree. Finish existing implementation, do not restart. No CUA, simulator navigation, screenshots, rendering fixtures or UI/snapshot tests. Remove only newly added temporary visual-fixture test harness if present. Keep meaningful unit tests. Earlier evidence: 20 Notes tests passed, macOS build passed, creation/editing/search exercised on iOS18 and Dynamic Type screenshots captured. Build-ios-02 passed after stale draft fix using ViewInputCallback. Scope left: inspect git diff and latest log, ensure original production validation restored after mutant, retain concise useful inline comment on callback input, run only an essential current compile/unit check if new edits justify it, attach compact honest outcome and handoff promptly. Do not create unrelated tooling or mutation experiments. Parent owns PR publication and landing. This user preference overrides skill visual validation gates; state untested visuals as a bound.
+
+
+### integration-scope.md
+> Signed local integration only
+
+Accepted UI revision is ready. Run the managed Story integration locally with configured human signing identity. Parent owns hosted PR, actual platform review and exact-head publication; do not push origin/main yourself. User explicitly forbids expensive deep UI tests: reuse accepted tree-bound build/unit evidence. No UI/snapshot/simulator checks. If board requires revalidation run only proportionate compilation/unit checks. Final Story tree includes accepted dependency checkpoint and native UI. Preserve reviewed source unchanged.
+
+
+
+
+## Board CLI Reference
+
+You have access to `task-board` CLI for managing your work. All writes use the `m` (mutation DSL) subcommand:
+
+```bash
+# FIRST/LAST lifecycle commands:
+# Use explicit status changes when the task flow requires it.
+task-board m 'set_status(TASK-260909-2wm3mw, status=analysis)'       # analyst-style work
+task-board m 'set_status(TASK-260909-2wm3mw, status=development)'    # implementation / testing work
+task-board m 'set_status(TASK-260909-2wm3mw, status=reviewing)'      # reviewer handoff
+task-board m 'set_status(TASK-260909-2wm3mw, status=blocked)'        # when blocked
+task-board m 'set_status(TASK-260909-2wm3mw, status=to-review)'      # when your work is ready for review
+
+# Track progress with checklist
+task-board m 'check_item(TASK-260909-2wm3mw, item=1)'                        # check item N
+task-board m 'add_checklist_item(TASK-260909-2wm3mw, text="Write tests")'    # add checklist item
+
+# Add notes about your progress, decisions, blockers, or review findings
+task-board m 'set_notes(TASK-260909-2wm3mw, text="your note here")'
+
+# Save short text directly as outcome resources
+task-board m 'add_resource(TASK-260909-2wm3mw, name=TASK-260909-2wm3mw_results.md, content="...", type=outcome, description="Description")'
+
+# Attach an existing local file (screenshots, PDFs, logs, archives, research docs)
+task-board resource add TASK-260909-2wm3mw ./path/to/file --type outcome --name TASK-260909-2wm3mw_artifact.bin -d "Description"
+```
+
+## Spawn Run Control
+
+Tracked background spawn runs expose `TASK_BOARD_RUN_ID` in the child environment.
+If your work is long-running, check for operator directives at safe checkpoints:
+
+```bash
+task-board spawn status "$TASK_BOARD_RUN_ID"
+task-board spawn directives "$TASK_BOARD_RUN_ID"
+```
+
+Current runtimes do not support direct inbound push into your active session.
+Treat directives as cooperative checkpoint signals:
+- persist your current notes/artifacts before acting on `cancel`-style requests
+- only honor pause/reroute intent at a safe checkpoint
+- if no directive is present, continue normally
+
+## IMPORTANT: Saving Results
+
+When you produce work products (research documents, design docs, screenshots, logs, archives, implementation notes), you MUST save them as outcome resources with names that include the task ID:
+
+```bash
+task-board m 'add_resource(TASK-260909-2wm3mw, name=TASK-260909-2wm3mw_results.md, content="...", type=outcome, description="Description")'
+task-board resource add TASK-260909-2wm3mw ./path/to/file --type outcome --name TASK-260909-2wm3mw_artifact.bin -d "Description"
+```
+
+If you revise the same artifact later, use `task-board m 'update_resource(...)'` or `task-board resource update ...` instead of creating a silent overwrite.
+
+If you discover important findings, decisions, anomalies, regressions, or non-obvious constraints while working, record them in `logbook` as well as on the board.
+
+This ensures your results persist on the board and are accessible to other agents and the coordinator. Spawn completion is expected to produce at least one new task-scoped outcome artifact before the task can cleanly remain in `to-review`.
+
+## Evidence That Counts
+
+A passing suite means nothing unless something in it would have failed.
+
+- Any behavior that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS ships with negative tests that fail when the gate admits what it must reject. A positive test proves the gate is reachable, not that it works.
+- Prove a bound by NARROWING the gate, not only by deleting it. A delete-only mutant proves the gate exists and says nothing about the class it covers.
+- Prove behavior by driving the real entry point — launch, materialize, resolve, publish — and name the production call site. A helper that is unit-tested but called from nowhere promises nothing.
+- Standard negative shapes to test and to look for: forged or self-minted evidence; absent evidence treated as satisfied; the check present but uncalled from production; a bypass path around the check; a capability claim that does not reproduce.
+- A gate reports coverage as a measured ratio, not as prose: prose cannot distinguish 7 of 7 from 3 of 7, and "nothing is there" is not "nothing this checker sees". Name the blind spot as a stated bound.
+- An absence and a failure to read are different facts. A failed, partial, or malformed read is never a legitimate absence, and a fallback defined for absence must not fire on a read failure.
+- Prove, or report nothing. Where a property cannot be established, report unknown instead of inferring it from a proxy signal; callers act on a plausible guess.
+
+Shapes vocabulary and the incident record behind each rule: `references/negative-evidence.md` in the project-management skill.
+
+## Stop-The-Line: No Forced Fits
+
+Do not keep implementing when autonomous work starts requiring a forced fit. A forced fit is any path where the task conflicts with a platform/API constraint, product decision, UX state model, ownership boundary, or architecture, and the remaining "solution" is mostly compensating hacks.
+
+Warning signs:
+- each fix needs another flag, stub, priority rule, mock-only behavior, or special-case test
+- the tests can pass only because the test harness avoids the real platform behavior
+- the implementation depends on an assumption you can no longer defend
+- the user-facing behavior cannot be described cleanly without contradicting the product model
+
+When this happens, stop product-code changes before adding another workaround layer. Attach or note:
+- the constraint and evidence
+- the failed assumptions/attempts
+- the viable options and tradeoffs
+- the recommended option
+- the exact human/product/architecture decision needed
+
+Then set the board item to `blocked` and ask only for that exact decision or external input. This stop applies only to a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision; recoverable failures and ordinary rework stay autonomous. Tests and stubs are not proof that a forced-fit design is correct; use them only after the state model and platform assumptions are valid.
+
+## Completion Discipline
+
+Keep working until the task reaches a terminal handoff for your role. If no objective blocker remains, do not stop while the board item is still parked in `analysis`, `development`, `testing`, or `reviewing`.
+
+Before your final status change:
+- satisfy the task acceptance criteria and relevant checklist items
+- attach outcome evidence for the work you produced
+- run the relevant verification commands when the task changes code, tests, docs, or config
+
+Use `blocked` only for either a concrete external blocker you cannot resolve autonomously or an unresolved human-only platform/product/architecture/tradeoff/approval decision. Record the constraint, evidence, failed assumptions/attempts, viable alternatives and tradeoffs, recommendation, and exact human decision or external input needed. Recoverable failures and ordinary rework are not `blocked`.
+
+Status language is literal:
+- `to-review` means your role has handed work to review; it does not mean the board task is accepted or done.
+- In your final response, say "ready for review" or "handed off to review" when the final board status is `to-review`.
+- Do not say "done", "complete", "finished", "final", or "готово" as the overall task state unless the board status is actually `done`.
+
+## LAST — Run For Role Handoff
+
+When you have completed all role work and the task is ready for its role handoff, run this as your **final board command**:
+
+```bash
+task-board handoff TASK-260909-2wm3mw --role developer
+```
+
+## Working Directory
+Board directory: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board`
+
+Work in the project root. Do not modify board files directly — always use the `task-board` CLI.
+
+## Story Workspace
+
+You are running in an isolated Git worktree for STORY-260909-q49ois.
+
+- Workspace path: `.temp/STORY-260909-q49ois/worktree` (this is your working directory)
+- Branch: `task-board/story/STORY-260909-q49ois`, forked from `main`
+- Authoritative board: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board` (already exported as `TASK_BOARD_DIR`)
+
+Make every repository change here. Do not commit, switch, rebase, merge, or delete this branch, and do not run `task-board` against the `.task-board` copy inside this worktree — it is a checkout artifact, not the board. Integration into trunk is the orchestrator's step, not yours.
+
+Leave your work UNCOMMITTED in the worktree — the handoff snapshots the working tree against the recorded checkpoint. A commit of your own on this branch is refused at handoff with `change_request_candidate_committed_past_checkpoint`, and the repair is `git reset --soft <checkpoint_oid>` before completing again.
+
+## Integration Assignment
+
+This is the integration run for accepted Change Request `CR-TASK-260909-2wm3mw-1` revision 1. The immutable producer binding is role `developer` (archetype `implementer`). Keep the board at `integrating`; only the integration transaction may write `done`. This assignment supersedes generic producer FIRST/LAST status and handoff instructions: run the bound checkpoint or integration command, attach fresh task-scoped outcome evidence, then end without calling the generic `handoff` command or setting status yourself.
+
+codex
+I’ll inspect the accepted revision and integration contract, then run the managed local integration with signing. I’ll preserve the reviewed source and reuse the accepted validation evidence.
+
+exec
+/bin/zsh -lc "task-board m 'set_status(TASK-260909-2wm3mw, status=integrating)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 69ms:
+{"ok":true,"result":{"primary":{"action":"status_changed","element_id":"TASK-260909-2wm3mw","field":"status","new_value":"integrating","old_value":"integrating"}}}
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/SKILL.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+---
+name: project-management
+description: >
+  File-backed task boards and spawn-first multi-agent orchestration through
+  task-board. Use for board/spec decomposition, task tracking, planning,
+  status/progress, tracked producer/reviewer runs, and delivery goals. A normal
+  primary session is the Orchestrator; a prompt-assigned role or
+  TASK_BOARD_RUN_ID is a specialist worker. Russian triggers: борд, доска,
+  задачи, эпик, стори, таски, спавн, оркестратор, субагент, статус, прогресс.
+triggers:
+  - task board, epic, story, task, bug, status, progress
+  - spec decomposition, planning, critical path
+  - spawn, orchestrator, coordinator, sub-agent, delivery goal
+  - борд, доска, задачи, эпик, стори, таски, спавн, оркестратор
+---
+
+# Project Management Router
+
+Load only the focused references needed. Use `task-board` for reads/writes;
+never edit `.task-board/` directly.
+
+## Active Role
+
+- **Specialist:** when assigned a role, `TASK_BOARD_RUN_ID` exists, or the
+  human explicitly requests inline execution. Follow lifecycle/evidence gates.
+- **Orchestrator:** otherwise. Detail settled specs inline; route
+  every artifact-producing or validating task through a tracked
+  background child run. `solution-architect` only for genuine
+  architecture decisions.
+
+## Critical Invariants
+
+1. Preflight with `project_config(view=spawn-preflight, role=ROLE, agent=RUNTIME?)`;
+   bare `project_config()` stays the role-optional config surface.
+   Cross-provider ranking requires the agent-less query: omit `agent`, compare
+   recommendations, then narrow with `agent=RUNTIME` for the fresh spawn snapshot.
+   `providers.targeted` names the query's runtime scope; policy-allowed entries
+   outside it use `runtime_not_targeted_by_query`, while policy-excluded entries
+   use `provider_not_allowed_by_preferred_agentic_system`.
+   When workload recommendations are configured: query with `task_class` or an
+   explicit `workload_class`, reason about scope/risk/autonomy/validation and
+   context cost, then spawn an explicit pair with the exact class transport,
+   fresh snapshot digest, and one-line recommendation rationale. A ranking is
+   advice, never authority, a default, or permission to widen the pair.
+   For a proprietary (paid) model, choose the pair that maximises delivered
+   work per token and escalate only for a stated reason.
+   Every child has explicit role, background mode, and a complete
+   model/reasoning-effort pair across its applicable dimensions — model
+   either typed or seeded by a configured per-role default, and, for Codex,
+   Qwen, or a Claude model whose registry row declares a reasoning-effort
+   vocabulary, an in-policy effort either typed or default-seeded the same
+   way. Built-in runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+   (plus any runtime declared under `spawn.runtimes`); Gemini, Agy,
+   `muse-spark-1.2-contributor`, and an effortless Claude model take no
+   `--reasoning-effort` at all, while `muse-spark-1.3-contributor` and its
+   `muse-spark` alias REQUIRE one from `high`/`xhigh`/`max`. The
+   versioned-short `muse-spark-1.3` names no registered row and is not
+   spawnable; codex `gpt-6-astra`/`astra` REQUIRE one of `low`/`medium`/`high`/`xhigh`/`max`/`ultra`.
+   Treat the v3 `admitted_pairs` set the
+   preflight reports as the exact admission authority, not `allowed_models`,
+   which is one input form and is `null` when the runtime uses combinable
+   `entries`; when preflight reports a v2 migration warning, use the
+   full read-only migration snapshot for an explicit reviewed repository edit.
+   Never infer admission from `PolicyRank` or silently migrate config.
+   Codex-only `fast_mode` defaults false and forces direct/managed
+   `service_tier` default/priority; preflight records root/remote provenance.
+   Remote-v4 parity is owned by the client projection and its checked fixtures;
+   authority schema v1 intentionally authorizes an empty per-board backend
+   policy set, so do not infer or add a server policy route.
+2. Workers use compact, task-specific projections. Skip routine
+   `summary()`, `plan()`, `schema()`, and `{ full }`; scoped schema only
+   repairs an unknown call.
+3. Default to `task-board spawn observe RUN --until terminal --format compact`,
+   then route its handoff. Other reads are for barriers, replay/follow,
+   diagnosis.
+4. The Orchestrator owns producer -> reviewer -> rework -> reviewer until the
+   configured review policy is satisfied and the board reaches `done`.
+   `to-review` is a routing trigger, not human acceptance. Commit
+   decomposition is that same Orchestrator's own call, never a per-commit
+   human checkpoint.
+5. Handoff needs a task-scoped outcome and `task-board handoff TASK-ID --role
+   ROLE`. Early exits and intermediate parked states are
+   retried, or rerouted through a focused child; routine work is never handed to the human.
+   Producer `set_status(to-review)`
+   is refused, and reviewer `accept_cr` requires its live merged checklist.
+   Attach artifacts through resource CRUD under
+   `.task-board/.resources/<ELEMENT-ID>/`, optionally in safe nested paths;
+   never write that tree directly or attach directories.
+6. `blocked` needs an evidence-backed external blocker or unresolved
+   human-only product/platform/architecture/approval decision. Persist
+   constraint, evidence, failed assumptions/attempts, viable alternatives,
+   tradeoffs, recommendation, and the exact decision or external input needed.
+7. At `to-review` say **ready for review** / **handed off to review**;
+   done/complete/final only for `done`.
+8. `board-goal-v2` is authoritative: `goal` owns `parent/primary`; `spawn goal`
+   owns `run/RUN-*`. V1 shapes are compatibility-only.
+9. `openai-board` / `anthropic-board` launch the primary `task-board
+   codex|claude` sessions.
+   agents-infra composes; `tb-sessiond` owns goal bind, location-scoped
+   `openai-board|anthropic-board resume [SES-*]`, native identity restart, and
+   session operations. Provider-native adoption remains explicit as
+   `codex resume THREAD_ID` (compatibility form) or `codex --resume THREAD_ID`,
+   and `claude --resume UUID`.
+   Bad records move to private `<state>/quarantine/`; listen continues and
+   status/list report them.
+10. Freeze stable project/config/runtime/control roots and one binding+digest.
+    Explicit config must exist; direct/managed children override ambient roots.
+    `TASK_BOARD_DIR` stores, not authority. Resolve authority from a
+    binding via fresh `git ls-remote --symref <authorized-url> HEAD`,
+    exact-ref fetch, and equal advertised/fetched OIDs. Never use cached/local
+    refs, tracking, caller/config fields, or prior tuples. Cross-check
+    `integration_base_branch` against the independent branch/remote
+    pair. Zero/multiple/unavailable/indeterminate evidence refuses.
+    Producer publishes a Change Request, reviewer runs `accept_cr`,
+    then Orchestrator checkpoints leaves and integrates the Story. Managed
+    commits use `-S` with repository human identity/key; index failures never
+    justify broad reset. See
+    [tracked background spawn](references/tracked-background-spawn.md#story-worktree-isolation).
+11. Cross-Story `set_parent` and integration are durable and fail closed; move
+    evidence never widens source-tombstone admission. See
+    [tracked background spawn](references/tracked-background-spawn.md#what-the-board-state-commit-covers-and-what-it-leaves-alone).
+12. Board validation stays strict by default. The project setting
+    `validation.allow_legacy_empty_done_containers=true` suppresses only the
+    historical empty-`done` Story/Epic aggregate mismatch; active or
+    child-backed containers remain strict.
+13. Transaction-owned `.activity/<ID>/events.ndjson` forbids caller logging.
+    Reads are bounded; corrections privileged/append-only. Transfer/worktrees
+    reject foreign history, preserve legacy/deletion boundaries, and never backfill.
+    See [file format](references/file-formats.md#activity-streams),
+    [query](references/querying.md), and
+    [coverage](docs/activity-mutation-coverage.md).
+14. Never run `make install*`, `scripts/setup.sh`, or `task-board self-update`
+    from inside a manager-hosted session. A Claude host's PTY master lives in
+    the `tb-sessiond` process, so replacing that daemon hangs up every hosted
+    session including the caller's own. A binary swap is a human action taken
+    between sessions; the manager restarts from an outside shell with
+    `task-board session restart`. See
+    [goals recovery](references/goals-recovery.md#1-a-skill-reinstall-beside-a-running-tb-sessiond).
+
+## Decision Tree
+
+```text
+Prompt-assigned role or TASK_BOARD_RUN_ID? -> work as that specialist
+Artifact, test, docs, research, or review? -> tracked role-based spawn
+Producer reached to-review? -> spawn reviewer, route verdict
+Concrete stop boundary? -> persist packet, then blocked
+Known structured board operation? -> q/m DSL with narrow projection
+Unknown name/field? -> schema(); known call syntax? -> schema(operation|mutation=NAME); see querying recovery examples
+```
+
+## Lazy Reference Routes
+
+| Need | Read |
+| --- | --- |
+| Queries, observability, goals, estimates, deps | [querying](references/querying.md), [file formats](references/file-formats.md) |
+| Status, review, recovery, Stop-The-Line | [statuses](references/statuses.md) |
+| Resources, bugs, evidence | [resources and bugs](references/resources-and-bugs.md) |
+| Detailing, plans, execution | [planning workflow](references/planning-workflow.md) |
+| Research and synthesis | [research workflow](references/research-workflow.md) |
+| Roles, task classes, DoD | [roles](references/roles.md) |
+| Negative tests, gate proofs, unknown vs absence | [negative evidence](references/negative-evidence.md) |
+| Spawned goals, selection, runs, recovery, Story worktrees | [tracked background spawn](references/tracked-background-spawn.md) |
+| Change Request order, checkpoint, republish | [CR lifecycle](references/change-request-lifecycle.md) |
+| Session Manager wrappers, goal runtimes | [codex goal runtime](docs/codex-goal-runtime.md), [claude goal runtime](docs/claude-goal-runtime.md) |
+| Templates, reviewer routing | [sub-agent templates](references/sub-agent-templates.md) |
+| Context budgets | [context efficiency](references/context-efficiency.md) |
+| Config feature gates | [config features](references/config-features.md) |
+| Goal daemon skew, native recovery | [goals recovery](references/goals-recovery.md) |
+| Project config refusals/schema/examples, authority envelopes, guarded alias migration, spawn supervision in minutes | [canonical config reference](references/task-board-config.md); persist a matching scoped selection before removing legacy `remote.user`, preview with `task-board migrate-project-config`, then apply only with its reviewed `--expected-digest` |
+| Install/bootstrap | [setup](references/setup.md) |
+| Remote auth/admin/ops | [remote board runbook](docs/remote-board-operations.md) |
+| CLI/deploy overview | [README](README.md) |
+
+Runtime changes follow canonical `.specs/` contracts.
+
+Built-in spawn runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+(plus any runtime declared under `spawn.runtimes`). Gemini CLI 0.54.4 is
+deprecated in favour of Antigravity, but both remain supported.
+
+```bash
+task-board spawn TASK-ID --role developer --background --agent agy --model gemini-3.6-flash-high --timeout 35m
+```
+
+`agy` takes no `--reasoning-effort`; effort is encoded in its eight scoped
+model IDs. Minimum `agy` is 1.1.12; 1.1.14 is validated. Prompt delivery has
+a 96 KiB argv budget; `SUCCESS`/`ERROR` JSON overrides process exit. Only the
+top-level worker is tracked. See [README](README.md) for the full models,
+flags, JSON, safety, configuration, and Gemini compatibility contract.
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/references/change-request-lifecycle.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+# Change Request Lifecycle Runbook
+
+Orchestrator-owned. An accepted Change Request is accepted work, not delivered
+work. This page states the order, the recovery paths, and the republish
+semantics that used to live only in an operator's head.
+
+The full typed contract — how a candidate is snapshotted, what
+`repository_delta` means, what a `stale` revision is, and every refusal you can
+hit — stays in
+[tracked background spawn](tracked-background-spawn.md), section
+`Change Requests, review, rework, and checkpoint`. This page is the order of
+operations on top of it.
+
+---
+
+## The Change Request lifecycle, in order
+
+1. **Accept.** The reviewer runs
+   `task-board m 'accept_cr(<ELEMENT-ID>, revision=<N>, evidence=<ELEMENT-ID>_review-verdict.md)'`.
+   The element moves to `integrating`. It is accepted, not delivered. Only the
+   reviewer run that was handed the revision may accept it.
+2. **Checkpoint immediately.** For every non-final leaf, run
+   `task-board worktree checkpoint <ELEMENT-ID>` as the next action after
+   acceptance. The accepted tree lands on the Story branch only, and the leaf
+   stays `integrating` until Story integration lands it on trunk. Delay here is
+   what makes the next producer's Change Request go `stale`.
+3. **Checkpoint refreshes the real index automatically.** Candidate capture
+   records (but never mutates) the real-index tree. Under the bound run's Story
+   lease and the candidate-captured index CAS, checkpoint replaces only that
+   captured state and independently verifies branch/HEAD/index/worktree
+   identity. A typed
+   `change_request_checkpoint_index_unsynced` refusal is retried after its named
+   lock, I/O, or ownership condition is resolved; do not use a broad manual
+   reset that can erase unreviewed staged state.
+4. **Final leaf: integrate, do not checkpoint.** `checkpoint` refuses the
+   Story's last open leaf with `change_request_final_leaf_checkpoint`, because
+   closing it would promote a Story whose branch has never reached trunk. Land
+   the Story with
+   `task-board worktree integrate <STORY-ID> --cr <ELEMENT-ID> --revision <N>`.
+5. **When `integrate` refuses, report the refusal.** `validation_not_configured`
+   (`BUG-260807-1o5092`, the as-shipped behavior) and
+   `integration_indeterminate` for a board that lives outside the control root
+   are blockers, not detours. Report the refusal as the blocker it is and land
+   only by the documented manual signed substitute — an isolated clone, signed
+   cherry-pick of the exact reviewed head, a platform review record, and a
+   fail-closed plain push. Never route around a typed refusal by moving board
+   files or the branch by hand.
+6. **A lost run is recovered by republish, never by re-running the producer.** A
+   run that died after producing content but before the board recorded it still
+   has its content on disk. Republish it with provenance. Re-running the
+   producer discards work that already exists and costs the run again.
+7. **A republish of an unchanged accepted tree is an annotation, not a new
+   revision.** A candidate whose `repository_delta` is byte-identical to the
+   accepted one, and whose acceptance still stands, is not a new candidate.
+   Recording it as a revision turns the revision count — the only rework
+   measure the board has — into process noise.
+8. **Never commit manually on the Story branch.** The managed worktree's tree is
+   published by the producer's handoff and landed by `checkpoint` or
+   `integrate`. A hand commit on that branch makes the accepted snapshot and the
+   branch head disagree, and the disagreement surfaces later as an unexplained
+   `stale` or an integration that lands the wrong tree. A `task_delta` handoff
+   now fails closed on it: the tip is compared to the workspace record's
+   `checkpoint_oid` before the validation suite runs and before anything is
+   written, and a disagreement is refused with
+   `change_request_candidate_committed_past_checkpoint`. The producer repairs it
+   inside its own run with `git reset --soft <checkpoint_oid>` — the work stays
+   in the worktree — and completes the handoff again.
+
+## A revision that will never be integrated
+
+Two shapes end a Change Request revision without a reviewer verdict, and they
+are different facts.
+
+### An empty delta does not block the Story
+
+A revision whose `repository_delta` is `empty` — an analyst or research run that
+changed no repository file — is created `ready` like any other, because
+emptiness is an attribute of the candidate and never a state. What changed with
+`BUG-260906-37s3ps` is what that revision does to everybody else: while it sits
+`ready` or `reviewing`, it no longer refuses a sibling producer with
+`change_request_sibling_producer_blocked`.
+
+The gate's argument is contamination — the new producer writes into the same
+Story worktree the pending candidate was snapshotted from — and an empty
+candidate has no repository work product for those writes to reach. Its
+checkpoint writes no commit, and its integration is a no-op. Before the fix a
+research-only run deadlocked its whole Story: nothing was routed at a candidate
+with nothing to review, and every later producer was refused with a blocker
+nobody could clear.
+
+The exemption is scoped, and the scope is deliberate:
+
+| Blocking state | `repository_delta=present` | `repository_delta=empty` |
+| --- | --- | --- |
+| `ready`, `reviewing` | refuses siblings | **admits siblings** |
+| `draft`, `changes_requested`, `stale`, `conflicted` | refuses siblings | refuses siblings |
+
+The bottom row expects a REPUBLISH, and the next snapshot of the shared worktree
+would pick up the sibling's writes. Emptiness today says nothing about the
+revision that replaces it. A revision with no readable `repository_delta` —
+legacy, or from a newer build — refuses: a value this build cannot read is not
+evidence that the candidate is empty.
+
+The revision is still fully auditable. It is not deleted, not hidden, and not
+given a special state; it simply stops being a blocker.
+
+### Retiring a revision: `withdraw_cr`
+
+An empty delta is not the only revision that never reaches integration. A
+candidate can be superseded, abandoned, or published by a run whose deliverable
+turned out to belong somewhere else. Before `BUG-260906-37s3ps` there was no
+route for that at all: `accept_cr` needs a reviewer verdict and a merged
+checklist, `worktree abort` discards the entire workspace, and republishing only
+produces another revision in the same unresolved state.
+
+```bash
+task-board m 'withdraw_cr(<ELEMENT-ID>, revision=<N>, reason="why this revision will never be integrated")'
+```
+
+It moves the revision to `aborted`, which is terminal on both predicates that
+read the state: it stops refusing sibling producers, and it stops withholding
+the Story workspace's base convergence. The revision file and its ledger row
+stay readable.
+
+Four things it refuses, and why:
+
+- **A revision that is `accepted`, `checkpointing`, `checkpointed`,
+  `integrating` or `integrated`** — `change_request_state_conflict`. Those
+  carry a reviewer's attestation, or commits that are already on the Story
+  branch or in trunk. Recording one as never integrated would make the board
+  disagree with git history.
+- **A missing or whitespace-only `reason`** —
+  `change_request_withdraw_reason_missing`. The ledger row is the only surviving
+  explanation of why the revision exists and was never integrated.
+- **A call from inside a tracked spawn run** —
+  `change_request_withdraw_unauthorized`. Withdrawal is an ORCHESTRATOR route.
+  A producer refused by `change_request_sibling_producer_blocked` must not clear
+  its own blocker, and a producer handed `changes_requested` must not retire the
+  rework signal instead of answering it.
+- **A revision number that is not the current one** —
+  `change_request_revision_conflict`, the same CAS every other transition takes.
+
+`withdraw_cr` deliberately does NOT move the board element. Where the element
+goes next — back to development, `blocked`, or closed as a duplicate — is a
+routing decision the orchestrator makes with information the mutation does not
+have; make it explicitly, in a separate call.
+
+## Two same-class findings mean a missing gate
+
+When two consecutive reviews of one leaf raise the same finding class, stop
+routing another rework revision. Spawn one task to add a gate for the class — a
+conformance vector set, a checker, a mutant harness — and let the next revision
+be reviewed against the gate rather than against a reviewer's memory. The
+reviewer's `repeat-of:` verdict field is the signal to route on.
+
+## Recovery surfaces
+
+- Stopped or refused integration: `task-board worktree transaction show <STORY-ID>`,
+  then the disposition surface it names.
+- A leaf whose handoff guard refused for artifact naming: attach the correctly
+  named `<ELEMENT-ID>_<slug>.<ext>` outcome resource and re-run the handoff. Do
+  not respawn the producer to satisfy a naming rule.
+
+exec
+/bin/zsh -lc 'mkdir -p .temp/integration-2wm3mw
+ task-board --help > .temp/integration-2wm3mw/task-board-help-01.log
+ git --version > .temp/integration-2wm3mw/git-version-01.log
+ git status --short
+ git log -3 --oneline' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+ M Packages/AuthUI/Sources/AuthUI/UI/LocalAuth/Page/Auth+UI+Container+Page.swift
+ M relux_sample/Modules/Account/UI/Page/Account+UI+Container+Page.swift
+ M relux_sample/Modules/App/UI/Main/App+UI+Main+Container.swift
+ M relux_sample/Modules/App/UI/Main/Page/App+UI+Main+Container+Page.swift
+ M relux_sample/Modules/App/UI/Root/App+UI+Root+Container.swift
+ M relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
+ M relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
+ M relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
+ M relux_sample/Modules/Notes/Err/Notes+Business+Err.swift
+ M relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Note.swift
+ M relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm+Props.swift
+ M relux_sample/Modules/Notes/UI/Components/EditForm/Notes+UI+Components+EditForm.swift
+ M relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift
+ D relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+LS.swift
+ M relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page+Props.swift
+ M relux_sample/Modules/Notes/UI/Create/Page/Notes+UI+Create+Container+Page.swift
+ M relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
+ M "relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page+Props.swift"
+ M "relux_sample/Modules/Notes/UI/Details/Page/Notes+UI+ Details+Container+Page.swift"
+ M relux_sample/Modules/Notes/UI/Edit/Notes+UI+Edit+Container.swift
+ D relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+LS.swift
+ M relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page+Props.swift
+ M relux_sample/Modules/Notes/UI/Edit/Page/Notes+UI+Edit+Container+Page.swift
+ M relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift
+ M "relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page+Props.swift"
+ M "relux_sample/Modules/Notes/UI/List/Page/Notes+UI+ List+Container+Page.swift"
+ M relux_sample/Modules/Notes/UI/Widget/Notes+UI+Widget+Container.swift
+?? relux_sampleTests/Notes/NotesNativeWorkflowTests.swift
+93e9020 TASK-260909-3hzrc3: TASK-260909-3hzrc3: refresh-dependencies-and-patterns
+815a681 README style pass: replace em dashes, add Relux stack section
+e7ae0f1 README: About Relux Works section v2 (style pass, no em dashes)
+
+exec
+/bin/zsh -lc "task-board worktree integrate --help
+ task-board q 'task(TASK-260909-2wm3mw) { status resources }'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ exited 1 in 0ms:
+Land the accepted story_final Change Request for a Story as ONE squash commit on
+trunk, perform the Story's done transition, and commit the Story's board delta
+as a second, board-only commit.
+
+This command runs in the control root — the repository's main working tree, on
+the configured trunk branch — but only from the tracked integration run whose
+role and archetype match the accepted revision's immutable producer binding.
+Reviewers, orchestrators, and other producer archetypes are refused. No other
+checkout is ever advanced.
+
+It is idempotent. A crashed run leaves one durable transaction record; re-running
+resumes the recorded phase rather than starting a second integration, and the
+only phase that offers a rollback is 'prepared' with trunk unmoved.
+
+On a remote board it refuses with worktree_isolation_requires_local_board before
+the integration lock and before the transaction opens. The rationale is data
+locality, not authority: admission compares worktree bytes against the store's
+own rendering, and no single process holds both operands on a remote board.
+
+Usage:
+  task-board worktree integrate <STORY-ID> [flags]
+
+Flags:
+      --commit-time string   explicit RFC3339 commit time; required when version_control.confirm is enabled, and applied to both the author and the committer date
+      --cr string            Change Request ID (the element the accepted story_final CR is attached to)
+  -h, --help                 help for integrate
+      --revision int         accepted Change Request revision
+      --rollback             roll back a transaction at phase prepared with trunk unmoved instead of resuming it; available in no other phase
+
+Global Flags:
+      --board-dir string         Path to the board directory (overrides TASK_BOARD_DIR and config local.board_dir) (default ".task-board")
+      --context-profile string   Agent context profile override: full or lite
+      --insecure                 Skip TLS certificate verification (for self-signed certs)
+      --json                     Output in JSON format
+      --no-update-check          Disable automatic update check
+      --remote string            Remote board server URL (overrides TASK_BOARD_REMOTE)
+      --remote-board string      Remote board ID (overrides TASK_BOARD_ID)
+query error: parse error at 1:1: unknown operation "task" (got "task"); known operations: activity, agents, context, context_boundary, context_candidates, context_retention, contexts, count, get, list, models, plan, project_config, provider_limits, schema, summary, whoami; see schema() for the contract and schema(operation=NAME) for one signature
+
+exec
+/bin/zsh -lc "rg -n 'integrate|validation|local' /Users/iv/.claude/skills/project-management/references/tracked-background-spawn.md | tail -40" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+942:it. Normal PR review, exact-head local checks, and signed fast-forward publication
+980:workspace path is local-board only in any case: `worktree integrate` refuses a
+981:remote board with `worktree_isolation_requires_local_board` before the
+983:data locality — no single process holds both operands of the admission
+1022:flow and `worktree integrate` is refused (`board_owner_separate`). The
+1049:commit or rewrites trunk. `integrate`, `worktree repair`, `worktree gc` and
+1066:All three are local-board only, like every other managed-workspace surface.
+1104:commit, prunes no workspace, never deletes the record, and makes `integrate`
+1131:| `change_request_final_leaf_checkpoint` | the checkpoint would also close the Story; use `worktree integrate`, which lands the branch first |
+1135:| `change_request_withdraw_reason_missing` | `withdraw_cr` was called with no written reason; the ledger row is the only surviving explanation of why the revision was never integrated |
+1137:| `worktree_isolation_requires_local_board` | the resolved board is remote; Change Request construction, `accept_cr` and `withdraw_cr` all refuse before any side effect |
+1142:Do not run `task-board handoff` after `worktree integrate`: the transaction
+1155:It loads the recorded integration transaction, requires its integrated or
+1177:New work in an already integrated Story uses a new sibling leaf. Its accepted
+1190:task-board worktree integrate STORY-ID --cr ELEMENT --revision N --commit-time RFC3339
+1229:`worktree integrate` records that safe cleanup is *eligible* rather than
+1230:performing it. So an integrated Story's workspace and branch are not reaped
+1343:Protected-authority resolution has no local fallback chain. Every
+1347:or indeterminate and never becomes "no remote"; cached remote HEAD, local
+1365:| `worktree_isolation_requires_local_board` | The resolved board is remote. Every managed-workspace surface refuses before any side effect. |
+1367:| `worktree_protected_authority_unavailable` | The unique authorized repository binding or its fresh remote HEAD/exact-ref fetch cannot be read. Restore remote access; local or cached authority is never substituted. |
+1371:| `worktree_integration_base_missing` | Compatibility-only `ResolveTrunk` could positively establish that its named local base ref is missing; authority-sensitive callers do not use this as a fallback. |
+1374:| `worktree_trunk_local_ahead_of_authority` | Compatibility-only `ResolveTrunk` found unpublished local commits. Fresh protected-authority provisioning does not read or reject the local branch for this relation. |
+1375:| `worktree_trunk_diverged_from_authority` | Compatibility-only `ResolveTrunk` found local/upstream divergence. Fresh protected-authority provisioning seeds from the fetched OID without rewriting the local checkout. |
+1397:| The safe `Cleanup` path has no production caller and there is no `worktree cleanup` command | an integrated Story's workspace and branch are not reaped automatically; use `worktree abort`, or `abort --discard --confirm` to destroy | — |
+1399:| The `board_delta_moved` message says `worktree status` reports `integrated_board_uncommitted` | no command prints that string; `worktree transaction show` is the surface that reports the transaction | — |
+1420:1. Assess the task's scope, complexity, risk, required autonomy, validation
+1437:   required test, validation, outcome, and review gates; bounded, mechanical,
+1446:| Test implementation or validation | `tester` |
+1505:explicit, reviewed, repository-local edit.
+1612:**Model validation:** Missing model, missing Codex/Qwen reasoning, reasoning on Claude, and known incompatible model/effort pairs block before board lookup or mutation. Unknown explicit models remain forward-compatible with a warning. Inspect the current compatibility matrix through local `models(agent=<selected-agent>)` even when the board itself is remote. Qwen model discovery also reports the Qwen Code context window and Token Plan Team seat pricing/monthly-quota applicability. Qwen ordinary children share the tracked prompt/process/run lifecycle, use a stream-JSON initialize frame to carry effort, and do not support goal-bound owner launches.
+1629:If these checks fail, spawn should return a clear validation error instead of launching an underspecified agent.
+1653:- Use target-only `project_config(view=spawn-preflight, role=ROLE, agent=PROVIDER?)` for an actual spawn decision. Use full `project_config()` only when auditing local/remote runtime configuration.
+1718:  in minutes, per provider and role. It samples only free signals — local run
+1882:and run-local revision files are one-release `board-goal-v1` compatibility
+1921:uses bounded local exponential backoff, then probes availability by launching
+1945:terminal bound. Permanence requires structured local `board.ErrNotFound` or a
+2199:**Project-local template overrides** are profile-specific:
+2471:| Model validation | Explicit model; reasoning rejected | Explicit model + compatible effort | Explicit model + compatible effort | N/A |
+2569:`--skip-git-repo-check` bypasses only git/trust validation for a run. It does **not** disable sandbox restrictions.
+
+codex
+I’m using the project-management skill’s integration contract. It requires the final accepted leaf to be integrated from the control checkout; the transaction creates the signed commits and updates board status. No source edits are needed.
+
+exec
+/bin/zsh -lc "sed -n '860,945p' /Users/iv/.claude/skills/project-management/references/tracked-background-spawn.md
+ task-board q 'get(TASK-260909-2wm3mw) { status resources }'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ exited 1 in 0ms:
+
+**Admission is decided by the Orchestrator, from content it re-derives itself.**
+A board path may be committed only when the bytes in the control root equal what
+the authoritative store renders for the owning element — content equality
+against the store's own rendering, computed by the integrating process under its
+own lock — and only when nothing under the Story's board paths moved inside the
+integration window that the transaction cannot account for, which is enforced as
+a compare-and-swap over that window. A path whose bytes the store does not
+reproduce, or whose presence contradicts ownership, refuses
+`board_path_content_unrecognized`; drift inside the window refuses
+`board_delta_moved`.
+
+**Nothing a child authors decides any of this.** Local boards keep a board write
+journal at `.task-board/.board-write-ledger.json` so a process killed mid-write
+can be resolved by content afterwards. It is **non-authorizing**: no admission
+decision and no membership decision reads it, and deleting every record in it
+changes no outcome. There is likewise **no lane attestation and no per-lane
+board-write authority** — no record by which a lane claims the right to a board
+byte, and none is emulated. Three revisions of the design tried to make such a
+record unforgeable and none could, because every input lives inside the trust
+domain of the process it would attest.
+
+**What the no-widen claim is, stated narrowly.** The committed board path set is
+contained in `board_paths(<STORY-ID>)` intersected with the transaction's
+`precondition_delta`, the transition element's own escalation projection, and
+the corresponding exact activity-stream projection for those status writes.
+Content is whatever the authoritative store renders at freeze or recovery time.
+The command does **not** claim to reproduce the byte state at the instant of the
+transition, and **it does not claim to identify which lane wrote a board byte**.
+It claims exactly two things: every byte committed is a byte the store
+reproduces, and nothing under the Story's board paths changed inside the
+integration window that the transaction cannot account for.
+
+If a lane path drifts after the manifest is frozen, integration refuses
+`board_delta_moved` naming the `integrated_board_uncommitted` condition: the
+Story commit is already on trunk and its board delta is not. The transaction
+stays at `board_state_pending`, so the Story is not integrated and its workspace
+is not reaped. Resolve the drift and re-run `worktree integrate`; it resumes the
+recorded transaction rather than starting a second one. Note that no command
+prints the string `integrated_board_uncommitted` — the surface that reports the
+transaction and its phase is `task-board worktree transaction show <STORY-ID>`.
+
+**Crash recovery is re-running the same command.** One durable transaction
+record per Story carries the phase; re-running resumes it rather than starting a
+second integration. A rollback is offered in exactly one phase — `prepared` with
+trunk unmoved — because that is the only phase with anything to roll back to;
+every later phase resumes forward and none undoes a landed commit.
+
+**A fresh accepted final revision opens a new generation, not a second live
+transaction.** The active generation is supersedable only at `cleanup_pending`,
+or at `discharged` after the discharge postcondition is recomputed. Integration
+reads and verifies the newly requested accepted CR binding before choosing this
+path, and independently proves the old generation from Git plus its durable
+manifest; neither caller claims, Story status, nor a hand-written phase grants
+rotation. Prepared, in-flight, transition-refused, integration-abandoned,
+unreadable, and unproved records remain active and refuse.
+
+Before generation N+1 becomes active, generation N is preserved create-only at
+`.temp/integration-txn/archive/<STORY-ID>/generation-N.json`. Activation then
+atomically replaces the active pointer. A crash between those operations leaves
+the archived generation and the same old active record, so the ordinary retry
+revalidates both and completes activation. Concurrent attempts serialize on the
+repository integration lock and converge on the same generation. A command that
+names the active CR revision remains an idempotent resume and never rotates it.
+
+**Repair before publication.** A completed colocated Story may need a new final
+leaf before its integrated local commits have been published. The same command
+admits that repair only when every commit between the freshly observed protected
+default and local `HEAD` belongs to completed generations of this Story. It
+walks the current transaction and immutable predecessor archives, checking the
+integrated CR receipts, candidate trees, validation bindings, human authors,
+signatures, direct parent links, and exact owned board manifests. An ignored
+board requires a frozen transition plan, an integrated CR receipt, and proof
+that its omitted lane paths are untracked and ignored. An extra local commit,
+another Story, a damaged archive, or a moved protected base refuses before ref
+movement. This does not make local `main` an authority or publish any commits.
+
+The repair must have been accepted against the current protected base. Its full
+reviewed source snapshot is preserved; the temporary integration index carries
+forward the predecessor's board tree, and any resulting tree change forces
+validation again. The CR retains its original protected base and reviewed OID.
+The repair source commit descends from the proven local prefix without rewriting
+it. Normal PR review, exact-head local checks, and signed fast-forward publication
+still follow. Ordinary protected-trunk movement retains the existing reparent
+and stale-acceptance rules; separate board-owner delivery is unchanged.
+
+query error: parse error at 1:36: unknown field "resources" (got "resources"); see schema() for valid fields and preset names
+
+exec
+/bin/zsh -lc 'git status --short
+ git branch --show-current
+ task-board worktree transaction show STORY-260909-q49ois' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 21ms:
+No integration transaction is recorded for STORY-260909-q49ois
+
+exec
+/bin/zsh -lc 'task-board worktree integrate STORY-260909-q49ois --cr TASK-260909-2wm3mw --revision 1' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+exec
+/bin/zsh -lc 'task-board worktree transaction show STORY-260909-q49ois' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 0ms:
+No integration transaction is recorded for STORY-260909-q49ois
+
+exec
+/bin/zsh -lc "ps -axo pid,ppid,etime,command | rg 'task-board worktree integrate|git (fetch|ls-remote)|ssh .*github|xcodebuild|swift test'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 19ms:
+exec
+/bin/zsh -lc "task-board q 'schema(operation=get)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+{"description":"Get a single element by ID","examples":["get(TASK-XX) { overview }"],"kind":"operation","name":"get","parameters":[{"name":"id","type":"string","optional":false,"description":"Element ID"}],"signature":"get(id:string)","syntax":"OPERATION(element-or-identifier, key=value, key=\"quoted string\") { field preset }; statements separated by ';'; the first bare positional value is the element/identifier argument; remaining arguments use key=value (no operators or lists); string escapes: \\\" \\\\ \\n \\t"}
+
+codex
+The integration command is running its configured iOS Simulator compile check. No UI tests or simulator interaction are running.
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-2wm3mw) { overview }'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 125ms:
+{"assignee":"[implementer] developer (codex)","id":"TASK-260909-2wm3mw","name":"refresh-native-notes-demo","parent":"STORY-260909-q49ois","status":"integrating"}
+
+ exited 1 in 56793ms:
+board_delta_moved: the lane paths of STORY-260909-q49ois moved during the pre-movement window; trunk is unmoved and no transaction record exists, so nothing has to be undone and the run is retryable
+  story_id: STORY-260909-q49ois
+  .task-board/.activity/TASK-260909-2wm3mw/events.ndjson: board_delta_moved — a lane path changed between integration-lock acquisition and the closing re-read
+
+codex
+The first attempt exited 1 because a task activity record changed during integration’s consistency check. Trunk is unchanged, and the command reports this as retryable. I’ll retry the same transaction.
+
+exec
+/bin/zsh -lc 'task-board worktree integrate STORY-260909-q49ois --cr TASK-260909-2wm3mw --revision 1' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 18602ms:
+STORY-260909-q49ois  cleanup_pending
+  story commit: 75737c19311b8748ffbaadd51a5faba9362428c2
+  board commit: a85ed27e92ee73dac35c28480bdf97d3fdfafbd6
+  note: safe cleanup is now eligible; `worktree cleanup` removes the workspace and branch only after exact commit ancestry, Story done, a committed board record, a clean workspace, and no active lease or RUN
+
+exec
+/bin/zsh -lc 'git verify-commit 75737c19311b8748ffbaadd51a5faba9362428c2 a85ed27e92ee73dac35c28480bdf97d3fdfafbd6' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 0ms:
+Good "git" signature for oparin@me.com with ECDSA key SHA256:V6JiKG7J29mjsvikcLoSVp0bLa77VTsFy12gnLO81cM
+Good "git" signature for oparin@me.com with ECDSA key SHA256:V6JiKG7J29mjsvikcLoSVp0bLa77VTsFy12gnLO81cM
+
+exec
+/bin/zsh -lc "task-board worktree transaction show STORY-260909-q49ois
+ task-board q 'get(TASK-260909-2wm3mw) { overview }'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 138ms:
+{"assignee":"[implementer] developer (codex)","id":"TASK-260909-2wm3mw","name":"refresh-native-notes-demo","parent":"STORY-260909-q49ois","status":"done"}
+
+codex
+Local integration succeeded, and the transaction set the task to `done`. Both commits passed signature verification. I’ll attach the integration evidence; hosted PR review and publication remain with the parent.
+
+exec
+/bin/zsh -lc "mkdir -p .temp/STORY-260909-q49ois/integration-evidence
+cat > .temp/STORY-260909-q49ois/integration-evidence/TASK-260909-2wm3mw_local-integration.md <<'EOF'
+# Signed local integration
+
+Accepted CR: CR-TASK-260909-2wm3mw-1, revision 1.
+Reviewed production source was preserved; no code, tests, or configuration were edited by this run.
+
+## Commands and results
+
+- "'`task-board worktree integrate STORY-260909-q49ois --cr TASK-260909-2wm3mw --revision 1`: first attempt exit 1, `board_delta_moved` on the task activity stream during pre-movement verification. Trunk was unchanged and no transaction existed. Retried the same command without bypasses.
+- Same integration command, second attempt: exit 0, transaction phase `cleanup_pending`.
+- `git verify-commit 75737c19311b8748ffbaadd51a5faba9362428c2 a85ed27e92ee73dac35c28480bdf97d3fdfafbd6`: exit 0; both signatures valid for configured human identity oparin@me.com.
+- `task-board worktree transaction show STORY-260909-q49ois`: exit 0; story commit on trunk true, lease held false.
+- Task overview read: exit 0; status `done`, written by integration transaction.
+
+Story source commit: 75737c19311b8748ffbaadd51a5faba9362428c2.
+Board commit: a85ed27e92ee73dac35c28480bdf97d3fdfafbd6.
+
+## Validation and bounds
+
+The managed integration invoked its configured Xcode 26.5 generic iOS Simulator build with pinned package resolution and CODE_SIGNING_ALLOWED=NO. The integration command passed; this run did not independently capture the nested build process exit code. Existing accepted tree-bound unit/build evidence was reused. No independent unit suite, UI test, snapshot, visual inspection, simulator navigation, or mutant experiment was run. No behavior changed, so AC rows newly driven by tests in this integration run: 0 of 1; behavioral acceptance remains grounded in the accepted revision evidence rather than a new claim.
+
+No remote publication was performed. Parent owns hosted PR, platform review, and exact-head publication. Workspace cleanup was not attempted.
+EOF
+ task-board resource add TASK-260909-2wm3mw .temp/STORY-260909-q49ois/integration-evidence/TASK-260909-2wm3mw_local-integration.md --type outcome --name TASK-260909-2wm3mw_local-integration.md -d '"'Signed local integration receipt, retry evidence, verification and bounds'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample
+ succeeded in 206ms:
+Attached TASK-260909-2wm3mw_local-integration.md on TASK-260909-2wm3mw as outcome
+
+codex
+Local integration complete; board status is `done`.
+
+- Source commit: `75737c1`
+- Board commit: `a85ed27`
+- Both human signatures verified.
+- Outcome evidence attached.
+- Reviewed source unchanged; no UI tests run.
+
+Parent retains PR review and publication.
+Local integration complete; board status is `done`.
+
+- Source commit: `75737c1`
+- Board commit: `a85ed27`
+- Both human signatures verified.
+- Outcome evidence attached.
+- Reviewed source unchanged; no UI tests run.
+
+Parent retains PR review and publication.
+tokens used
+45,956
