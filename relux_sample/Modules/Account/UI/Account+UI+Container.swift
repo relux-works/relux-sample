@@ -8,7 +8,9 @@ extension Account.UI {
         var body: some View {
             content
                 .navigationTitle("Account")
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
         }
 
         private var content: some View {

@@ -38,7 +38,7 @@ extension Notes.UI.Component.EditForm.Note {
 
 extension Notes.UI.Component.EditForm.Note {
     var valid: Bool {
-        self.title.isNotEmpty && self.content.isNotEmpty
+        Notes.Business.Model.Note.hasValidContent(title: title, content: content)
     }
 }
 

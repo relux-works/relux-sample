@@ -1,4 +1,4 @@
-@preconcurrency import LocalAuthentication
+import LocalAuthentication
 import AuthModels
 import AuthServiceInt
 
@@ -14,14 +14,14 @@ extension Auth.Business {
 }
 
 extension Auth.Business.Service: Auth.Business.IService {
-    public var laContext: LAContext { get async { laCtx } }
+    // LAContext remains owned by this actor; interfaces expose domain values only.
 
     public var availableBiometry: Model.BiometryType { get async {
 
         var error: NSError?
-        let allowed = await laContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        let allowed = laCtx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
 
-        return switch await laContext.biometryType {
+        return switch laCtx.biometryType {
             case .none: .other(allowed: allowed)
             case .touchID: .touch(allowed: allowed)
             case .faceID: .face(allowed: allowed)
@@ -31,7 +31,7 @@ extension Auth.Business.Service: Auth.Business.IService {
     }}
 
     public func runLocalAuth() async -> Result<Bool, Auth.Business.Err> {
-        let laContext = await self.laContext
+        let laContext = self.laCtx
         return await withCheckedContinuation { ctx in
             var error: NSError?
             if laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {

@@ -52,6 +52,19 @@ extension SampleApp.UI.Root.Container {
     }
 
     private var debugModal: some View {
-        Text("Debug page")
+        NavigationStack {
+            Form {
+                Section("Notes data flow") {
+                    Text("Container → Effect → Flow → Service → Action → Reducer → UI projection")
+                    Text("Views receive values and callbacks. Business state owns the notes; the service uses an in-memory data provider.")
+                }
+            }
+            .navigationTitle("Architecture")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { Task { await actions { ModalRouter.Action.dismiss } } }
+                }
+            }
+        }
     }
 }

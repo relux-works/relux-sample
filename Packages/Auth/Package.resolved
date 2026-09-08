@@ -1,0 +1,24 @@
+{
+  "originHash" : "caf93ef70e814675f5846b76d9566c094057d8462d4e508bb8b93f63f1241c5a",
+  "pins" : [
+    {
+      "identity" : "swift-ioc",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swift-ioc.git",
+      "state" : {
+        "revision" : "95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd",
+        "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swift-relux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swift-relux.git",
+      "state" : {
+        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
+        "version" : "9.2.0"
+      }
+    }
+  ],
+  "version" : 3
+}

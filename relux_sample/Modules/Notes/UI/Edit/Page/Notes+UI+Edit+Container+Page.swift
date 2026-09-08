@@ -3,67 +3,15 @@ import SwiftUI
 extension Notes.UI.Edit.Container {
     struct Page: Relux.UI.View {
         typealias Note = Notes.Business.Model.Note
-
-        @StateObject private var ls: LocalState
-
         let props: Props
-        private let actions: Actions
-
-        init(
-            props: Props,
-            actions: Actions
-        ) {
-            self.props = props
-            self.actions = actions
-            self._ls = .init(wrappedValue: .init(props: props))
-        }
+        let actions: Actions
 
         var body: some View {
-            content
-                .navigationBarItems(trailing: removeBtn)
-                .navBar(middle: createBtn, edge: .bottom)
+            Notes.UI.Component.EditForm(
+                props: .init(title: "Edit Note", note: props.note,
+                             errorMessage: props.errorMessage),
+                actions: .init(onSave: actions.onSave, onCancel: actions.onCancel)
+            )
         }
-    }
-}
-
-// header
-extension Notes.UI.Edit.Container.Page {
-    private var removeBtn: some View {
-        NavBarBtn.iconBtn(
-            systemName: "trash",
-            action: actions.onRemove.callAsFunction
-        )
-    }
-}
-
-// subviews
-extension Notes.UI.Edit.Container.Page {
-    private var createBtn: some View {
-        AsyncButton(action: onSave) {
-            Text("Save")
-        }
-        .buttonStyle(.borderedProminent)
-        .disabled(ls.valid.not)
-    }
-
-    private var content: some View {
-        form
-    }
-
-    private var form: some View {
-        Notes.UI.Component.EditForm(
-            props: .init(
-                title: "Edit note",
-                note: $ls.note
-            ),
-            actions: .init()
-        )
-    }
-}
-
-// reactions
-extension Notes.UI.Edit.Container.Page {
-    private func onSave() async {
-        await actions.onSave(ls.note.asNote(withId: props.note.id))
     }
 }

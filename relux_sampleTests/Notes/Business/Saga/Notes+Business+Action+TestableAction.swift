@@ -1,5 +1,5 @@
 import Relux
-import Auth
+import AuthReluxInt
 @testable import relux_sample
 
 extension Notes.Business.Action {

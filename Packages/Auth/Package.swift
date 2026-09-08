@@ -8,19 +8,17 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .library(name: "AuthModels", type: .dynamic, targets: ["AuthModels"]),
-        .library(name: "AuthReluxInt", type: .dynamic, targets: ["AuthReluxInt"]),
-        .library(name: "AuthReluxImpl", type: .dynamic, targets: ["AuthReluxImpl"]),
-        .library(name: "AuthServiceInt", type: .dynamic, targets: ["AuthServiceInt"]),
-        .library(name: "AuthServiceImpl", type: .dynamic, targets: ["AuthServiceImpl"]),
+        .library(name: "AuthModels", targets: ["AuthModels"]),
+        .library(name: "AuthReluxInt", targets: ["AuthReluxInt"]),
+        .library(name: "AuthReluxImpl", targets: ["AuthReluxImpl"]),
+        .library(name: "AuthServiceInt", targets: ["AuthServiceInt"]),
+        .library(name: "AuthServiceImpl", targets: ["AuthServiceImpl"]),
         // Test-only helpers (static is fine)
         .library(name: "AuthTestSupport", targets: ["AuthTestSupport"]),
     ],
     dependencies: [
-        // Dev note: self-reference forces dynamic linkage across products.
-        .package(name: "Auth-Self", path: "."),
-        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "9.0.0"),
+        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
         .package(path: "../TestInfrastructure"),
     ],
     targets: [
@@ -31,29 +29,29 @@ let package = Package(
         .target(
             name: "AuthReluxInt",
             dependencies: [
-                .product(name: "AuthModels", package: "Auth-Self"),
+                "AuthModels",
                 .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(
             name: "AuthServiceInt",
             dependencies: [
-                .product(name: "AuthModels", package: "Auth-Self"),
+                "AuthModels",
             ]
         ),
         .target(
             name: "AuthServiceImpl",
             dependencies: [
-                .product(name: "AuthModels", package: "Auth-Self"),
-                .product(name: "AuthServiceInt", package: "Auth-Self"),
+                "AuthModels",
+                "AuthServiceInt",
             ]
         ),
         .target(
             name: "AuthReluxImpl",
             dependencies: [
-                .product(name: "AuthModels", package: "Auth-Self"),
-                .product(name: "AuthReluxInt", package: "Auth-Self"),
-                .product(name: "AuthServiceInt", package: "Auth-Self"),
+                "AuthModels",
+                "AuthReluxInt",
+                "AuthServiceInt",
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "swift-relux"),
             ]
@@ -61,9 +59,9 @@ let package = Package(
         .target(
             name: "AuthTestSupport",
             dependencies: [
-                .product(name: "AuthModels", package: "Auth-Self"),
-                .product(name: "AuthServiceInt", package: "Auth-Self"),
-                .product(name: "AuthReluxInt", package: "Auth-Self"),
+                "AuthModels",
+                "AuthServiceInt",
+                "AuthReluxInt",
                 .product(name: "Relux", package: "swift-relux"),
                 .product(name: "TestInfrastructure", package: "TestInfrastructure"),
             ]
@@ -73,7 +71,9 @@ let package = Package(
             dependencies: [
                 "AuthReluxImpl",
                 "AuthReluxInt",
-                "AuthModels"
+                "AuthModels",
+                "AuthServiceInt",
+                .product(name: "Relux", package: "swift-relux")
             ]
         )
     ]

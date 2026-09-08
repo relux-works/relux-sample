@@ -1,22 +1,14 @@
 import SwiftUI
 
 extension Notes.UI.Component.EditForm {
-    struct Props: ViewProps {
+    struct Props: Relux.UI.ViewProps {
         let title: String
-        var note: Binding<Note>
-        
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.note.wrappedValue == rhs.note.wrappedValue &&
-            lhs.title == rhs.title
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(title)
-            hasher.combine(note.wrappedValue)
-        }
+        let note: Notes.Business.Model.Note?
+        var errorMessage: String? = nil
     }
 
     struct Actions: Relux.UI.ViewCallbacks {
-       
+        let onSave: ViewInputCallback<Notes.Business.Model.Note>
+        let onCancel: ViewCallback<Void>
     }
 }

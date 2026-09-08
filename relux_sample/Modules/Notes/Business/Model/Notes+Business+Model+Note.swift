@@ -10,6 +10,14 @@ extension Notes.Business.Model {
 }
 
 extension Notes.Business.Model.Note {
+    // The service and editor share the same content rule; the domain has no UI dependency.
+    static func hasValidContent(title: String, content: String) -> Bool {
+        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+
+extension Notes.Business.Model.Note {
     init(from apiModel: Notes.Data.Api.DTO.Note) {
         self.id = apiModel.id
         self.createdAt = apiModel.date

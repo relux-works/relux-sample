@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Auth"),
-        .package(url: "https://github.com/relux-works/swiftui-relux.git", from: "8.0.0")
+        .package(url: "https://github.com/relux-works/swiftui-relux.git", exact: "9.0.0")
     ],
     targets: [
         .target(

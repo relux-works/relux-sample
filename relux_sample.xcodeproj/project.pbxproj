@@ -8,31 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604CB2D9169E300BE2349 /* SwiftUIRelux */; };
-		704F5C342E168CBD00FCAE62 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C332E168CBD00FCAE62 /* Relux */; };
-		704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */ = {isa = PBXBuildFile; productRef = 704F5C362E168D3500FCAE62 /* SwiftUIRelux */; };
 		70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
-		70992C1E2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 701F04CA2D93062700BC99C2 /* Relux */; };
-		70992C1F2DDDFDA6007767C7 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A39F1E2DBAB02600112F5E /* Relux */; };
 		70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 70992D3E2DDDFE8E007767C7 /* Logging */; };
 		70A603E72D8ED02000BE2349 /* SwiftIoC in Frameworks */ = {isa = PBXBuildFile; productRef = 70A603E62D8ED02000BE2349 /* SwiftIoC */; };
 		70A604C92D9169CD00BE2349 /* ReluxRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604C82D9169CD00BE2349 /* ReluxRouter */; };
 		70E0BEEF2E00000100000023 /* AuthUIAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000013 /* AuthUIAPI */; };
 		70E0BEEF2E00000100000024 /* AuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = 70E0BEEF2E00000100000014 /* AuthUI */; };
-		AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */ = {isa = PBXBuildFile; productRef = 70A604BA2D8F401600BE2349 /* Relux */; };
 		AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; };
 		AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; };
 		AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; };
 		AA5CB2C52EE8E0FC0077BFF8 /* AuthServiceInt in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; };
 		AA5CB2C72EE8E1090077BFF8 /* AuthServiceImpl in Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; };
-		AA5CB2C92EE8E11D0077BFF8 /* AuthModels in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AA5CB2CA2EE8E1220077BFF8 /* AuthReluxInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C02EE8E0E30077BFF8 /* AuthReluxInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C22EE8E0EF0077BFF8 /* AuthReluxImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C42EE8E0FC0077BFF8 /* AuthServiceInt */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AA5CB2C62EE8E1090077BFF8 /* AuthServiceImpl */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,11 +39,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AA5CB2C92EE8E11D0077BFF8 /* AuthModels in Embed Frameworks */,
-				AA5CB2CA2EE8E1220077BFF8 /* AuthReluxInt in Embed Frameworks */,
-				AA5CB2CB2EE8E1270077BFF8 /* AuthReluxImpl in Embed Frameworks */,
-				AA5CB2CC2EE8E12D0077BFF8 /* AuthServiceInt in Embed Frameworks */,
-				AA5CB2CD2EE8E1320077BFF8 /* AuthServiceImpl in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,8 +48,6 @@
 /* Begin PBXFileReference section */
 		70A603AB2D8ECD6900BE2349 /* relux_sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = relux_sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70A603BC2D8ECD6D00BE2349 /* relux_sampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = relux_sampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA5A934E2EE8FB650049F50D /* swiftui-relux */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swiftui-relux"; path = "../swiftui-relux"; sourceTree = SOURCE_ROOT; };
-		AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = relux_sample.xctestplan; path = ../../../../Downloads/relux_sample.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -88,13 +68,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				70992C1F2DDDFDA6007767C7 /* Relux in Frameworks */,
-				70992C1E2DDDFDA6007767C7 /* Relux in Frameworks */,
 				70992C1D2DDDFDA6007767C7 /* Relux in Frameworks */,
-				704F5C372E168D3500FCAE62 /* SwiftUIRelux in Frameworks */,
 				7023D0DF2DD23EDA000A3E51 /* SwiftUIRelux in Frameworks */,
 				70992D3F2DDDFE8E007767C7 /* Logging in Frameworks */,
-				704F5C342E168CBD00FCAE62 /* Relux in Frameworks */,
 				AA5CB2BF2EE8E0D70077BFF8 /* AuthModels in Frameworks */,
 				AA5CB2C12EE8E0E30077BFF8 /* AuthReluxInt in Frameworks */,
 				AA5CB2C32EE8E0EF0077BFF8 /* AuthReluxImpl in Frameworks */,
@@ -112,10 +88,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA5CB2B62EE8D5AF0077BFF8 /* Relux in Frameworks */,
-				AA5A923C2EE8EB7B0049F50D /* (null) in Frameworks */,
-				AA5A923D2EE8EB7B0049F50D /* (null) in Frameworks */,
-				AA5A923E2EE8EB7B0049F50D /* (null) in Frameworks */,
-				AA5A923F2EE8EB7B0049F50D /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,12 +97,10 @@
 		70A603A22D8ECD6900BE2349 = {
 			isa = PBXGroup;
 			children = (
-				AA5CB2B92EE8D3DD0077BFF8 /* relux_sample.xctestplan */,
 				70A603AD2D8ECD6900BE2349 /* relux_sample */,
 				70A603BF2D8ECD6D00BE2349 /* relux_sampleTests */,
 				70B3DD2D2DB6A27A00FA5FA8 /* Frameworks */,
 				70A603AC2D8ECD6900BE2349 /* Products */,
-				AA5A934E2EE8FB650049F50D /* swiftui-relux */,
 			);
 			sourceTree = "<group>";
 		};
@@ -175,11 +145,7 @@
 				70A604BA2D8F401600BE2349 /* Relux */,
 				70A604C82D9169CD00BE2349 /* ReluxRouter */,
 				70A604CB2D9169E300BE2349 /* SwiftUIRelux */,
-				701F04CA2D93062700BC99C2 /* Relux */,
-				70A39F1E2DBAB02600112F5E /* Relux */,
 				70992D3E2DDDFE8E007767C7 /* Logging */,
-				704F5C332E168CBD00FCAE62 /* Relux */,
-				704F5C362E168D3500FCAE62 /* SwiftUIRelux */,
 				70E0BEEF2E00000100000013 /* AuthUIAPI */,
 				70E0BEEF2E00000100000014 /* AuthUI */,
 				AA5CB2BE2EE8E0D70077BFF8 /* AuthModels */,
@@ -454,7 +420,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -496,7 +462,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -519,7 +485,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -542,7 +508,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.relux-works.relux-sampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -604,41 +570,25 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-log.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.6.3;
+				kind = exactVersion;
+				version = 1.15.1;
 			};
 		};
 		70A603E52D8ED01F00BE2349 /* XCRemoteSwiftPackageReference "swift-ioc" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/relux-works/swift-ioc.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.1;
+				kind = exactVersion;
+				version = 1.0.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		701F04CA2D93062700BC99C2 /* Relux */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Relux;
-		};
-		704F5C332E168CBD00FCAE62 /* Relux */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Relux;
-		};
-		704F5C362E168D3500FCAE62 /* SwiftUIRelux */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftUIRelux;
-		};
 		70992D3E2DDDFE8E007767C7 /* Logging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 70992D3D2DDDFE8E007767C7 /* XCRemoteSwiftPackageReference "swift-log" */;
 			productName = Logging;
-		};
-		70A39F1E2DBAB02600112F5E /* Relux */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Relux;
 		};
 		70A603E62D8ED02000BE2349 /* SwiftIoC */ = {
 			isa = XCSwiftPackageProductDependency;

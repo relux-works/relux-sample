@@ -4,140 +4,124 @@ extension Notes.UI.List.Container {
     struct Page: Relux.UI.View {
         typealias Note = Notes.Business.Model.Note
         typealias Err = Notes.Business.Err
-
         let props: Props
         let actions: Actions
+        @State private var search = ""
+        @State private var noteToDelete: Note?
 
         var body: some View {
-            content
-                .navigationTitle("Notes")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationBarItems(trailing: createBtn)
-                .animation(.easeInOut, value: props.notes.asAnimatableValue)
-                .animation(.easeInOut, value: props.notes.value?.flatCount)
-                .refreshable(action: actions.onReload.callAsFunction)
-        }
-    }
-}
-
-// header
-extension Notes.UI.List.Container.Page {
-    private var createBtn: some View {
-        NavBarBtn.iconBtn(
-            systemName: "plus",
-            action: actions.onCreate
-        )
-    }
-}
-
-// subviews
-extension Notes.UI.List.Container.Page {
-    private var content: some View {
-        List {
-            listView(for: props.notes.value)
-        }.overlay(content: loadingState)
-    }
-
-    @ViewBuilder
-    private func loadingState() -> some View {
-        switch props.notes {
-            case .initial: initialView
-            case .failure: failureView
-            case let .success(notes): switch notes.isNotEmpty {
-                case false: emptyListView
-                case true: EmptyView()
+            let groups = props.groups(matching: search)
+            List {
+                if let message = props.errorMessage {
+                    Section { Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red) }
+                }
+                ForEach(groups, id: \.id) { group in
+                    Section {
+                        ForEach(group) { note in
+                            Button { Task { await actions.onOpen(note.id) } } label: {
+                                NoteRow(props: .init(title: note.title, content: note.content,
+                                                     date: note.createdAt))
+                            }
+                            .tint(.primary)
+                            .swipeActions(allowsFullSwipe: false) {
+                                Button("Delete", systemImage: "trash", role: .destructive) { noteToDelete = note }
+                            }
+                            .contextMenu {
+                                Button("Delete Note", systemImage: "trash", role: .destructive) { noteToDelete = note }
+                            }
+                        }
+                    } header: {
+                        if let date = group.first?.createdAt {
+                            Text(date.formatted(date: .abbreviated, time: .omitted))
+                        }
+                    }
+                }
+                if !groups.isEmpty {
+                    Section {
+                        Text("In-memory demo. Changes reset when you restart the app.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .overlay {
+                switch props.notes {
+                case .initial:
+                    ProgressView("Loading notes…")
+                case .failure:
+                    ContentUnavailableView {
+                        Label("Couldn’t Load Notes", systemImage: "exclamationmark.triangle")
+                    } description: {
+                        Text("Try loading your notes again.")
+                    } actions: {
+                        AsyncButton(action: actions.onReload) { Text("Try Again") }.buttonStyle(.bordered)
+                    }
+                case .success:
+                    if groups.isEmpty {
+                        if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            ContentUnavailableView {
+                                Label("Your Notes Start Here", systemImage: "note.text")
+                            } description: {
+                                Text("Capture an idea or make a quick checklist. Notes reset when the app restarts.")
+                            } actions: {
+                                AsyncButton(action: actions.onCreate) { Text("New Note") }.buttonStyle(.bordered)
+                            }
+                        } else {
+                            ContentUnavailableView.search(text: search)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Notes")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always),
+                        prompt: "Search titles and text")
+            #else
+            .searchable(text: $search, prompt: "Search titles and text")
+            #endif
+            .refreshable(action: actions.onReload.callAsFunction)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    AsyncButton(action: actions.onCreate) { Label("New Note", systemImage: "square.and.pencil") }
+                        .keyboardShortcut("n", modifiers: .command)
+                }
+            }
+            .confirmationDialog("Delete note?", isPresented: Binding(
+                get: { noteToDelete != nil }, set: { if !$0 { noteToDelete = nil } }
+            ), titleVisibility: .visible, presenting: noteToDelete) { note in
+                Button("Delete Note", role: .destructive) { Task { await actions.onRemove(note) } }
+                Button("Cancel", role: .cancel) { }
+            } message: { note in
+                Text("“\(note.title)” will be removed from this session.")
             }
         }
     }
 }
 
-// loading overlays
-extension Notes.UI.List.Container.Page {
-    private var initialView: some View {
-        ProgressView("Loading...")
-            .extendingContent()
-    }
-
-    private var failureView: some View {
-        Text("Failed to load")
-            .extendingContent()
-    }
-
-    private var emptyListView: some View {
-        Text("No notes yet...")
-            .extendingContent()
-    }
-}
-
-// list content
-extension Notes.UI.List.Container.Page {
-    @ViewBuilder
-    private func listView(for noteGroups: [[Note]]?) -> some View {
-        switch noteGroups {
-            case .none: EmptyView()
-            case let .some(groups): noteGroupsView(for: groups)
+private extension Notes.UI.List.Container.Page {
+    struct NoteRow: Relux.UI.View {
+        struct Props: Relux.UI.ViewProps {
+            let title: String
+            let content: String
+            let date: Date
         }
-    }
+        let props: Props
 
-    @ViewBuilder
-    private func noteGroupsView(for noteGroups: [[Note]]) -> some View {
-        ForEach(noteGroups, id: \.id) { group in
-            notesGroupSection(for: group)
-        }
-    }
-
-    private func notesGroupSection(for group: [Note]) -> some View {
-        Section(header: notesGroupSectionHeader(for: group.first?.createdAt ?? .now)) {
-            ForEach(group) { note in
-                noteRow(for: note)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) { removeSwipeAction(for: note) }
+        var body: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(props.title).font(.headline)
+                Text(props.content).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
+                Text(props.date.formatted(date: .omitted, time: .shortened))
+                    .font(.caption).foregroundStyle(.secondary)
             }
-        }
-    }
-
-    private func removeSwipeAction(for note: Note) -> some View {
-        SwipeButton(
-            props: .init(
-                icon: Image(systemName: "trash"),
-                tint: .red
-            ),
-            actions: .init(
-                action: { await onRemove(note) }
-            )
-        )
-    }
-
-    private func notesGroupSectionHeader(for date: Date = .now) -> some View {
-        Text(date.formatted(dateFormat: .dateAsDDMMMM))
-    }
-
-    private func noteRow(for note: Note) -> some View {
-        Relux.NavigationLink(page: .app(page: .notes(.details(id: note.id)))) {
-            noteRowContent(for: note)
-        }
-    }
-
-    private func noteRowContent(for note: Note) -> some View {
-        VStack(alignment: .leading) {
-            HStack(alignment: .bottom) {
-                Text(note.title)
-                Spacer()
-                Text(note.createdAt.formatted(date: .omitted, time: .shortened))
-            }
-            Text(note.content)
-                .lineLimit(2)
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityHint("Opens the note")
         }
     }
 }
 
-// reactions
-extension Notes.UI.List.Container.Page {
-    private func onRemove(_ note: Note) async {
-        await actions.onRemove(note)
-    }
-}
-
-// utils
 extension Array<Notes.Business.Model.Note> {
-    public var id: Date? { self.first?.createdAt.startOfDay }
+    public var id: Date? { first?.createdAt.startOfDay }
 }

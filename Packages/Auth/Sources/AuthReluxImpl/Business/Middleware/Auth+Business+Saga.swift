@@ -47,10 +47,15 @@ extension Auth.Business.Saga {
 
     private func authorizeWithBiometry() async {
         switch await svc.runLocalAuth() {
-            case .success:
+            // A completed evaluation is not necessarily an authorized user.
+            case .success(true):
                 await actions {
                     Auth.Business.Action.authSucceed
                     router.pushMain()
+                }
+            case .success(false):
+                await actions {
+                    Auth.Business.Action.authFailed(err: .authenticationRejected)
                 }
             case let .failure(err):
                 await actions {

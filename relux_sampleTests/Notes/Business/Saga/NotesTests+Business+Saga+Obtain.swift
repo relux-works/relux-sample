@@ -15,13 +15,18 @@ extension NotesTests.Business.Saga {
             service.obtainNotesHandler = { .success(notes) }
 
                 // Act
-            _ = await flow.apply(Effect.obtainNotes)
+            let result: Relux.Flow.Result = await flow.apply(Effect.obtainNotes)
+            guard case .success = result else {
+                Issue.record("Expected success flow result")
+                return
+            }
 
                 // Assert
             let successAction = logger.getAction(Action.obtainNotesSuccess(notes: notes))
             #expect(successAction.isNotNil)
             #expect(service.obtainNotesCallCount == 1)
         }
+
 
         @Test func obtainNotes_Failure() async throws {
                 // Arrange
@@ -35,7 +40,11 @@ extension NotesTests.Business.Saga {
             service.obtainNotesHandler = { .failure(err) }
 
                 // Act
-            _ = await flow.apply(Effect.obtainNotes)
+            let result: Relux.Flow.Result = await flow.apply(Effect.obtainNotes)
+            guard case .failure = result else {
+                Issue.record("Expected failure flow result")
+                return
+            }
 
                 // Assert
             let failureAction = logger.getAction(Action.obtainNotesFail(err: err))

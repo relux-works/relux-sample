@@ -43,7 +43,8 @@ extension SampleApp.Registry {
         await Relux.init(
             logger: resolve(Relux.Logger.self),
             appStore: resolve(Relux.Store.self),
-            rootSaga: .init()
+            // Modules and the dispatcher share the container-owned root saga.
+            rootSaga: resolve(Relux.RootSaga.self)
         )
         .register { @MainActor in
             resolve(ErrorHandling.Module.self)

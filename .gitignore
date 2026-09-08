@@ -20,9 +20,8 @@ Carthage/Build
 .build
 .swiftpm
 .idea
-*.resolved
 .gitrelease
- *.pbxproj
 gitrelease
 
 DerivedData/
+.temp/

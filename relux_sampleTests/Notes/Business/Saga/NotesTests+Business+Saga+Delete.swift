@@ -16,13 +16,18 @@ extension NotesTests.Business.Saga {
             service.deleteNotesHandler = { _ in .success(()) }
 
                 // Act
-            _ = await flow.apply(Effect.delete(note: note))
+            let result: Relux.Flow.Result = await flow.apply(Effect.delete(note: note))
+            guard case .success = result else {
+                Issue.record("Expected success flow result")
+                return
+            }
 
                 // Assert
             let successAction = logger.getAction(Action.deleteNoteSuccess(note: note))
             #expect(successAction.isNotNil)
             #expect(service.deleteNotesCallCount == 1)
         }
+
 
         @Test func deleteNote_Failure() async throws {
             // Arrange
@@ -37,7 +42,11 @@ extension NotesTests.Business.Saga {
             service.deleteNotesHandler = { _ in .failure(err) }
 
             // Act
-            _ = await flow.apply(Effect.delete(note: note))
+            let result: Relux.Flow.Result = await flow.apply(Effect.delete(note: note))
+            guard case .failure = result else {
+                Issue.record("Expected failure flow result")
+                return
+            }
 
             // Assert
             #expect(service.deleteNotesCallCount == 1)

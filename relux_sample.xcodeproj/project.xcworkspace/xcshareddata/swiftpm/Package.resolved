@@ -1,0 +1,51 @@
+{
+  "originHash" : "8c48054f4efc13588561f23a5d0e6c26aee59a1f91591713cec3a455b9b8b484",
+  "pins" : [
+    {
+      "identity" : "swift-ioc",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swift-ioc.git",
+      "state" : {
+        "revision" : "95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd",
+        "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "9c6fb14227f55d8f711ce3847dc2f419fb0ecacb",
+        "version" : "1.15.1"
+      }
+    },
+    {
+      "identity" : "swift-relux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swift-relux.git",
+      "state" : {
+        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
+        "version" : "9.2.0"
+      }
+    },
+    {
+      "identity" : "swiftui-relux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swiftui-relux.git",
+      "state" : {
+        "revision" : "ac791a9a3f84c2db0b0f874622728a7efff37e01",
+        "version" : "9.0.0"
+      }
+    },
+    {
+      "identity" : "swiftui-reluxrouter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swiftui-reluxrouter.git",
+      "state" : {
+        "revision" : "cb80d2b5422a2329701d6e450815ba565b396b6d",
+        "version" : "12.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

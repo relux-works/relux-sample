@@ -29,7 +29,7 @@ extension Notes.UI.Widget.Container.Page {
         .padding()
         .frame(height: 100)
         .background(.gray.opacity(0.3))
-        .cornerRadius(28, corners: .allCorners)
+        .clipShape(RoundedRectangle(cornerRadius: 28))
     }
 }
 

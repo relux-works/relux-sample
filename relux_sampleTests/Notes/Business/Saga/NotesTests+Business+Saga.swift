@@ -1,6 +1,6 @@
 import Testing
 import Relux
-import Auth
+import AuthReluxInt
 @testable import relux_sample
 
 extension NotesTests.Business.Saga {

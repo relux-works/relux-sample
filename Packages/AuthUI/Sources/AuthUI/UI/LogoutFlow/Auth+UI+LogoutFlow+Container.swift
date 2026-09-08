@@ -9,7 +9,9 @@ extension Auth.UI.Initial {
         var body: some View {
             ProgressView()
                 .navigationBarBackButtonHidden()
-                .navigationBarHidden(true)
+                #if os(iOS)
+                .toolbar(.hidden, for: .navigationBar)
+                #endif
                 .task { await runLogoutFlow() }
         }
     }

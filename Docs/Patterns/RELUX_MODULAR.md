@@ -8,7 +8,7 @@ Domain decomposition pattern for scalable iOS/macOS applications.
 
 - Scale from MVP to 1000+ module apps
 - Fast incremental builds via isolated recompilation
-- Explicit dynamic linkage with predictable layering
+- Explicit module boundaries with predictable layering
 - Clear seams for implementation swapping via DI
 - Repeatable pattern across all domains
 
@@ -16,7 +16,7 @@ Domain decomposition pattern for scalable iOS/macOS applications.
 
 ## Package Layout
 
-Single package, multiple dynamic products per domain:
+Single package, multiple library products per domain:
 
 | Product | Contents | Dependencies |
 |---------|----------|--------------|
@@ -27,7 +27,7 @@ Single package, multiple dynamic products per domain:
 | `<Domain>ReluxImpl` | State, reducer, saga/flow, module wiring | Models, ReluxInt, ServiceInt, ServiceImpl, SwiftIoC, Relux |
 | `<Domain>TestSupport` | Mocks, stubs, test helpers (static library) | Models, ReluxInt, ServiceInt, TestInfrastructure |
 
-All products except TestSupport are `type: .dynamic`.
+Use automatic library linkage. Static upstream dependencies must have one owner in the final process; see [the verified architecture audit](../ArchitectureAudit.md).
 
 ---
 
@@ -67,18 +67,16 @@ let package = Package(
     name: "<Domain>",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "<Domain>Models", type: .dynamic, targets: ["<Domain>Models"]),
-        .library(name: "<Domain>ReluxInt", type: .dynamic, targets: ["<Domain>ReluxInt"]),
-        .library(name: "<Domain>ServiceInt", type: .dynamic, targets: ["<Domain>ServiceInt"]),
-        .library(name: "<Domain>ServiceImpl", type: .dynamic, targets: ["<Domain>ServiceImpl"]),
-        .library(name: "<Domain>ReluxImpl", type: .dynamic, targets: ["<Domain>ReluxImpl"]),
+        .library(name: "<Domain>Models", targets: ["<Domain>Models"]),
+        .library(name: "<Domain>ReluxInt", targets: ["<Domain>ReluxInt"]),
+        .library(name: "<Domain>ServiceInt", targets: ["<Domain>ServiceInt"]),
+        .library(name: "<Domain>ServiceImpl", targets: ["<Domain>ServiceImpl"]),
+        .library(name: "<Domain>ReluxImpl", targets: ["<Domain>ReluxImpl"]),
         .library(name: "<Domain>TestSupport", targets: ["<Domain>TestSupport"]),
     ],
     dependencies: [
-        // Self-reference forces dynamic linkage within package
-        .package(name: "<Domain>-Self", path: "."),
-        .package(url: "https://github.com/relux-works/swift-ioc.git", from: "1.0.1"),
-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
+        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
         .package(path: "../TestInfrastructure"),
     ],
     targets: [
@@ -89,30 +87,30 @@ let package = Package(
         .target(
             name: "<Domain>ReluxInt",
             dependencies: [
-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
+                "<Domain>Models",
                 .product(name: "Relux", package: "swift-relux"),
             ]
         ),
         .target(
             name: "<Domain>ServiceInt",
             dependencies: [
-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
+                "<Domain>Models",
             ]
         ),
         .target(
             name: "<Domain>ServiceImpl",
             dependencies: [
-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
+                "<Domain>Models",
+                "<Domain>ServiceInt",
             ]
         ),
         .target(
             name: "<Domain>ReluxImpl",
             dependencies: [
-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
-                .product(name: "<Domain>ReluxInt", package: "<Domain>-Self"),
-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
-                .product(name: "<Domain>ServiceImpl", package: "<Domain>-Self"),
+                "<Domain>Models",
+                "<Domain>ReluxInt",
+                "<Domain>ServiceInt",
+                "<Domain>ServiceImpl",
                 .product(name: "SwiftIoC", package: "swift-ioc"),
                 .product(name: "Relux", package: "swift-relux"),
             ]
@@ -120,9 +118,9 @@ let package = Package(
         .target(
             name: "<Domain>TestSupport",
             dependencies: [
-                .product(name: "<Domain>Models", package: "<Domain>-Self"),
-                .product(name: "<Domain>ReluxInt", package: "<Domain>-Self"),
-                .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
+                "<Domain>Models",
+                "<Domain>ReluxInt",
+                "<Domain>ServiceInt",
                 .product(name: "TestInfrastructure", package: "TestInfrastructure"),
             ]
         ),
@@ -153,16 +151,9 @@ let package = Package(
 
 ---
 
-## Dynamic Linking Guardrails
+## Linking Boundaries
 
-SwiftPM/Xcode quirks require careful handling:
-
-1. **Use product dependencies** (not target deps) inside the same package
-2. **Self-reference trick**: Declare `.package(name: "<Domain>-Self", path: ".")` and reference products via that package to force dynamic linkage
-3. **All products `type: .dynamic`** except TestSupport
-4. **App/test targets must link AND embed** all dynamic products
-
-If SwiftPM behavior regresses, fallback: split into two packages (`<Domain>Interfaces` and `<Domain>Implementations`).
+Use ordinary target dependencies within one package and product dependencies across packages. Keep library products automatic unless a measured deployment requirement needs dynamic linkage. Do not self-reference the package to force dynamic products: this sample reproduced duplicate Relux runtime classes when multiple Auth libraries embedded the same static upstream dependency. Xcode links the automatic products without manual Embed Frameworks entries.
 
 ---
 
@@ -300,6 +291,6 @@ public struct <Domain>UIRouter: <Domain>UIProviding {
 | Concern | Mitigation |
 |---------|------------|
 | Multiple dylibs increase launch time | Monitor on device; merge impl products per domain if needed |
-| SwiftPM dynamic-in-one-package is brittle | Fallback: split into Interface/Implementation packages |
+| Duplicate runtime classes from forced dynamic products | Use automatic linkage with ordinary target dependencies |
 | Verbose imports | Optional facade product (`<Domain>Kit`) for simple consumers |
 | 6 products per domain seems heavy | Start with HybridState in ReluxImpl; split when complexity grows |

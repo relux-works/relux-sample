@@ -9,7 +9,9 @@ extension Auth.UI.LocalAuth {
         var body: some View {
             content
                 .navigationBarBackButtonHidden()
-                .navigationBarHidden(true)
+                #if os(iOS)
+                .toolbar(.hidden, for: .navigationBar)
+                #endif
         }
 
         private var content: some View {

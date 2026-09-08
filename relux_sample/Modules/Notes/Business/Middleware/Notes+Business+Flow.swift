@@ -17,8 +17,12 @@ extension Notes.Business {
             dispatcher: Relux.Dispatcher? = .none,
             svc: Notes.Business.IService
         ) async {
-            let defaultDispatcher =  await Self.defaultDispatcher
-            self.dispatcher = dispatcher ?? defaultDispatcher
+            // Resolve the global dispatcher only when no explicit dependency was supplied.
+            if let dispatcher {
+                self.dispatcher = dispatcher
+            } else {
+                self.dispatcher = await Self.defaultDispatcher
+            }
             self.svc = svc
         }
     }
@@ -52,7 +56,8 @@ extension Notes.Business.Flow {
                     Notes.Business.Action.obtainNotesFail(err: err)
                     ErrorHandling.Business.Effect.track(error: err)
                 }
-                return .success
+                // Logging the error does not turn the failed operation into a successful flow.
+                return .failure(err)
         }
     }
 

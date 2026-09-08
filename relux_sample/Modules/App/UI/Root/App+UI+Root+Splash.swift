@@ -10,7 +10,9 @@ extension SampleApp.UI.Root {
         var body: some View {
             ProgressView()
                 .navigationBarBackButtonHidden()
-                .navigationBarHidden(true)
+                #if os(iOS)
+                .toolbar(.hidden, for: .navigationBar)
+                #endif
         }
     }
 }

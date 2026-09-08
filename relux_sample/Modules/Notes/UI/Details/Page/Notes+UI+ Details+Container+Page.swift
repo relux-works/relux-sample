@@ -4,86 +4,56 @@ extension Notes.UI.Details.Container {
     struct Page: Relux.UI.View {
         typealias Note = Notes.Business.Model.Note
         typealias Err = Notes.Business.Err
-
         let props: Props
         let actions: Actions
+        @State private var confirmDelete = false
 
         var body: some View {
-            content
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
-// header
-extension Notes.UI.Details.Container.Page {
-    var title: Text {
-        switch props.note.value {
-            case .none: Text("Note")
-            case let .some(data): switch data {
-                case .none: Text("Note")
-                case let .some(note): Text(note.title)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func editBtn(for note: Note) -> some View {
-        NavBarBtn.iconBtn(systemName: "square.and.pencil") {
-            await actions.onEdit(note)
-        }
-    }
-}
-// subviews
-extension Notes.UI.Details.Container.Page {
-    private var content: some View {
-        ScrollView {
-            switch props.note {
-                case .initial: progressView
-                case .failure: failureView
-                case let .success(note): switch note {
-                    case .none: emptyView
-                    case let .some(note): noteView(note)
+            Group {
+                switch props.note {
+                case .initial: ProgressView("Loading note…")
+                case .failure:
+                    ContentUnavailableView {
+                        Label("Couldn’t Load Note", systemImage: "exclamationmark.triangle")
+                    } description: { Text("Try loading your notes again.") } actions: {
+                        AsyncButton(action: actions.onReload) { Text("Try Again") }.buttonStyle(.bordered)
+                    }
+                case .success(nil):
+                    ContentUnavailableView("Note Not Found", systemImage: "note.text",
+                                           description: Text("This note is no longer in your session."))
+                case .success(let note?):
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text(note.title).font(.title).bold().accessibilityAddTraits(.isHeader)
+                            Text(note.createdAt.formatted(date: .abbreviated, time: .shortened))
+                                .font(.subheadline).foregroundStyle(.secondary)
+                            Text(note.content).textSelection(.enabled)
+                            if let message = props.errorMessage {
+                                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading).padding()
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            AsyncButton(action: { await actions.onEdit(note) }) {
+                                Label("Edit Note", systemImage: "square.and.pencil")
+                            }
+                        }
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button("Delete Note", systemImage: "trash", role: .destructive) { confirmDelete = true }
+                        }
+                    }
+                    .confirmationDialog("Delete note?", isPresented: $confirmDelete, titleVisibility: .visible) {
+                        Button("Delete Note", role: .destructive) { Task { await actions.onRemove(note) } }
+                        Button("Cancel", role: .cancel) { }
+                    } message: { Text("“\(note.title)” will be removed from this session.") }
                 }
             }
+            .navigationTitle("Note")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
         }
     }
-
-    private var progressView: some View {
-        ProgressView()
-            .extendingContent()
-    }
-
-    private var failureView: some View {
-        Text("Something went wrong :(")
-            .extendingContent()
-    }
-
-    private var emptyView: some View {
-        Text("Note doesn't exist")
-            .extendingContent()
-    }
-
-    private func noteView(_ note: Note) -> some View {
-        noteContent(note)
-            .navigationBarItems(trailing: editBtn(for: note))
-    }
-
-    private func noteContent(_ note: Note) -> some View {
-        VStack(alignment: .leading, spacing: 32) {
-            HStack {
-                Text(note.title)
-                    .font(.title2)
-                Spacer()
-            }
-            
-            Text(note.content)
-                .font(.body)
-
-            Text("Created at: \(note.createdAt.formatted(date: .numeric, time: .standard))")
-                .font(.caption)
-        }.padding()
-    }
 }
-

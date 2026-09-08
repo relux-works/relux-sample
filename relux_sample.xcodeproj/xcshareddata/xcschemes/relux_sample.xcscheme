@@ -28,12 +28,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <TestPlans>
-         <TestPlanReference
-            reference = "container:../../../../Downloads/relux_sample.xctestplan"
-            default = "YES">
-         </TestPlanReference>
-      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
@@ -43,17 +37,6 @@
                BlueprintIdentifier = "70A603BB2D8ECD6D00BE2349"
                BuildableName = "relux_sampleTests.xctest"
                BlueprintName = "relux_sampleTests"
-               ReferencedContainer = "container:relux_sample.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "70A603C52D8ECD6D00BE2349"
-               BuildableName = "relux_sampleUITests.xctest"
-               BlueprintName = "relux_sampleUITests"
                ReferencedContainer = "container:relux_sample.xcodeproj">
             </BuildableReference>
          </TestableReference>

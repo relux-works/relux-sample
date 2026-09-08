@@ -4,6 +4,8 @@ Entry point for developers and AI agents working with this codebase.
 
 ---
 
+Current verified contracts and dependency pins: [ArchitectureAudit.md](Docs/ArchitectureAudit.md).
+
 ## Quick Start
 
 1. Read this file for project overview and conventions
@@ -46,7 +48,7 @@ Detailed documentation in `Docs/Patterns/`:
 
 | Pattern | Document | Purpose |
 |---------|----------|---------|
-| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 dynamic products |
+| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 library products |
 | Orchestration | [RELUX_ORCHESTRATION.md](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination without coupling |
 | Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
 | Testing Strategy | [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
@@ -60,8 +62,6 @@ Detailed documentation in `Docs/Patterns/`:
 Packages/
   Auth/                       ← Domain package (6 products)
   AuthUI/                     ← UI package (2 products)
-  SessionOrchestration/       ← Cross-domain coordinator
-  DataOrchestration/          ← Cross-domain coordinator
   TestInfrastructure/         ← Shared test utilities
 
 relux_sample/

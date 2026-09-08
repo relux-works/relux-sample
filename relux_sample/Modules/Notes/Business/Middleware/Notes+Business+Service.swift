@@ -34,10 +34,10 @@ extension Notes.Business.Service: Notes.Business.IService {
     }
     
     func upsert(note: Notes.Business.Model.Note) async -> Result<Void, Notes.Business.Err> {
-        await self.fetcher.upsert(note: note.asDto)
-
-        // uncomment this to check "Notes.Flow.upsert" result completeness
-//        return .failure(.notImplemented)
+        guard Note.hasValidContent(title: note.title, content: note.content) else {
+            return .failure(.invalidContent)
+        }
+        return await self.fetcher.upsert(note: note.asDto)
     }
     
     func delete(noteId: Notes.Business.Model.Note.Id) async -> Result<Void, Notes.Business.Err> {

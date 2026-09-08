@@ -1,9 +1,9 @@
 # Relux SwiftUI Sample
 
-[![Swift 6.0+](https://img.shields.io/badge/Swift-6.0+-red?logo=swift)](https://swift.org/download/)
+[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-red?logo=swift)](https://swift.org/download/)
 [![Platform](https://img.shields.io/badge/platform-iOS%2017%2B%20%7C%20macOS%2014%2B-blue)]()
 
-Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Split into small domain packages (Auth, Notes) to demonstrate scaling from MVP to large apps while keeping builds fast and boundaries clear.
+Modular, async-first [Relux architecture for SwiftUI](https://github.com/relux-works/swift-relux). Auth is split into domain and UI packages; Notes remains an app module to demonstrate scaling from MVP to large apps while keeping boundaries clear.
 
 Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for workspace layout, patterns, and conventions.
 
@@ -41,20 +41,27 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
 ---
 
 ## Quick Start
-```bash
-# Clone
-git clone <repo-url>
-cd relux-sample
 
-# Open in Xcode
-open relux_sample.xcodeproj
+Use Xcode 26 or newer with Swift 6.2+ (required by swift-log 1.15.1).
+Open `relux_sample.xcodeproj`, select `relux_sample`, and choose an iOS simulator.
+The app supports iOS 17+ and macOS 14+. There is no root Swift package; package commands must specify a package directory.
 
-# Build & run
-# Select relux_sample scheme → Run (Cmd+R)
+See [ArchitectureAudit.md](Docs/ArchitectureAudit.md) for pinned revisions, verified contracts, regression evidence, and validation bounds.
 
-# Run tests
-# Product → Test (Cmd+U)
-```
+## Tools and Validation
+
+| Tool | Purpose | Command / entry point | Outputs |
+| --- | --- | --- | --- |
+| Xcode / xcodebuild | Resolve and build the iOS app | `xcodebuild build -project relux_sample.xcodeproj -scheme relux_sample -destination 'generic/platform=iOS Simulator' -derivedDataPath .temp/DerivedData -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData`, Xcode configured build products |
+| xcrun simctl | Find an installed test destination | `xcrun simctl list devices available` | Terminal |
+| xcodebuild | Existing Notes Swift Testing suite | `xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData/Logs/Test` |
+| SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
+| xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
+| SwiftPM | Standalone UI package compilation | `swift build --package-path Packages/AuthUI --force-resolved-versions` | `Packages/AuthUI/.build` |
+| Git | Patch whitespace validation | `git diff --check` | Terminal; no separate lint configuration is installed |
+| task-board | Task evidence and producer handoff | `task-board resource add TASK-ID /path/to/artifact --type outcome --name TASK-ID_results.md`; `task-board handoff TASK-ID --role developer` | Authoritative board resources |
+
+Use a simulator name installed on your host. Dependency updates must update exact manifest/project requirements and the checked-in `Package.resolved` files together. Tests use Swift Testing; the Notes suite retains its existing app-hosted target, while Auth tests live in the Auth package. Store temporary logs and audit clones under `.temp/`.
 
 ---
 

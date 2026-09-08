@@ -1,0 +1,15 @@
+{
+  "originHash" : "e5c2dd41cd7340c0799023a85c6bada37a9b29aa1e90014b9f57509a2b8a56a0",
+  "pins" : [
+    {
+      "identity" : "swift-relux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/relux-works/swift-relux.git",
+      "state" : {
+        "revision" : "483a0f2b6c97721ecb651516e9db9fb83c90cd69",
+        "version" : "9.2.0"
+      }
+    }
+  ],
+  "version" : 3
+}

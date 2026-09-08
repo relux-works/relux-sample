@@ -4,27 +4,25 @@ extension Account.UI.Container {
     struct Page: Relux.UI.View {
         let props: Props
         let actions: Actions
+        @State private var confirmLogout = false
 
         var body: some View {
-            content
-        }
-
-        private var content: some View {
-            VStack {
-                debug
-                logout
+            Form {
+                Section("Local demo session") {
+                    Label("On this device", systemImage: "person.crop.circle")
+                    Text("Authentication uses your device’s system authentication. Notes stay in memory until the app restarts.")
+                        .foregroundStyle(.secondary)
+                }
+                Section("Developer tools") {
+                    AsyncButton(action: actions.onOpenDebug) { Label("About the Architecture", systemImage: "curlybraces") }
+                }
+                Section {
+                    Button("Log Out", role: .destructive) { confirmLogout = true }
+                }
             }
-        }
-
-        private var debug: some View {
-            AsyncButton(action: actions.onOpenDebug) {
-                Text("Open Debug")
-            }
-        }
-
-        private var logout: some View {
-            AsyncButton(action: actions.onLogout) {
-                Text("Logout")
+            .confirmationDialog("Log out?", isPresented: $confirmLogout, titleVisibility: .visible) {
+                Button("Log Out", role: .destructive) { Task { await actions.onLogout() } }
+                Button("Cancel", role: .cancel) { }
             }
         }
     }
