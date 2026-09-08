@@ -1,0 +1,21 @@
+{
+  "contract": "primary-goal-v1",
+  "id": "PRIMARY-GOAL-260909-2cv53t",
+  "revision": 3,
+  "previous_revision": 2,
+  "state": "active",
+  "scope": {
+    "kind": "board"
+  },
+  "objective": "Refactor the refreshed Swift Relux sample to open directly in the Notes list without startup authentication, remove the Relux Sample landing screen, move Account into Settings, and demonstrate Auth through per-note locking/unlocking using system biometry or device credentials. Preserve simple native UI, old OS support, Relux boundaries, concise inline docs and accurate diagrams/exercises. Use best-effort UI with no expensive visual tests; validate domain access and failure behavior with focused unit tests/builds and deliver signed reviewed changes.",
+  "mutation": {
+    "kind": "objective_realigned",
+    "reason": "User redirected authentication from app entry to individual locked notes",
+    "actor": {
+      "kind": "primary_parent",
+      "actor_id": "iv"
+    }
+  },
+  "created_at": "2026-09-08T20:43:42.116729Z",
+  "updated_at": "2026-09-08T22:21:36.505849Z"
+}
