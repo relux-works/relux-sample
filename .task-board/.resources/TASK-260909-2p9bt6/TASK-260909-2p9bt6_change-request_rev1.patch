@@ -1,0 +1,2530 @@
+diff --git a/.spec/refresh-sample.md b/.spec/refresh-sample.md
+index eca8a1a..190f071 100644
+--- a/.spec/refresh-sample.md
++++ b/.spec/refresh-sample.md
+@@ -1,11 +1,17 @@
+-# Refresh Relux Sample
++# Relux sample delivery scope
+ 
+-## Current delivery: TASK-260909-3hzrc3
++## Implemented baseline
+ 
+-Refresh every direct and transitive dependency to the latest stable tagged release verified from upstream source. Pin the resulting graph, repair project configuration and demonstrated architecture defects, and preserve iOS 17/macOS 14 deployment compatibility. Add Swift Testing regression coverage before behavioral refactors and verify the app on the iOS simulator. Record exact source revisions, contracts, validation, and remaining bounds in `Docs/ArchitectureAudit.md`.
++Dependency and architecture repairs retain iOS 17/macOS 14 deployment targets with Xcode 26+ / Swift 6.2+. Auth is packaged behind interfaces; Notes remains an app-local in-memory domain. The accepted native Notes demo includes create/edit/delete, search, draft validation and failure feedback. Current documentation baseline: `a85ed27e92ee73dac35c28480bdf97d3fdfafbd6` (app PR #2).
+ 
+-The sample retains its existing screens and in-memory Notes data. Platform-specific navigation modifiers may be repaired to compile on both supported platforms. No UI redesign belongs to this task.
++## Learning materials: TASK-260909-2p9bt6
+ 
+-## Follow-up scope
++Publish the accepted TASK-260909-3kd1i7 outline as a concise optional exercises guide. Retain three focused diagram sources in `diagrams/` covering module dependencies, Notes save UDF and logout orchestration; include viewable SVG documentation assets and render temporary previews under `.temp/`. Reconcile README, its Russian pointer, PROJECT_GUIDE and pattern docs with actual source. Preserve pinned upstream citations and separate historical audit evidence from learning prose.
+ 
+-The parent owns the remaining demo UI work in STORY-260909-q49ois and the learning guide in STORY-260909-3g9457. The saved phase plan is in `.planning/260909_004430_epic-260909-1h8p6e.md`. The parent owns signed integration, pull-request review, publication, and landing; this producer hands off an uncommitted candidate.
++Persistence, session-safe provider cleanup and a headless CLI are optional future exercises, not implemented behavior. No functional app changes, generated Xcode project artifacts, or new dependencies belong to this documentation task.
++
++## Validation and delivery boundary
++
++The user stopped expensive UI testing and authorized blind best-effort app delivery. Do not run app UI tests, screenshots, full builds or behavioral test suites for this documentation-only scope. Validate local links, review source correspondence, render diagrams and visually inspect their previews. Report validation bounds honestly; previous app evidence is historical, not a new execution.
++
++The developer leaves documentation uncommitted in the managed Story worktree and attaches task-scoped outcomes before handing off to review. The parent owns signed commits, hosted PR review, publication and landing.
+diff --git a/Docs/ArchitectureAudit.md b/Docs/ArchitectureAudit.md
+index 806c33f..4aa43fa 100644
+--- a/Docs/ArchitectureAudit.md
++++ b/Docs/ArchitectureAudit.md
+@@ -1,7 +1,7 @@
+ # Dependency and Architecture Audit
+ 
+ Task: TASK-260909-3hzrc3 (`refresh-dependencies-and-patterns`), 2026-09-09.
+-Baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`; the Story worktree was 0 commits behind local main. Parent verified this was current origin/main before creating the worktree. This producer leaves the candidate uncommitted for review.
++Audited dependency-repair baseline: `815a681105ed40c9846ac62c7c123c1250c1eb84`. This document records the pinned contracts; historical producer evidence is linked below.
+ 
+ ## Verified dependency graph
+ 
+@@ -15,7 +15,7 @@ Queried `git ls-remote --tags` for all five repositories, selected the highest s
+ | [swift-ioc](https://github.com/relux-works/swift-ioc/blob/95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd/Package.swift) | 1.0.1..<2 | 1.0.3 | `95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd` | iOS 13, macOS 10.15; Swift 6.0 |
+ | [swift-log](https://github.com/apple/swift-log/blob/9c6fb14227f55d8f711ce3847dc2f419fb0ecacb/Package.swift) | 1.6.3..<2 | 1.15.1 | `9c6fb14227f55d8f711ce3847dc2f419fb0ecacb` | No platform floor in manifest; Swift 6.2 |
+ 
+-SwiftUIRelux 9.0.0 requires Relux >=9.2.0 and Router >=12.1.0 within their current major versions; Router requires Relux >=9.2.0. Relux, SwiftIoC, and swift-log have no external package dependencies at these tags. These five repositories are the entire external graph; the three local packages are Auth, AuthUI, and TestInfrastructure. There is no HttpClient dependency: the root manifest described nonexistent `Sources` and `TestsSupport` directories and was accidental debris.
++SwiftUIRelux 9.0.0 requires Relux >=9.2.0 and Router >=12.1.0 within their current major versions; Router requires Relux >=9.2.0. Relux, SwiftIoC, and swift-log have no external package dependencies at these tags. These five repositories are the entire external graph; the three local packages are Auth, AuthUI, and TestInfrastructure. There is no HttpClient dependency: the removed root manifest referenced a nonexistent `Sources` directory and did not describe the current app/package layout. Root `TestsSupport/` does exist and contains legacy RPC/WebSocket mocks; it is distinct from the maintained `Packages/TestInfrastructure` package.
+ 
+ Direct requirements are now exact in the local manifests and Xcode project. Four checked-in lockfiles cover the app and each independently resolvable package. Router's transitive revision is fixed by those lockfiles. Re-resolution with Xcode's `-onlyUsePackageVersionsFromResolvedFile` and `-disableAutomaticPackageResolution` succeeded; all 4 of 4 lockfile SHA-256 values remained unchanged. SwiftPM validation uses `--force-resolved-versions`. This demonstrates resolution at the audited revisions; it does not promise continued network availability or immutable upstream tags without the locks.
+ 
+@@ -29,48 +29,6 @@ Direct requirements are now exact in the local manifests and Xcode project. Four
+ - **Navigation:** [ProjectingRouter](https://github.com/relux-works/swiftui-reluxrouter/blob/cb80d2b5422a2329701d6e450815ba565b396b6d/SDK/Sources/Routers/ProjectedRouter/Relux+Navigation+ProjectingRouter.swift) remains ObservableObject with a mutable native NavigationPath. The app's native NavigationStack binding is the upstream supported system-navigation boundary. Path projection uses upstream reflection; this audit does not claim a stable Apple serialization format or exhaustive navigation coverage.
+ - **Authentication boundary:** AuthServiceInt now exposes only domain outcomes; LocalAuthentication and LAContext stay in AuthServiceImpl. The saga accepts only `.success(true)`. `.success(false)` emits `authenticationRejected`; service errors emit failure without main navigation. The policy remains `.deviceOwnerAuthentication`, which permits system credential fallback: the existing “biometry” names do not imply biometric-only security. Physical authentication behavior is outside the automated fixture's bound.
+ 
+-## Repairs and tests-first evidence
++## Historical validation
+ 
+-1. Replaced the broken XCTest test importing nonexistent `Auth` / `AuthImplementation` with Swift Testing tests against actual package products. Before the production refactor, `authorizationFalseNeverRoutesToMain` failed through `Relux.Dispatcher.actions -> registered Auth.Module -> Saga.apply`, demonstrating an actual authorization routing defect.
+-2. Baseline automatic dependency resolution reached current Relux but the self-referencing dynamic Auth products embedded its static runtime repeatedly. The baseline emitted duplicate-class warnings. Removed the self-dependency and forced dynamic linkage, preserving six separate products and their layer boundaries with normal target dependencies. The subsequent package and app runs have no duplicate Relux class warnings. Updated the modular pattern template to match.
+-3. Removed obsolete Auth embed entries, duplicate product/framework links, null framework entries, the local sibling SwiftUIRelux reference, and a Downloads-relative test plan / nonexistent UI-test reference. These were configuration repairs, not regenerated project output.
+-4. Strengthened all six existing Notes flow outcome tests to inspect returned ActionResult as well as dispatched actions. `obtainNotes_Failure` failed before its refactor because the flow returned success. The correction preserves error tracking and returns failure. Upsert and delete retain their existing outcomes.
+-5. Kept iOS 17 and restored the app's documented macOS 14 deployment target. Guarded iOS-only navigation presentation, moved legacy trailing controls to standard toolbar items, and replaced the only UIKit rounded-corner call with the native SwiftUI RoundedRectangle. No screen redesign or new navigation destination was introduced.
+-
+-## Measured coverage and bounds
+-
+-Acceptance criteria are split into their three stated rows:
+-
+-| AC row | Evidence entry point | Named test coverage / bound |
+-| --- | --- | --- |
+-| iOS simulator build and relevant Swift tests pass | `xcodebuild build/test`; Auth package `Auth-Package` test scheme | `AuthBehaviorTests` (7 tests) and `NotesTests` (14 tests); build itself is compiler evidence rather than a unit test |
+-| Dependencies reproducibly resolve | Xcode package resolver and SwiftPM, with lock enforcement | Direct command evidence and unchanged hashes for 4 of 4 locks; no unit test substitutes for the real resolver |
+-| Audit documents actual verified contracts and changes | Exact-tag source inspection and this document | Manual source/diff review; documentation truth is not attested by a token-search test |
+-
+-**1 of 3 AC rows driven by named behavioral tests; 3 of 3 rows validated by their appropriate test, command, or source-review entry point.** Two rows are explicitly outside behavioral-test coverage. New Auth test sources are handed off in the uncommitted candidate; the parent owns the commit.
+-
+-Auth tests drive **5 of 5 declared effects** through registered production module dispatch: `checkAuthContext` and `logout` in `authContextAndLogoutChooseTheirRoutes`, `obtainAvailableBiometryType` in `registeredModuleReducesBiometryAndCleansUp`, `authorizeWithBiometry` in the three `authorization*` tests, and `runLogoutFlow` in `logoutRecreatesContextBeforeRoutingToLocalAuth`. They cover all **3 of 3 authorization outcome classes** (true, false, error). `registeredModuleReducesBiometryAndCleansUp` also verifies state ownership. The logout-flow test checks the reset occurred and routing/action outcomes, but does not claim independently measured interleaving order. Notes tests drive **6 of 6 success/failure operation rows** via the production `Notes.Business.Flow.apply` used by RootSaga. Existing reducer and UI projection tests remain enabled. The Notes flow tests use its injected dispatcher; they do not independently prove absence of a global singleton or drive the whole GUI. The lazy fallback and RootSaga identity corrections were inspected and exercised by app startup, without a dedicated identity assertion.
+-
+-No source-scanning gate was added. Physical LocalAuthentication, actual iOS 17/macOS 14 runtime execution, screenshots, exhaustive UI navigation, and a complete audit of unchanged historical test helpers are not claimed. Compilation targets iOS 17/macOS 14 using the installed newer SDK/runtime. Existing app-hosted Notes tests were retained; new Auth tests are in a dedicated package target. Broad extraction of Notes is deferred to avoid changing architecture and UI simultaneously.
+-
+-## Narrowing mutants
+-
+-| Mutant | What it narrows failure handling to | Named failing test | Real exit | Survival bound |
+-| --- | --- | --- | ---: | --- |
+-| Auth false-result admission | Service errors still refuse; only `.success(false)` is admitted to main | `AuthBehaviorTests.authorizationFalseNeverRoutesToMain` | 1 | Killed; no survivor |
+-| Notes obtain-error admission | Errors still fail except `.obtainFailed`; upsert/delete failure handling remains present | `NotesTests.Business.Saga.Obtain.obtainNotes_Failure` | 65 | Killed; no survivor |
+-
+-Both were behavioral runs, not deleted checks. The Auth mutant preserved the `.success(true)` token and changed the false branch's actions; the Notes mutant retained `return .failure(err)` and added one admitted error case. Sources were restored byte-for-byte from task-local copies before green reruns. **2 of 2 mutants killed; 0 survivors.** This scope does not constitute mutation coverage of every unchanged upstream or application gate.
+-
+-## Verification environment and logbook
+-
+-Xcode 26.5 (`17F42`), Apple Swift 6.3.2, Apple Silicon host; iOS 26.5 simulator iPhone 17 (`46491660-E76A-40D1-9AD8-1CEA45C1F685`). All commands ran in this Story worktree unless the Auth package directory is stated. Raw logs and tag/source evidence are attached to the task; local copies are under `.temp/TASK-260909-3hzrc3/`. No dependency installs outside SwiftPM/Xcode resolution were required.
+-
+-- Baseline Auth command failed with exit 1 due to obsolete module imports. An initial fixture revision also failed with exit 1 because the original protocol leaked non-Sendable LAContext; that compile error was corrected before recording the behavioral red test. Tests-first Auth run then failed with exit 1 specifically on false-result authorization.
+-- First iOS build failed with exit 65 on stale dynamic embed copies. One intermediate project edit caused a parse error (exit 74); the project was reconstructed from the clean baseline plus scoped edits, then built successfully. No broken intermediate project was retained.
+-- First AuthUI macOS build failed with exit 1 on an iOS-only navigation modifier. Mac app builds failed with exit 65 on UIKit and navigation-bar APIs until the platform fixes; subsequent macOS app and standalone AuthUI builds passed.
+-- Existing Notes suite initially passed (14 tests). Added outcome assertions produced the expected red run (exit 65, `obtainNotes_Failure`), then all 14 passed after correction. Narrowing mutants above produced real non-zero exits; they are not reported as successful tests.
+-- Final locked Auth macOS suite: exit 0, 7 tests. Final locked iOS Auth suite: exit 0, 7 tests. Final locked iOS app suite: exit 0, 14 tests. macOS app build: exit 0. Standalone locked AuthUI build: exit 0. Locked Xcode resolution: exit 0. Whitespace check: exit 0. No repository-specific lint configuration exists; whitespace/Swift compiler validation is the stated lint bound.
+-- Xcode emits a metadata-extraction warning because the sample has no AppIntents framework. This is build-tool metadata output, not a source compiler warning. No new unchecked Sendable conformance or warning-suppression flag was introduced. The pre-existing Combine retroactive unchecked conformances remain; broad concurrency redesign is outside the tested delta.
+-
+-The attached outcome contains the exact command-to-log and exit-code matrix, source-tag evidence, and review handoff. There are no unresolved external blockers for this scope.
++The dependency repair’s tests-first failures, mutation results, tool versions and logbook are preserved in [DependencyAuditEvidence.md](History/DependencyAuditEvidence.md). Those runs establish their stated historical bounds, not current UI coverage. For current commands use [README](../README.md#tools-and-validation); for exercises use [LearningExercises.md](LearningExercises.md).
+diff --git a/Docs/History/DependencyAuditEvidence.md b/Docs/History/DependencyAuditEvidence.md
+new file mode 100644
+index 0000000..a5eebe1
+--- /dev/null
++++ b/Docs/History/DependencyAuditEvidence.md
+@@ -0,0 +1,49 @@
++# Dependency audit evidence (historical)
++
++Original TASK-260909-3hzrc3 evidence from 2026-09-09. These are that task’s commands and results, not reruns for the documentation task. Current contracts and pinned source citations remain in [ArchitectureAudit.md](../ArchitectureAudit.md). Later UI changes are outside this historical snapshot.
++
++## Repairs and tests-first evidence
++
++1. Replaced the broken XCTest test importing nonexistent `Auth` / `AuthImplementation` with Swift Testing tests against actual package products. Before the production refactor, `authorizationFalseNeverRoutesToMain` failed through `Relux.Dispatcher.actions -> registered Auth.Module -> Saga.apply`, demonstrating an actual authorization routing defect.
++2. Baseline automatic dependency resolution reached current Relux but the self-referencing dynamic Auth products embedded its static runtime repeatedly. The baseline emitted duplicate-class warnings. Removed the self-dependency and forced dynamic linkage, preserving six separate products and their layer boundaries with normal target dependencies. The subsequent package and app runs have no duplicate Relux class warnings. Updated the modular pattern template to match.
++3. Removed obsolete Auth embed entries, duplicate product/framework links, null framework entries, the local sibling SwiftUIRelux reference, and a Downloads-relative test plan / nonexistent UI-test reference. These were configuration repairs, not regenerated project output.
++4. Strengthened all six existing Notes flow outcome tests to inspect returned ActionResult as well as dispatched actions. `obtainNotes_Failure` failed before its refactor because the flow returned success. The correction preserves error tracking and returns failure. Upsert and delete retain their existing outcomes.
++5. Kept iOS 17 and restored the app's documented macOS 14 deployment target. Guarded iOS-only navigation presentation, moved legacy trailing controls to standard toolbar items, and replaced the only UIKit rounded-corner call with the native SwiftUI RoundedRectangle. No screen redesign or new navigation destination was introduced.
++
++## Measured coverage and bounds
++
++Acceptance criteria are split into their three stated rows:
++
++| AC row | Evidence entry point | Named test coverage / bound |
++| --- | --- | --- |
++| iOS simulator build and relevant Swift tests pass | `xcodebuild build/test`; Auth package `Auth-Package` test scheme | `AuthBehaviorTests` (7 tests) and `NotesTests` (14 tests); build itself is compiler evidence rather than a unit test |
++| Dependencies reproducibly resolve | Xcode package resolver and SwiftPM, with lock enforcement | Direct command evidence and unchanged hashes for 4 of 4 locks; no unit test substitutes for the real resolver |
++| Audit documents actual verified contracts and changes | Exact-tag source inspection and this document | Manual source/diff review; documentation truth is not attested by a token-search test |
++
++**1 of 3 AC rows driven by named behavioral tests; 3 of 3 rows validated by their appropriate test, command, or source-review entry point.** Two rows are explicitly outside behavioral-test coverage. New Auth test sources are handed off in the uncommitted candidate; the parent owns the commit.
++
++Auth tests drive **5 of 5 declared effects** through registered production module dispatch: `checkAuthContext` and `logout` in `authContextAndLogoutChooseTheirRoutes`, `obtainAvailableBiometryType` in `registeredModuleReducesBiometryAndCleansUp`, `authorizeWithBiometry` in the three `authorization*` tests, and `runLogoutFlow` in `logoutRecreatesContextBeforeRoutingToLocalAuth`. They cover all **3 of 3 authorization outcome classes** (true, false, error). `registeredModuleReducesBiometryAndCleansUp` also verifies state ownership. The logout-flow test checks the reset occurred and routing/action outcomes, but does not claim independently measured interleaving order. Notes tests drive **6 of 6 success/failure operation rows** via the production `Notes.Business.Flow.apply` used by RootSaga. Existing reducer and UI projection tests remain enabled. The Notes flow tests use its injected dispatcher; they do not independently prove absence of a global singleton or drive the whole GUI. The lazy fallback and RootSaga identity corrections were inspected and exercised by app startup, without a dedicated identity assertion.
++
++No source-scanning gate was added. Physical LocalAuthentication, actual iOS 17/macOS 14 runtime execution, screenshots, exhaustive UI navigation, and a complete audit of unchanged historical test helpers are not claimed. Compilation targets iOS 17/macOS 14 using the installed newer SDK/runtime. Existing app-hosted Notes tests were retained; new Auth tests are in a dedicated package target. Broad extraction of Notes is deferred to avoid changing architecture and UI simultaneously.
++
++## Narrowing mutants
++
++| Mutant | What it narrows failure handling to | Named failing test | Real exit | Survival bound |
++| --- | --- | --- | ---: | --- |
++| Auth false-result admission | Service errors still refuse; only `.success(false)` is admitted to main | `AuthBehaviorTests.authorizationFalseNeverRoutesToMain` | 1 | Killed; no survivor |
++| Notes obtain-error admission | Errors still fail except `.obtainFailed`; upsert/delete failure handling remains present | `NotesTests.Business.Saga.Obtain.obtainNotes_Failure` | 65 | Killed; no survivor |
++
++Both were behavioral runs, not deleted checks. The Auth mutant preserved the `.success(true)` token and changed the false branch's actions; the Notes mutant retained `return .failure(err)` and added one admitted error case. Sources were restored byte-for-byte from task-local copies before green reruns. **2 of 2 mutants killed; 0 survivors.** This scope does not constitute mutation coverage of every unchanged upstream or application gate.
++
++## Verification environment and logbook
++
++Xcode 26.5 (`17F42`), Apple Swift 6.3.2, Apple Silicon host; iOS 26.5 simulator iPhone 17 (`46491660-E76A-40D1-9AD8-1CEA45C1F685`). All commands ran in this Story worktree unless the Auth package directory is stated. Raw logs and tag/source evidence are attached to the task; local copies are under `.temp/TASK-260909-3hzrc3/`. No dependency installs outside SwiftPM/Xcode resolution were required.
++
++- Baseline Auth command failed with exit 1 due to obsolete module imports. An initial fixture revision also failed with exit 1 because the original protocol leaked non-Sendable LAContext; that compile error was corrected before recording the behavioral red test. Tests-first Auth run then failed with exit 1 specifically on false-result authorization.
++- First iOS build failed with exit 65 on stale dynamic embed copies. One intermediate project edit caused a parse error (exit 74); the project was reconstructed from the clean baseline plus scoped edits, then built successfully. No broken intermediate project was retained.
++- First AuthUI macOS build failed with exit 1 on an iOS-only navigation modifier. Mac app builds failed with exit 65 on UIKit and navigation-bar APIs until the platform fixes; subsequent macOS app and standalone AuthUI builds passed.
++- Existing Notes suite initially passed (14 tests). Added outcome assertions produced the expected red run (exit 65, `obtainNotes_Failure`), then all 14 passed after correction. Narrowing mutants above produced real non-zero exits; they are not reported as successful tests.
++- Final locked Auth macOS suite: exit 0, 7 tests. Final locked iOS Auth suite: exit 0, 7 tests. Final locked iOS app suite: exit 0, 14 tests. macOS app build: exit 0. Standalone locked AuthUI build: exit 0. Locked Xcode resolution: exit 0. Whitespace check: exit 0. No repository-specific lint configuration exists; whitespace/Swift compiler validation is the stated lint bound.
++- Xcode emits a metadata-extraction warning because the sample has no AppIntents framework. This is build-tool metadata output, not a source compiler warning. No new unchecked Sendable conformance or warning-suppression flag was introduced. The pre-existing Combine retroactive unchecked conformances remain; broad concurrency redesign is outside the tested delta.
++
++The attached outcome contains the exact command-to-log and exit-code matrix, source-tag evidence, and review handoff. There are no unresolved external blockers for this scope.
+diff --git a/Docs/LearningExercises.md b/Docs/LearningExercises.md
+new file mode 100644
+index 0000000..39c8e4a
+--- /dev/null
++++ b/Docs/LearningExercises.md
+@@ -0,0 +1,41 @@
++# Learn by extending the demo
++
++Run the app using [README](../README.md#quick-start), then trace the [three diagrams](../diagrams/README.md). Notes currently supports in-memory create, edit, delete and local title/body search. Auth uses system device-owner authentication. None of the four extensions below is shipped behavior.
++
++Auth's small observable HybridState stays on MainActor. Notes separates actor-owned business truth from a derived MainActor UIState. Choose the split for isolation and consumers, not to maximize package count: Auth's six products live in one package, and Notes still lives in the app.
++
++## 1. Duplicate a note
++
++**Goal:** create a second note with a new ID and creation date while retaining title/content and the original note.
++
++Start at the [note model](../relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift), [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [reducer](../relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift), and [Details.Container](../relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift). Use the existing upsert path; define duplication rules in the domain and expose a container callback.
++
++Write reducer and Flow tests first: distinct ID, fresh date, unchanged original, exactly one inserted copy. A service failure must return failure and insert nothing. Then drive the callback in the app and verify the list. Use [upsert tests](../relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift) as a starting point. Avoid dispatch in a Page or a second mutable notes collection in UI.
++
++## 2. Keep notes across launches
++
++**Goal:** saved and deleted notes retain their state after relaunch.
++
++Replace the provider behind [IFetcher](../relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift), wired by [Notes.Module](../relux_sample/Modules/Notes/Notes+Module.swift). An actor-backed file provider is sufficient. Keep DTO conversion and domain error mapping at the [service boundary](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift); do not put file operations in the Flow. The current delete method is spelled `deletetNote`.
++
++Write/read/recreate/delete/recreate a temporary real store. Specify first-run behavior for absent storage; unreadable or corrupt storage must fail rather than become a successful empty list. Failed writes must not emit successful domain mutations. Add provider durability tests and service-mapping tests, then relaunch the app against that implementation.
++
++## 3. Make logout cleanup session-safe
++
++**Goal:** notes from a previous session cannot reappear through reload or a late request.
++
++Start at the [app saga](../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift), [Auth saga](../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift), and Notes module/provider. Current store cleanup does not erase the provider dictionary. Decide whether durable notes are erased or retained for the same device user; LocalAuthentication does not define multi-account backend identity.
++
++Expose Notes-owned cleanup through an interface and coordinate it explicitly. Drive registered logout dispatch; verify the chosen provider policy, state/projection cleanup and routing. Hold an old request, log out, release it and prove it cannot repopulate state. Include cleanup failure. Independent subscribers do not establish ordering; see [logout diagram](../diagrams/plantuml/sequence/logout-orchestration.puml). Avoid Auth importing Notes implementation or adding mock-only session guarantees.
++
++## 4. Reuse Notes from a headless CLI
++
++**Goal:** list, create and delete from a terminal through the same business behavior as the GUI.
++
++Extract necessary models, interfaces, implementation and utilities into a UI-independent package. Compose a business-only module with injected dispatcher/service. The current Notes module creates UIState and resolves an app dispatcher; it cannot be reused unchanged. Use [Auth's manifest](../Packages/Auth/Package.swift) as a boundary example, not a mandatory six-product template.
++
++Build the business target without SwiftUI, AuthUI or app navigation. Launch the actual executable against temporary storage and assert output, reducer state and exit status for list/create/delete. Malformed input and storage errors must exit nonzero without success output. Add a documented `swift run` command only after an executable target exists. Do not bypass shared Flow/reducers with a duplicated service-only CLI.
++
++## Review your extension
++
++Use [Testing Strategy](Patterns/TESTING_STRATEGY.md) and the [README commands](../README.md#tools-and-validation). Record exactly what you ran and its exit code. Update diagrams when ownership or runtime ordering changes. Exercises are optional follow-up work, not claims about persistence, session isolation or a CLI in the current sample.
+diff --git a/Docs/Patterns/DOMAIN_TEST_SUPPORT.md b/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
+index 724e61a..68d915d 100644
+--- a/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
++++ b/Docs/Patterns/DOMAIN_TEST_SUPPORT.md
+@@ -1,160 +1,13 @@
+-# Domain Test Support
++# Domain test support
+ 
+-Per-domain test utilities built on TestInfrastructure.
++[AuthTestSupport](../../Packages/Auth/Package.swift) is the existing domain helper product. It contains a [service mock](../../Packages/Auth/Sources/AuthTestSupport/Mocks/Auth+ServiceMock.swift), [model stubs](../../Packages/Auth/Sources/AuthTestSupport/Stubs/Auth+Model+Stubs.swift), and [assertion helpers](../../Packages/Auth/Sources/AuthTestSupport/Assertions/Auth+TestHelpers.swift). It is not proof that every current test consumes those helpers: AuthBehaviorTests defines its own fixtures.
+ 
+----
++Within a package, reference targets by name (`"AuthModels"`, `"AuthServiceInt"`, `"AuthReluxInt"`). Across packages, use `.product(name: "TestInfrastructure", package: "TestInfrastructure")`. Do not introduce a `Domain-Self` package reference or force dynamic libraries for test support.
+ 
+-## Purpose
++Notes is not extracted and has no NotesTestSupport product. Its mocks and stubs live under [relux_sampleTests/Notes](../../relux_sampleTests/Notes). Move them with the domain if the [headless extraction exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli) is undertaken.
+ 
+-Each domain provides `<Domain>TestSupport` product containing:
+-- Service mock with call tracking and handlers
+-- Router mock (if domain navigates)
+-- Model stub factories
+-- Testable wrappers for actions/effects
++## Fixture discipline
+ 
+----
++Prefer actor-isolated mutable service fixtures for concurrent tests. The legacy Auth ServiceMock uses `@unchecked Sendable` with mutable handlers and counters; do not share it across concurrent tests or treat the annotation as a concurrency guarantee. Its `recreateLAContext` is a no-op, so use an explicit recording fixture when asserting that behavior.
+ 
+-## Location
+-```
+-Packages/<Domain>/Sources/<Domain>TestSupport/
+-```
+-
+----
+-
+-## Structure
+-```
+-<Domain>TestSupport/
+-  Mocks/
+-    <Domain>+ServiceMock.swift
+-    <Domain>+RouterMock.swift      (if needed)
+-  Stubs/
+-    <Domain>+Model+Stubs.swift
+-  Assertions/
+-    <Domain>+Action+Testable.swift
+-    <Domain>+Effect+Testable.swift
+-    <Domain>+LoggerExtensions.swift
+-```
+-
+----
+-
+-## Package.swift
+-```swift
+-.target(
+-    name: "<Domain>TestSupport",
+-    dependencies: [
+-        .product(name: "<Domain>Models", package: "<Domain>-Self"),
+-        .product(name: "<Domain>ReluxInt", package: "<Domain>-Self"),
+-        .product(name: "<Domain>ServiceInt", package: "<Domain>-Self"),
+-        .product(name: "TestInfrastructure", package: "TestInfrastructure"),
+-    ]
+-),
+-```
+-
+----
+-
+-## Service Mock Pattern
+-```swift
+-public final class ServiceMock: IService, @unchecked Sendable {
+-    // Call counts
+-    public private(set) var obtainCallCount = 0
+-    
+-    // Captured arguments
+-    public private(set) var capturedNotes: [Model.Note] = []
+-    
+-    // Handlers — set in test
+-    public var obtainHandler: (() async -> Result<[Model.Note], Err>)?
+-    
+-    // Convenience stubs
+-    public func stubObtainSuccess(_ notes: [Model.Note]) {
+-        obtainHandler = { .success(notes) }
+-    }
+-}
+-```
+-
+----
+-
+-## Model Stubs Pattern
+-```swift
+-extension <Domain>.Business.Model.Note {
+-    public static func stub(
+-        id: Id = .init(),
+-        title: String? = nil
+-    ) -> Self {
+-        .init(id: id, title: title ?? "Title \(Int.random(in: 1...1000))")
+-    }
+-}
+-
+-extension Array where Element == <Domain>.Business.Model.Note {
+-    public static func stub(count: Int = 3) -> Self {
+-        (0..<count).map { _ in .stub() }
+-    }
+-}
+-```
+-
+----
+-
+-## Testable Wrappers Pattern
+-
+-For actions/effects with non-Equatable fields (like `Error`):
+-```swift
+-extension <Domain>.Business.Action {
+-    public enum Testable: Equatable {
+-        case obtainSuccess(noteCount: Int)
+-        case obtainFail(errorMessage: String)
+-    }
+-    
+-    public var testable: Testable {
+-        switch self {
+-        case .obtainNotesSuccess(let notes): .obtainSuccess(noteCount: notes.count)
+-        case .obtainNotesFail(let err): .obtainFail(errorMessage: err.localizedDescription)
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Logger Extensions Pattern
+-```swift
+-extension Relux.Testing.Logger {
+-    public func find<Domain>Action(_ testable: <Domain>.Business.Action.Testable) -> <Domain>.Business.Action? {
+-        findAction(<Domain>.Business.Action.self) { $0.testable == testable }
+-    }
+-}
+-```
+-
+----
+-
+-## Usage
+-```swift
+-import Testing
+-import TestInfrastructure
+-import NotesTestSupport
+-
+-@Test
+-func obtainNotes_success() async {
+-    // Arrange
+-    let logger = Relux.Testing.Logger()
+-    let service = Notes.Business.ServiceMock()
+-    service.stubObtainSuccess(.stub(count: 5))
+-    
+-    let flow = await Notes.Business.Flow(dispatcher: .init(logger: logger), svc: service)
+-    
+-    // Act
+-    _ = await flow.apply(Notes.Business.Effect.obtainNotes)
+-    
+-    // Assert
+-    #expect(service.obtainCallCount == 1)
+-    #expect(logger.findNotesAction(.obtainSuccess(noteCount: 5)) != nil)
+-}
+-```
+-
+----
+-
+-## Checklist
+-
+-1. [ ] Add `<Domain>TestSupport` target to Package.swift
+-2. [ ] Implement ServiceMock with handlers and call tracking
+-3. [ ] Add model stub factories
+-4. [ ] Add Testable wrappers if actions contain Error/non-Equatable
+-5. [ ] Add Logger extensions for domain-specific lookups
++Use stable IDs, dates and explicit strings when they affect assertions. Return deliberate failures for unexpected calls. Assert false authorization separately from thrown/service errors; assert Flow failure separately from logged error effects. See executable [Auth tests](../../Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift) and the [testing strategy](TESTING_STRATEGY.md).
+diff --git a/Docs/Patterns/RELUX_FLOW_VS_SAGA.md b/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
+index 70ad406..78b4e89 100644
+--- a/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
++++ b/Docs/Patterns/RELUX_FLOW_VS_SAGA.md
+@@ -1,167 +1,27 @@
+-# Flow vs Saga
++# Flow versus Saga
+ 
+-When to use `Relux.Flow` (returns result) vs `Relux.Saga` (fire-and-forget).
++| Contract | Flow | Saga |
++| --- | --- | --- |
++| `apply` result | `Relux.Flow.Result` (ActionResult) | `Void` |
++| Caller gets operation success/failure | Yes | Observe domain state/actions instead |
++| Async work awaited | Yes | Yes; Void does not mean detached |
++| State mutation | Dispatch actions to reducers | Dispatch actions to reducers |
++| Current example | Notes create/update/delete/fetch | Auth and SampleApp coordination |
+ 
+----
++## Notes: return the operation outcome
+ 
+-## Comparison
++[Notes.Business.Flow](../../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift) calls an injected service. A successful upsert dispatches `upsertNoteSuccess` and returns `.success`. Failure dispatches `upsertNoteFail` and error tracking concurrently, then returns `.failure(err)`. Logging never converts failure into success. The service rejects blank titles/content before writing to the provider.
+ 
+-| Aspect | Flow | Saga |
+-|--------|------|------|
+-| Return type | `Relux.Flow.Result` | `Void` |
+-| Caller can await outcome | ✅ Yes | ❌ No |
+-| Use case | UI needs to react to success/failure | Fire-and-forget side effects |
+-| Service calls | ✅ Yes | ✅ Yes |
+-| State mutations | Via dispatched Actions | Via dispatched Actions |
++[Create.Container](../../relux_sample/Modules/Notes/UI/Create/Notes+UI+Create+Container.swift) awaits `actions(actions: { Notes.Business.Effect.upsert(note: note) })`; success dismisses the editor, failure sets an error message while preserving its local draft. Views invoke callbacks; they do not dispatch Relux actions.
+ 
+----
++See the [upsert sequence](../../diagrams/plantuml/sequence/notes-upsert.puml). Awaiting reduction is not a guarantee that Combine's scheduled main-queue projection or SwiftUI rendering has already occurred.
+ 
+-## Flow
++## Auth: observe actions and navigation
+ 
+-Use when **caller needs to know the outcome**.
++[Auth.Business.Saga](../../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift) accepts only `.success(true)` from `runLocalAuth`. False emits `authenticationRejected`; errors emit failure. Only true dispatches `authSucceed` and the main route. LocalAuthentication uses device-owner authentication, including system credential fallback; the “biometry” names do not promise biometric-only authentication.
+ 
+-```swift
+-// Definition
+-extension Notes.Business {
+-    actor Flow: Relux.Flow {
+-        private let svc: IService
+-        
+-        func apply(_ effect: any Relux.Effect) async -> Relux.Flow.Result {
+-            switch effect as? Notes.Business.Effect {
+-                case .upsert(let note): return await upsert(note)
+-                default: return .success
+-            }
+-        }
+-        
+-        private func upsert(_ note: Model.Note) async -> Relux.Flow.Result {
+-            switch await svc.upsert(note: note) {
+-                case .success:
+-                    await actions { Notes.Business.Action.upsertNoteSuccess(note: note) }
+-                    return .success
+-                case .failure(let err):
+-                    await actions { Notes.Business.Action.upsertNoteFail(err: err) }
+-                    return .failure(err)
+-            }
+-        }
+-    }
+-}
+-```
+-```swift
+-// Usage in UI
+-private func create(_ note: Note) async {
+-    switch await actions(actions: { Notes.Business.Effect.upsert(note: note) }) {
+-        case .success: 
+-            await close()  // Navigate away
+-        case .failure: 
+-            showError()    // Show error UI
+-    }
+-}
+-```
++The caller does not use a returned domain result to navigate: the saga requests routing through its injected interface. Thus navigation alone does not dictate Flow versus Saga. Choose based on who owns the outcome and how consumers observe it. Cross-domain event observers in this sample use Saga; see [orchestration](RELUX_ORCHESTRATION.md).
+ 
+----
++## Validate both sides
+ 
+-## Saga
+-
+-Use for **fire-and-forget** side effects where UI observes state changes.
+-
+-```swift
+-// Definition
+-extension Auth.Business {
+-    actor Saga: Relux.Saga {
+-        private let svc: IService
+-        
+-        func apply(_ effect: any Relux.Effect) async {
+-            switch effect as? Auth.Business.Effect {
+-                case .authorizeWithBiometry: await authorizeWithBiometry()
+-                default: break
+-            }
+-        }
+-        
+-        private func authorizeWithBiometry() async {
+-            switch await svc.runLocalAuth() {
+-                case .success:
+-                    await actions {
+-                        Auth.Business.Action.authSucceed
+-                        router.pushMain()
+-                    }
+-                case .failure(let err):
+-                    await actions {
+-                        Auth.Business.Action.authFailed(err: err)
+-                    }
+-            }
+-        }
+-    }
+-}
+-```
+-
+-```swift
+-// Usage in UI — just dispatch, observe state for changes
+-private func tryLocalAuth() async {
+-    await actions { Auth.Business.Effect.authorizeWithBiometry }
+-    // UI updates via state observation, not return value
+-}
+-```
+-
+----
+-
+-## Decision Guide
+-
+-```
+-Does caller need to:
+-  - Navigate on success? → Flow
+-  - Show inline error? → Flow
+-  - Dismiss modal on completion? → Flow
+-  
+-Is the operation:
+-  - Background sync? → Saga
+-  - App lifecycle event? → Saga
+-  - Cross-domain coordination? → Saga (Orchestrator)
+-```
+-
+----
+-
+-## Orchestrator: Always Saga
+-
+-Orchestrators never return results because:
+-
+-1. No single caller — they react to events
+-2. Multiple downstream effects — which result to return?
+-3. Domains handle their own success/failure
+-
+-
+-```swift
+-// Orchestrator Saga — always void
+-extension SessionOrchestration.Saga {
+-    func handleAuthEffect(_ effect: any Relux.Effect) async {
+-        switch effect as? Auth.Business.Effect {
+-            case .runLogoutFlow:
+-                // Fire-and-forget to multiple domains
+-                await actions(.concurrently) {
+-                    Profile.Business.Effect.clearProfile
+-                    Settings.Business.Effect.resetToDefaults
+-                }
+-            default: break
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Both in Same Domain
+-
+-A domain can have both Flow and Saga:
+-```swift
+-extension Notes.Business {
+-    struct Module: Relux.Module {
+-        let sagas: [any Relux.Saga]
+-        
+-        init() {
+-            self.sagas = [
+-                Flow(svc: svc),      // CRUD operations — returns results
+-                BackgroundSaga()     // Sync, cleanup — fire-and-forget
+-            ]
+-        }
+-    }
+-}
+-```
++Assert returned Flow results as well as actions and state. For Auth, exercise true, false and error service outcomes through registered module dispatch. Existing examples are linked in [Testing Strategy](TESTING_STRATEGY.md); a logged success-path action is not sufficient evidence of failure handling.
+diff --git a/Docs/Patterns/RELUX_MODULAR.md b/Docs/Patterns/RELUX_MODULAR.md
+index 0b5a544..4103e5e 100644
+--- a/Docs/Patterns/RELUX_MODULAR.md
++++ b/Docs/Patterns/RELUX_MODULAR.md
+@@ -1,296 +1,35 @@
+-# Relux Modular Architecture
++# Relux modular architecture
+ 
+-Domain decomposition pattern for scalable iOS/macOS applications.
++Auth demonstrates six library products within [one package](../../Packages/Auth/Package.swift). Notes stays inside the app until reuse or ownership justifies extraction. Six products are a boundary example, not a minimum size for every feature.
+ 
+----
++| Auth product | Responsibility | Direct local target dependencies |
++| --- | --- | --- |
++| AuthModels | Namespace, data, errors | None |
++| AuthReluxInt | Actions, effects, state and router contracts | AuthModels |
++| AuthServiceInt | Service contract | AuthModels |
++| AuthServiceImpl | LocalAuthentication implementation | AuthModels, AuthServiceInt |
++| AuthReluxImpl | State, reducer, saga and module | AuthModels, AuthReluxInt, AuthServiceInt |
++| AuthTestSupport | Domain test helpers | AuthModels, AuthServiceInt, AuthReluxInt |
+ 
+-## Goals
++External dependencies are explicit in the manifest: Relux and SwiftIoC for runtime wiring, TestInfrastructure for helpers. [AuthUI](../../Packages/AuthUI/Package.swift) has AuthUIAPI and AuthUI targets. UI imports interfaces, not service or Relux implementations. See the [dependency diagram](../../diagrams/plantuml/component/auth-dependencies.puml).
+ 
+-- Scale from MVP to 1000+ module apps
+-- Fast incremental builds via isolated recompilation
+-- Explicit module boundaries with predictable layering
+-- Clear seams for implementation swapping via DI
+-- Repeatable pattern across all domains
++## Composition root
+ 
+----
++[App IoC](../../relux_sample/IoC/IoC.swift) imports implementation products and supplies `Auth.Module(router:serviceFactory:)`. The module resolves an `IService`; it does not import AuthServiceImpl. Swap a service at this construction boundary without changing the saga or view. [AuthRouterAdapter](../../relux_sample/Adapters/AuthRouterAdapter.swift) maps domain navigation needs into app actions so Auth does not import app navigation.
+ 
+-## Package Layout
++Use target names for dependencies within a package and product dependencies across packages. Use automatic library linkage. Do not add a self-package dependency or manually embed every product: duplicate static Relux ownership caused runtime duplicate-class warnings in the [architecture audit](../ArchitectureAudit.md). TestSupport belongs to testing consumers, not the app's production dependency graph. There is no installed import-lint gate; manifests, compilation and review enforce the current boundaries.
+ 
+-Single package, multiple library products per domain:
++## State sizing
+ 
+-| Product | Contents | Dependencies |
+-|---------|----------|--------------|
+-| `<Domain>Models` | Namespace, data types, errors. No Relux. | — |
+-| `<Domain>ReluxInt` | Actions, effects, state/router protocols, UI page enums | Models, Relux |
+-| `<Domain>ServiceInt` | Service protocol(s) only | Models |
+-| `<Domain>ServiceImpl` | Concrete service implementation | Models, ServiceInt |
+-| `<Domain>ReluxImpl` | State, reducer, saga/flow, module wiring | Models, ReluxInt, ServiceInt, ServiceImpl, SwiftIoC, Relux |
+-| `<Domain>TestSupport` | Mocks, stubs, test helpers (static library) | Models, ReluxInt, ServiceInt, TestInfrastructure |
++Auth uses an observable MainActor HybridState for a small domain. Notes uses an actor BusinessState and a derived MainActor UIState with a dictionary and groups ordered by creation day. BusinessState as an upstream protocol requires Sendable reference semantics and async reduction/cleanup; using an actor is this app's choice. UIState is a projection, not a second editable domain store.
+ 
+-Use automatic library linkage. Static upstream dependencies must have one owner in the final process; see [the verified architecture audit](../ArchitectureAudit.md).
++[Notes.Module](../../relux_sample/Modules/Notes/Notes+Module.swift) constructs both states, a flow, a service and an in-memory fetcher. Its current wiring is not a headless package. Extract a business-only composition when undertaking the [CLI exercise](../LearningExercises.md#4-reuse-notes-from-a-headless-cli).
+ 
+----
++## Add a boundary when it earns its cost
+ 
+-## Dependency Graph
+-```
+-┌─────────────────────────────────────────────────────────────────┐
+-│                         App Host Binary                         │
+-│  Links & embeds all domain products                            │
+-└─────────────────────────────────────────────────────────────────┘
+-                              │
+-        ┌─────────────────────┼─────────────────────┐
+-        ▼                     ▼                     ▼
+-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+-│<Domain>ReluxImpl│   │<Domain>ServiceImpl│ │<Domain>TestSupport│
+-└───────────────┘    └───────────────┘    └───────────────┘
+-        │                     │                     │
+-        ▼                     ▼                     ▼
+-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+-│<Domain>ReluxInt│    │<Domain>ServiceInt│  │TestInfrastructure│
+-└───────────────┘    └───────────────┘    └───────────────┘
+-        │                     │
+-        └──────────┬──────────┘
+-                   ▼
+-          ┌───────────────┐
+-          │ <Domain>Models │
+-          └───────────────┘
+-```
+-
+----
+-
+-## Package.swift Template
+-```swift
+-// swift-tools-version: 6.0
+-import PackageDescription
+-
+-let package = Package(
+-    name: "<Domain>",
+-    platforms: [.iOS(.v17), .macOS(.v14)],
+-    products: [
+-        .library(name: "<Domain>Models", targets: ["<Domain>Models"]),
+-        .library(name: "<Domain>ReluxInt", targets: ["<Domain>ReluxInt"]),
+-        .library(name: "<Domain>ServiceInt", targets: ["<Domain>ServiceInt"]),
+-        .library(name: "<Domain>ServiceImpl", targets: ["<Domain>ServiceImpl"]),
+-        .library(name: "<Domain>ReluxImpl", targets: ["<Domain>ReluxImpl"]),
+-        .library(name: "<Domain>TestSupport", targets: ["<Domain>TestSupport"]),
+-    ],
+-    dependencies: [
+-        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
+-        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
+-        .package(path: "../TestInfrastructure"),
+-    ],
+-    targets: [
+-        .target(
+-            name: "<Domain>Models",
+-            dependencies: []
+-        ),
+-        .target(
+-            name: "<Domain>ReluxInt",
+-            dependencies: [
+-                "<Domain>Models",
+-                .product(name: "Relux", package: "swift-relux"),
+-            ]
+-        ),
+-        .target(
+-            name: "<Domain>ServiceInt",
+-            dependencies: [
+-                "<Domain>Models",
+-            ]
+-        ),
+-        .target(
+-            name: "<Domain>ServiceImpl",
+-            dependencies: [
+-                "<Domain>Models",
+-                "<Domain>ServiceInt",
+-            ]
+-        ),
+-        .target(
+-            name: "<Domain>ReluxImpl",
+-            dependencies: [
+-                "<Domain>Models",
+-                "<Domain>ReluxInt",
+-                "<Domain>ServiceInt",
+-                "<Domain>ServiceImpl",
+-                .product(name: "SwiftIoC", package: "swift-ioc"),
+-                .product(name: "Relux", package: "swift-relux"),
+-            ]
+-        ),
+-        .target(
+-            name: "<Domain>TestSupport",
+-            dependencies: [
+-                "<Domain>Models",
+-                "<Domain>ReluxInt",
+-                "<Domain>ServiceInt",
+-                .product(name: "TestInfrastructure", package: "TestInfrastructure"),
+-            ]
+-        ),
+-        .testTarget(
+-            name: "<Domain>Tests",
+-            dependencies: [
+-                "<Domain>ReluxImpl",
+-                "<Domain>TestSupport",
+-            ]
+-        ),
+-    ]
+-)
+-```
+-
+----
+-
+-## Layering Rules
+-
+-| Layer | Can Import | Cannot Import |
+-|-------|-----------|---------------|
+-| UI | ReluxInt, Models | ReluxImpl, ServiceImpl |
+-| ReluxImpl | ReluxInt, ServiceInt, ServiceImpl, Models | UI |
+-| ServiceImpl | ServiceInt, Models | Relux*, UI |
+-| ServiceInt | Models | Everything else |
+-| Models | Nothing domain-specific | Everything else |
+-
+-**Enforcement**: Code review, lint rules, or build-time import checks.
+-
+----
+-
+-## Linking Boundaries
+-
+-Use ordinary target dependencies within one package and product dependencies across packages. Keep library products automatic unless a measured deployment requirement needs dynamic linkage. Do not self-reference the package to force dynamic products: this sample reproduced duplicate Relux runtime classes when multiple Auth libraries embedded the same static upstream dependency. Xcode links the automatic products without manual Embed Frameworks entries.
+-
+----
+-
+-## IoC Integration
+-```swift
+-// <Domain>ReluxImpl/<Domain>+Module.swift
+-
+-extension <Domain> {
+-    @MainActor
+-    public struct Module: Relux.Module {
+-        private let ioc: IoC
+-        
+-        public let states: [any Relux.AnyState]
+-        public let sagas: [any Relux.Saga]
+-        
+-        public init(router: <Domain>.Business.IRouter) {
+-            self.ioc = Self.buildIoC(router: router)
+-            
+-            self.states = [
+-                ioc.get(by: <Domain>.Business.IState.self)!
+-            ]
+-            self.sagas = [
+-                ioc.get(by: <Domain>.Business.ISaga.self)!
+-            ]
+-        }
+-    }
+-}
+-
+-extension <Domain>.Module {
+-    private static func buildIoC(router: <Domain>.Business.IRouter) -> IoC {
+-        let ioc = IoC(logger: IoC.Logger(enabled: false))
+-        
+-        ioc.register(<Domain>.Business.IRouter.self, lifecycle: .container) { router }
+-        ioc.register(<Domain>.Business.IState.self, lifecycle: .container) { <Domain>.Business.State() }
+-        ioc.register(<Domain>.Business.IService.self, lifecycle: .container) { <Domain>.Business.Service() }
+-        ioc.register(<Domain>.Business.ISaga.self, lifecycle: .container) { 
+-            <Domain>.Business.Saga(
+-                svc: ioc.get(by: <Domain>.Business.IService.self)!,
+-                router: ioc.get(by: <Domain>.Business.IRouter.self)!
+-            )
+-        }
+-        
+-        return ioc
+-    }
+-}
+-```
+-
+----
+-
+-## Router Protocol Pattern
+-
+-Domains define navigation needs via protocol; app provides implementation:
+-```swift
+-// <Domain>ReluxInt
+-extension <Domain>.Business {
+-    public protocol IRouter: Sendable {
+-        func set<Domain>Page(_ page: <Domain>.UI.Model.Page) -> any Relux.Action
+-        func pushMain() -> any Relux.Action
+-    }
+-}
+-
+-// App provides adapter
+-struct <Domain>RouterAdapter: <Domain>.Business.IRouter {
+-    func set<Domain>Page(_ page: <Domain>.UI.Model.Page) -> any Relux.Action {
+-        AppRouter.Action.set([.<domain>(page: page)])
+-    }
+-    
+-    func pushMain() -> any Relux.Action {
+-        AppRouter.Action.push(.app(page: .main))
+-    }
+-}
+-```
+-
+----
+-
+-## UI Package (Optional)
+-
+-For domains with views, separate UI package:
+-```
+-<Domain>UI/
+-  Package.swift
+-  Sources/
+-    <Domain>UIAPI/      ← View provider protocol
+-    <Domain>UI/         ← Concrete views
+-```
+-```swift
+-// <Domain>UIAPI
+-public protocol <Domain>UIProviding: Sendable {
+-    @MainActor
+-    func view(for page: <Domain>.UI.Model.Page) -> AnyView
+-}
+-
+-// <Domain>UI
+-public struct <Domain>UIRouter: <Domain>UIProviding {
+-    @MainActor
+-    public func view(for page: <Domain>.UI.Model.Page) -> AnyView {
+-        switch page {
+-            case .list: AnyView(<Domain>.UI.List.Container())
+-            case .details(let id): AnyView(<Domain>.UI.Details.Container(id: id))
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Checklist: New Domain
+-
+-1. [ ] Create `<Domain>/Package.swift` with 6 products
+-2. [ ] Implement `<Domain>Models` — namespace, data types, errors
+-3. [ ] Implement `<Domain>ServiceInt` — service protocol
+-4. [ ] Implement `<Domain>ServiceImpl` — concrete service
+-5. [ ] Implement `<Domain>ReluxInt` — actions, effects, state protocol, router protocol
+-6. [ ] Implement `<Domain>ReluxImpl` — state, reducer, saga/flow, module
+-7. [ ] Implement `<Domain>TestSupport` — mocks, stubs
+-8. [ ] Add tests in `<Domain>Tests`
+-9. [ ] Register module in app `IoC.swift`
+-10. [ ] Create router adapter in app
+-11. [ ] Add to orchestrator if cross-domain coordination needed
+-12. [ ] Create `<Domain>UI` package if views needed
+-
+----
+-
+-## Benefits
+-
+-- **Smaller recompilation surface**: Model changes don't touch Relux or services
+-- **Clear DI seams**: Swap implementations (mock/real) via IoC
+-- **Repeatable**: Clone pattern for any domain
+-- **Agent-friendly**: Explicit boundaries prevent accidental coupling
+-
+----
+-
+-## Trade-offs
+-
+-| Concern | Mitigation |
+-|---------|------------|
+-| Multiple dylibs increase launch time | Monitor on device; merge impl products per domain if needed |
+-| Duplicate runtime classes from forced dynamic products | Use automatic linkage with ordinary target dependencies |
+-| Verbose imports | Optional facade product (`<Domain>Kit`) for simple consumers |
+-| 6 products per domain seems heavy | Start with HybridState in ReluxImpl; split when complexity grows |
++1. Identify independent reuse, ownership or build needs.
++2. Define model and interface targets without UI or concrete service imports.
++3. Implement services and reducers behind those contracts.
++4. Inject implementations and router adapters from the app.
++5. Add focused Swift Testing coverage and register the module before dispatching work.
++6. Update the dependency diagram and dependency locks when the graph changes.
+diff --git a/Docs/Patterns/RELUX_ORCHESTRATION.md b/Docs/Patterns/RELUX_ORCHESTRATION.md
+index 848e00d..7fa4b2b 100644
+--- a/Docs/Patterns/RELUX_ORCHESTRATION.md
++++ b/Docs/Patterns/RELUX_ORCHESTRATION.md
+@@ -1,331 +1,24 @@
+-# Relux Orchestration Pattern
++# Relux orchestration
+ 
+-Cross-domain coordination without coupling domains to each other.
++Cross-domain coordination lives at the composition boundary. In this sample, [SampleApp.Business.Saga](../../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift) observes `Auth.Business.Effect.runLogoutFlow` and calls `store.cleanup(exclusions: [AppRouter.self])`. [SampleApp.Module](../../relux_sample/Modules/App/App+Module.swift) registers the saga and no states.
+ 
+----
++See the [logout sequence](../../diagrams/plantuml/sequence/logout-orchestration.puml).
+ 
+-## Problem
++## Actual entry point
+ 
+-Domain A needs to react to Domain B's events, but:
+-- Domain A should not import Domain B
+-- Domain B should not know Domain A exists
+-- Bidirectional dependencies are forbidden
++Account's container dispatches `Auth.Business.Effect.logout`. Auth routes to `.logoutFlow`; that screen's container dispatches `runLogoutFlow` from its task. Two sagas observe the effect:
+ 
+----
++- Auth recreates its LocalAuthentication context, then dispatches the local-auth route and `logOutSucceed` action.
++- SampleApp cleans registered store states except AppRouter.
+ 
+-## Solution
++Auth does not import Notes. The app coordinates cleanup through the store. Cleanup is not deletion of the in-memory Notes fetcher, and no late-request rejection is implemented. See the [session-safe cleanup exercise](../LearningExercises.md#3-make-logout-cleanup-session-safe).
+ 
+-Dedicated **Orchestrator** modules that:
+-- Import multiple domain interfaces (`*ReluxInt`)
+-- Listen to domain effects
+-- Dispatch cross-domain responses
+-- Own no state
+-- Return no results
++## Ordering and ownership
+ 
+----
++Registration makes modules available; it does not establish a subscriber execution order. The actual IoC registration order is ErrorHandling, Navigation, SampleApp, Auth, then async Notes. Serial dispatch orders actions within that dispatch, not all saga subscribers of one effect. If an invariant requires cleanup before routing, make the awaited coordination explicit and test that order with a held request.
+ 
+-## Structure
+-```
+-<Concern>Orchestration/
+-  Package.swift
+-  Sources/
+-    <Concern>OrchestrationImpl/
+-      <Concern>Orchestration+Saga.swift
+-      <Concern>Orchestration+Saga+<DomainA>.swift
+-      <Concern>Orchestration+Saga+<DomainB>.swift
+-      <Concern>Orchestration+Module.swift
+-      <Concern>Orchestration+Effect.swift    ← Optional
+-```
++A Saga returns Void but its async work can still be awaited. Avoid interpreting “fire-and-forget” as a detached task or proof that the operation succeeded. Store state belongs to domains; coordination should not create another copy of it.
+ 
+----
++## Scaling beyond the demo
+ 
+-## Package.swift
+-```swift
+-// swift-tools-version: 6.0
+-import PackageDescription
+-
+-let package = Package(
+-    name: "SessionOrchestration",
+-    platforms: [.iOS(.v17), .macOS(.v14)],
+-    products: [
+-        .library(
+-            name: "SessionOrchestration",
+-            type: .dynamic,
+-            targets: ["SessionOrchestrationImpl"]
+-        ),
+-    ],
+-    dependencies: [
+-        .package(url: "https://github.com/relux-works/swift-relux.git", from: "8.4.0"),
+-        // Domain interfaces ONLY
+-        .package(path: "../Auth"),
+-        .package(path: "../Profile"),
+-        .package(path: "../Settings"),
+-    ],
+-    targets: [
+-        .target(
+-            name: "SessionOrchestrationImpl",
+-            dependencies: [
+-                .product(name: "Relux", package: "swift-relux"),
+-                .product(name: "AuthReluxInt", package: "Auth"),
+-                .product(name: "ProfileReluxInt", package: "Profile"),
+-                .product(name: "SettingsReluxInt", package: "Settings"),
+-            ]
+-        ),
+-    ]
+-)
+-```
+-
+----
+-
+-## Saga Implementation
+-
+-Main entry point routes to domain-specific handlers:
+-
+-```swift
+-// SessionOrchestration+Saga.swift
+-import AuthReluxInt
+-import ProfileReluxInt
+-import SettingsReluxInt
+-import Relux
+-
+-extension SessionOrchestration {
+-    public actor Saga: Relux.Saga {
+-        public init() {}
+-        
+-        public func apply(_ effect: any Relux.Effect) async {
+-            await handleAuthEffect(effect)
+-            await handleProfileEffect(effect)
+-            await handleSettingsEffect(effect)
+-        }
+-    }
+-}
+-```
+-
+-Per-domain handlers in separate files:
+-
+-```swift
+-// SessionOrchestration+Saga+Auth.swift
+-extension SessionOrchestration.Saga {
+-    func handleAuthEffect(_ effect: any Relux.Effect) async {
+-        switch effect as? Auth.Business.Effect {
+-            
+-        case .runLogoutFlow:
+-            await actions(.concurrently) {
+-                Profile.Business.Effect.clearProfile
+-                Settings.Business.Effect.resetToDefaults
+-            }
+-            
+-        case .authSucceeded(let userId):
+-            await actions {
+-                Profile.Business.Effect.fetchProfile(userId: userId)
+-            }
+-            
+-        default:
+-            break
+-        }
+-    }
+-}
+-```
+-```swift
+-// SessionOrchestration+Saga+Profile.swift
+-extension SessionOrchestration.Saga {
+-    func handleProfileEffect(_ effect: any Relux.Effect) async {
+-        switch effect as? Profile.Business.Effect {
+-            
+-        case .profileFetchFailed(let error) where error.isAuthError:
+-            await actions {
+-                Auth.Business.Effect.forceReauthentication
+-            }
+-            
+-        case .profileDeleted:
+-            await actions {
+-                Auth.Business.Effect.logout
+-            }
+-            
+-        default:
+-            break
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Module
+-```swift
+-// SessionOrchestration+Module.swift
+-import Relux
+-
+-extension SessionOrchestration {
+-    public struct Module: Relux.Module {
+-        public let states: [any Relux.AnyState] = []  // Always empty
+-        public let sagas: [any Relux.Saga]
+-        
+-        public init() {
+-            self.sagas = [Saga()]
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Optional: Exposed Effects
+-
+-If app/UI needs to trigger orchestrator directly:
+-
+-```swift
+-// SessionOrchestration+Effect.swift
+-import Relux
+-
+-extension SessionOrchestration {
+-    public enum Effect: Relux.Effect {
+-        case teardownSession
+-        case refreshSession
+-    }
+-}
+-```
+-
+-Handle in saga:
+-```swift
+-extension SessionOrchestration.Saga {
+-    private func handleOwnEffect(_ effect: any Relux.Effect) async {
+-        switch effect as? SessionOrchestration.Effect {
+-        case .teardownSession:
+-            await actions(.concurrently) {
+-                Auth.Business.Effect.logout
+-                Profile.Business.Effect.clearProfile
+-            }
+-        default:
+-            break
+-        }
+-    }
+-}
+-```
+-
+----
+-
+-## Granular Orchestrators
+-
+-Prefer multiple focused orchestrators over one monolithic:
+-
+-| Orchestrator | Domains | Responsibility |
+-|--------------|---------|----------------|
+-| `SessionOrchestration` | Auth, Profile, Settings | User session lifecycle |
+-| `DataOrchestration` | Auth, Notes, Files, Sync | User data coordination |
+-| `CommerceOrchestration` | Auth, Cart, Checkout, Payment | Purchase flows |
+-
+-**Benefits**:
+-- Minimal import surface per orchestrator
+-- Clear ownership
+-- Parallel compilation
+-- Teams/agents can own specific orchestrators
+-
+----
+-
+-## Key Constraints
+-
+-| Rule | Rationale |
+-|------|-----------|
+-| No state | Orchestrators coordinate, domains own state |
+-| No result returns | Multiple downstream effects, no single result |
+-| Only `*ReluxInt` deps | Never import implementations |
+-| No orchestrator-to-orchestrator deps | Each listens independently |
+-| Register after domains | So orchestrator can listen to domain effects |
+-
+----
+-
+-## Registration Order
+-```swift
+-// IoC.swift
+-await Relux.init(...)
+-    .register { @MainActor in
+-        // 1. Infrastructure
+-        resolve(ErrorHandling.Module.self)
+-        resolve(Navigation.Module.self)
+-        
+-        // 2. Domains
+-        resolve(Auth.Module.self)
+-        resolve(Profile.Module.self)
+-        await resolveAsync(Notes.Module.self)
+-        
+-        // 3. Orchestrators (last)
+-        resolve(SessionOrchestration.Module.self)
+-        resolve(DataOrchestration.Module.self)
+-    }
+-```
+-
+----
+-
+-## Cross-Domain State Access
+-
+-Orchestrators are stateless. When coordination needs domain state:
+-
+-**UI Provides Context**
+-
+-UI Container bundles necessary context into effect:
+-```swift
+-// Effect defines what context it needs
+-enum Effect: Relux.Effect {
+-    case sync(context: SyncContext)
+-    
+-    struct SyncContext: Sendable {
+-        let isAuthenticated: Bool
+-        let userId: String?
+-    }
+-}
+-
+-// UI Container provides context
+-private func syncNotes() async {
+-    let context = Notes.Business.Effect.SyncContext(
+-        isAuthenticated: authState.isAuthenticated,
+-        userId: authState.userId
+-    )
+-    await actions { Notes.Business.Effect.sync(context: context) }
+-}
+-```
+-
+-```
+-
+----
+-
+-## Dependency Graph
+-```
+-┌─────────────────────────────────────────────────────────────────┐
+-│                        App Host Binary                          │
+-└─────────────────────────────────────────────────────────────────┘
+-                              │
+-      ┌───────────────────────┼───────────────────────┐
+-      ▼                       ▼                       ▼
+-┌───────────────┐   ┌───────────────────┐   ┌───────────────┐
+-│ Domain Impls  │   │   Orchestrators   │   │ Domain Impls  │
+-│               │   │                   │   │               │
+-│AuthReluxImpl  │   │SessionOrchestration│  │NotesReluxImpl │
+-│ProfileReluxImpl│  │  └ AuthReluxInt   │   │FilesReluxImpl │
+-│               │   │  └ ProfileReluxInt│   │               │
+-│               │   │  └ SettingsReluxInt│  │               │
+-│               │   │                   │   │               │
+-│               │   │DataOrchestration  │   │               │
+-│               │   │  └ AuthReluxInt   │   │               │
+-│               │   │  └ NotesReluxInt  │   │               │
+-│               │   │  └ FilesReluxInt  │   │               │
+-└───────────────┘   └───────────────────┘   └───────────────┘
+-        │                     │                     │
+-        ▼                     ▼                     ▼
+-┌───────────────────────────────────────────────────────────────┐
+-│                      Domain Interfaces                        │
+-│  AuthReluxInt, ProfileReluxInt, NotesReluxInt, FilesReluxInt │
+-└───────────────────────────────────────────────────────────────┘
+-```
+-
+----
+-
+-## Checklist: New Orchestrator
+-
+-1. [ ] Identify domains that need coordination
+-2. [ ] Create `<Concern>Orchestration/Package.swift`
+-3. [ ] Depend only on `*ReluxInt` products
+-4. [ ] Implement `Saga` with per-domain handler files
+-5. [ ] Implement `Module` with empty states
+-6. [ ] Register in app IoC after domain modules
+-7. [ ] Add tests
++SessionOrchestration, DataOrchestration, Profile and Settings packages do not exist here. A larger app may extract a focused concern into an orchestrator that imports domain interfaces and exposes no domain state. Start with an app-local saga until separate ownership or reuse warrants a package. Test through registered dispatch and assert real state/service/routing outcomes, not only the presence of logged effects.
+diff --git a/Docs/Patterns/TESTING_STRATEGY.md b/Docs/Patterns/TESTING_STRATEGY.md
+index 93a170c..f004230 100644
+--- a/Docs/Patterns/TESTING_STRATEGY.md
++++ b/Docs/Patterns/TESTING_STRATEGY.md
+@@ -1,515 +1,30 @@
+-# Testing Strategy
++# Testing strategy
+ 
+-How to test business logic through discrete, isolated layers.
++Use Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`) in Swift. [README commands](../../README.md#tools-and-validation) are the maintained build/test entry points; there is no root Swift package.
+ 
+----
++## Existing suites
+ 
+-## Philosophy
++| Source | Entry point and assertions | Bound |
++| --- | --- | --- |
++| [AuthBehaviorTests](../../Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift) | Registered module dispatch; authorization true/false/error, routing, biometry state and cleanup | Injected service; does not exercise physical LocalAuthentication |
++| [Notes flow tests](../../relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Obtain.swift) | `Flow.apply`; returned result and logged actions for success/failure (also Upsert and Delete files) | Injected service/dispatcher; not whole-app UI |
++| [Notes reducer tests](../../relux_sampleTests/Notes/Business/State/NotesTests+Business+State+Upsert.swift) | Real action reduction and domain state | No provider or routing integration |
++| [Notes UIState tests](../../relux_sampleTests/Notes/UI/State/NotesTests+UI+State.swift) | Business-to-UI projection | Does not prove rendered frames |
++| [NotesNativeWorkflowTests](../../relux_sampleTests/Notes/NotesNativeWorkflowTests.swift) | Draft validation and identity, real in-memory service CRUD, blank-input rejection through Flow, search mapping and save-button props | Does not tap the native UI or prove persistence |
+ 
+-Test each layer in isolation. Combined, they cover the entire business logic without integration test complexity.
+-```
+-┌─────────────────────────────────────────────────────────────────┐
+-│                        Business Logic                           │
+-└─────────────────────────────────────────────────────────────────┘
+-                              │
+-     ┌────────────┬───────────┼───────────┬────────────┐
+-     ▼            ▼           ▼           ▼            ▼
+-┌─────────┐ ┌─────────┐ ┌───────────┐ ┌─────────┐ ┌─────────┐
+-│  Saga   │ │ Reducer │ │  Service  │ │Orchestr.│ │  Smoke  │
+-│  Tests  │ │  Tests  │ │   Tests   │ │  Tests  │ │  Tests  │
+-└─────────┘ └─────────┘ └───────────┘ └─────────┘ └─────────┘
+-     │            │           │           │            │
+-     ▼            ▼           ▼           ▼            ▼
+- Service      State        Data      Cross-domain   Wiring
+-  calls      mutations   transforms  coordination  validation
+-```
++Auth tests live in a package target. Notes retains the app-hosted `relux_sampleTests` target; its `Business/Saga` directory tests a Flow. Prefer package test targets for newly extracted business code without pretending the existing hosted suite has moved.
+ 
+----
++## Add tests at the changed boundary
+ 
+-## Five Testing Layers
++- Flow: inject a service; assert both operation result and all dispatched success/failure actions. Concurrent error tracking must not hide failure.
++- Reducer: pass real actions; assert resulting values and preservation on failed mutations. Use an exhaustive switch over the domain action enum.
++- Service/provider: verify conversion and error mapping. For durable storage, use a temporary real store and recreate it to verify persistence. These durability tests are proposed, not present.
++- Orchestration: drive registered dispatch; assert state, provider policy and routing. Hold an in-flight request when proving logout ordering. The current app has no session-safe provider-reset guarantee.
++- UI projection: observe derived values with a bounded wait; do not assume dispatch return means Combine delivery has run.
++- Wiring: register the real module, dispatch via its production dispatcher, and inspect the resulting state. Use AuthBehaviorTests as the executable example instead of inventing Store registration APIs.
+ 
+-### 1. Saga/Flow Tests
++Mocks should fail on unintended calls and use actor isolation or another explicit synchronization policy when mutable. `@unchecked Sendable` alone is not synchronization. See [domain support](DOMAIN_TEST_SUPPORT.md) and [shared infrastructure](TEST_INFRASTRUCTURE.md).
+ 
+-**What**: Verify orchestration logic — service calls, action dispatching, error handling.
++## Evidence boundaries
+ 
+-**Mock**: Service  
+-**Assert**: Dispatched actions/effects via Logger
+-```swift
+-@Test
+-func obtainNotes_success_dispatchesAction() async {
+-    // Arrange
+-    let logger = Relux.Testing.Logger()
+-    let dispatcher = Relux.Dispatcher(logger: logger)
+-    let service = Notes.Business.ServiceMock()
+-    let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+-    
+-    let notes: [Notes.Business.Model.Note] = .stub
+-    service.stubObtainSuccess(notes)
+-    
+-    // Act
+-    _ = await flow.apply(Notes.Business.Effect.obtainNotes)
+-    
+-    // Assert
+-    #expect(service.obtainCallCount == 1)
+-    #expect(logger.findNotesAction(.obtainSuccess(noteCount: notes.count)) != nil)
+-}
+-
+-@Test
+-func obtainNotes_failure_dispatchesErrorTracking() async {
+-    // Arrange
+-    let logger = Relux.Testing.Logger()
+-    let dispatcher = Relux.Dispatcher(logger: logger)
+-    let service = Notes.Business.ServiceMock()
+-    let flow = await Notes.Business.Flow(dispatcher: dispatcher, svc: service)
+-    
+-    let err = Notes.Business.Err.obtainFailed(cause: StubError())
+-    service.stubObtainFailure(err)
+-    
+-    // Act
+-    _ = await flow.apply(Notes.Business.Effect.obtainNotes)
+-    
+-    // Assert
+-    #expect(logger.findNotesAction(.obtainFail(errorMessage: err.localizedDescription)) != nil)
+-    #expect(logger.findEffect(ErrorHandling.Business.Effect.self) { 
+-        if case .track = $0 { return true }
+-        return false
+-    } != nil)
+-}
+-```
+-
+-**Covers**:
+-- Correct service method called
+-- Correct action dispatched on success
+-- Correct action dispatched on failure
+-- Error tracking triggered
+-- Flow returns correct result
+-
+----
+-
+-### 2. Reducer/State Tests
+-
+-**What**: Verify state mutations — actions correctly update state.
+-
+-**Mock**: None — test state directly  
+-**Assert**: State values after action
+-
+-**Important**: Use exhaustive `switch` (no `default`) so compiler catches unhandled actions.
+-```swift
+-// In reducer — compiler enforces all cases handled
+-func reduce(with action: Notes.Business.Action) async {
+-    switch action {  // No 'default' clause
+-        case .obtainNotesSuccess(let notes): ...
+-        case .obtainNotesFail(let err): ...
+-        case .upsertNoteSuccess(let note): ...
+-        // Compiler errors if new case added but not handled
+-    }
+-}
+-```
+-```swift
+-@Test
+-func obtainNotesSuccess_updatesState() async {
+-    // Arrange
+-    let state = Notes.Business.State()
+-    let notes: [Notes.Business.Model.Note] = .stub
+-    
+-    // Act
+-    await state.reduce(with: Notes.Business.Action.obtainNotesSuccess(notes: notes))
+-    
+-    // Assert
+-    #expect(await state.notes == .success(notes))
+-}
+-
+-@Test
+-func deleteNoteSuccess_removesFromState() async {
+-    // Arrange
+-    let state = Notes.Business.State()
+-    let notes: [Notes.Business.Model.Note] = .stub
+-    let noteToDelete = notes.first!
+-    
+-    await state.reduce(with: Notes.Business.Action.obtainNotesSuccess(notes: notes))
+-    
+-    // Act
+-    await state.reduce(with: Notes.Business.Action.deleteNoteSuccess(note: noteToDelete))
+-    
+-    // Assert
+-    let currentNotes = await state.notes.value
+-    #expect(currentNotes?.contains(noteToDelete) == false)
+-    #expect(currentNotes?.count == notes.count - 1)
+-}
+-
+-@Test
+-func cleanup_resetsState() async {
+-    // Arrange
+-    let state = Notes.Business.State()
+-    await state.reduce(with: Notes.Business.Action.obtainNotesSuccess(notes: .stub))
+-    
+-    // Act
+-    await state.cleanup()
+-    
+-    // Assert
+-    guard case .initial = await state.notes else {
+-        Issue.record("Expected initial state")
+-        return
+-    }
+-}
+-```
+-
+-**Covers**:
+-- Success actions update state correctly
+-- Failure actions update state correctly
+-- Upsert adds/updates items
+-- Delete removes items
+-- Cleanup resets to initial
+-
+----
+-
+-### 3. Service Tests
+-
+-**What**: Verify data layer — API calls, DTO transformations, error mapping.
+-
+-**Mock**: Fetcher / API client  
+-**Assert**: Correct calls made, correct transformations applied
+-```swift
+-@Test
+-func getNotes_transformsDTOToModel() async {
+-    // Arrange
+-    let fetcher = Notes.Data.Api.FetcherMock()
+-    let service = Notes.Business.Service(fetcher: fetcher)
+-    
+-    let dto = Notes.Data.Api.DTO.Note(
+-        id: UUID(),
+-        date: .now,
+-        title: "Test",
+-        content: "Content"
+-    )
+-    fetcher.stubGetNotesSuccess([dto])
+-    
+-    // Act
+-    let result = await service.getNotes()
+-    
+-    // Assert
+-    guard case .success(let notes) = result else {
+-        Issue.record("Expected success")
+-        return
+-    }
+-    #expect(notes.count == 1)
+-    #expect(notes.first?.id == dto.id)
+-    #expect(notes.first?.title == dto.title)
+-}
+-
+-@Test
+-func getNotes_mapsError() async {
+-    // Arrange
+-    let fetcher = Notes.Data.Api.FetcherMock()
+-    let service = Notes.Business.Service(fetcher: fetcher)
+-    
+-    fetcher.stubGetNotesFailure(.networkError)
+-    
+-    // Act
+-    let result = await service.getNotes()
+-    
+-    // Assert
+-    guard case .failure(let err) = result else {
+-        Issue.record("Expected failure")
+-        return
+-    }
+-    #expect(err == .obtainFailed(cause: .networkError))
+-}
+-```
+-
+-**Covers**:
+-- DTO → Model transformation
+-- Model → DTO transformation
+-- Error mapping
+-- Correct API methods called
+-- Sorting/filtering logic
+-
+-**When to test Fetcher separately**: If Fetcher has complex logic (retry, caching, pagination), add dedicated tests with mocked URLSession.
+-
+----
+-
+-### 4. Orchestrator Tests
+-
+-**What**: Verify cross-domain coordination — correct effects dispatched to other domains.
+-
+-**Mock**: None — orchestrators only dispatch, don't call services  
+-**Assert**: Cross-domain effects dispatched via Logger
+-```swift
+-@Test
+-func authLogout_triggersProfileAndSettingsClear() async {
+-    // Arrange
+-    let logger = Relux.Testing.Logger()
+-    let dispatcher = Relux.Dispatcher(logger: logger)
+-    let saga = SessionOrchestration.Saga(dispatcher: dispatcher)
+-    
+-    // Act
+-    await saga.apply(Auth.Business.Effect.runLogoutFlow)
+-    
+-    // Assert — verify ALL expected dispatches
+-    #expect(logger.findEffect(Profile.Business.Effect.self) { 
+-        if case .clearProfile = $0 { return true }
+-        return false
+-    } != nil)
+-    
+-    #expect(logger.findEffect(Settings.Business.Effect.self) { 
+-        if case .resetToDefaults = $0 { return true }
+-        return false
+-    } != nil)
+-}
+-
+-@Test
+-func authSuccess_triggersProfileFetch() async {
+-    // Arrange
+-    let logger = Relux.Testing.Logger()
+-    let dispatcher = Relux.Dispatcher(logger: logger)
+-    let saga = SessionOrchestration.Saga(dispatcher: dispatcher)
+-    
+-    // Act
+-    await saga.apply(Auth.Business.Effect.authSucceeded(userId: "user-123"))
+-    
+-    // Assert
+-    #expect(logger.findEffect(Profile.Business.Effect.self) { 
+-        if case .fetchProfile(let id) = $0 { return id == "user-123" }
+-        return false
+-    } != nil)
+-}
+-```
+-
+-**Covers**:
+-- Correct domains notified on events
+-- Correct parameters passed
+-- Concurrent dispatches all fire
+-
+----
+-
+-### 5. Smoke Tests (Optional)
+-
+-**What**: Lightweight integration tests verifying wiring between layers.
+-
+-**Mock**: Service only (lowest layer)  
+-**Assert**: End state after full flow
+-
+-Catches contract gaps where saga dispatches action that reducer doesn't handle.
+-```swift
+-@Test
+-func fullObtainFlow_stateUpdates() async {
+-    // Real state + real flow, mock service only
+-    let state = Notes.Business.State()
+-    let service = Notes.Business.ServiceMock()
+-    let store = Relux.Store()
+-    await store.register(state)
+-    
+-    let flow = Notes.Business.Flow(svc: service, store: store)
+-    await store.register(saga: flow)
+-    
+-    let notes: [Notes.Business.Model.Note] = .stub(count: 3)
+-    service.stubObtainSuccess(notes)
+-    
+-    // Act
+-    await store.dispatch(Notes.Business.Effect.obtainNotes)
+-    
+-    // Assert
+-    #expect(await state.notes.value?.count == 3)
+-}
+-```
+-
+-**When to write smoke tests**:
+-- Critical user flows (login, checkout, data sync)
+-- After fixing wiring bugs
+-- Not needed for every feature
+-
+----
+-
+-## UIState Testing
+-
+-### Test Transformations as Pure Functions
+-
+-Extract transformation logic as static functions — enables synchronous, deterministic tests.
+-```swift
+-// In UIState — extract as static
+-extension Notes.UI.State {
+-    static func groupByDay(_ notes: [Note]) -> [[Note]] {
+-        notes
+-            .sorted { $0.createdAt > $1.createdAt }
+-            .chunked { $0.createdAt.startOfDay == $1.createdAt.startOfDay }
+-            .map { Array($0) }
+-    }
+-}
+-
+-// Test — synchronous, no timing issues
+-@Test
+-func groupByDay_groupsCorrectly() {
+-    let today = Date.now
+-    let yesterday = today.addingTimeInterval(-86400)
+-    let notes: [Notes.Business.Model.Note] = [
+-        .stub(createdAt: today),
+-        .stub(createdAt: today),
+-        .stub(createdAt: yesterday),
+-    ]
+-    
+-    let grouped = Notes.UI.State.groupByDay(notes)
+-    
+-    #expect(grouped.count == 2)
+-    #expect(grouped[0].count == 2)  // today
+-    #expect(grouped[1].count == 1)  // yesterday
+-}
+-```
+-
+-### Pipeline Wiring Test (Minimal)
+-
+-One test to verify Combine pipeline is connected:
+-```swift
+-@Test
+-func pipeline_propagatesChanges() async throws {
+-    let businessState = Notes.Business.State()
+-    let uiState = await Notes.UI.State(state: businessState)
+-    
+-    await businessState.reduce(with: .obtainNotesSuccess(notes: .stub(count: 2)))
+-    
+-    try await withTimeout(seconds: 1.0) {
+-        guard let grouped = try await uiState.$notesGroupedByDay.asyncStream.next()?.value else {
+-            Issue.record("Pipeline did not emit")
+-            return
+-        }
+-        #expect(grouped.flatMap { $0 }.count == 2)
+-    }
+-}
+-```
+-
+----
+-
+-## Concurrent Dispatch Assertions
+-
+-When saga dispatches `.concurrently`, assert **all** expected dispatches:
+-```swift
+-// Saga code
+-await actions(.concurrently) {
+-    Notes.Business.Action.upsertNoteFail(err: err)
+-    ErrorHandling.Business.Effect.track(error: err)
+-}
+-
+-// Test — verify both
+-@Test
+-func upsertFailure_dispatchesActionAndTracking() async {
+-    // ... setup ...
+-    
+-    // Assert both were dispatched
+-    #expect(logger.findNotesAction(.upsertFail(...)) != nil)
+-    #expect(logger.findEffect(ErrorHandling.Business.Effect.self) { ... } != nil)
+-    
+-    // Optionally verify counts
+-    #expect(logger.countActions(Notes.Business.Action.self) == 1)
+-    #expect(logger.countEffects(ErrorHandling.Business.Effect.self) == 1)
+-}
+-```
+-
+----
+-
+-## Test Data Guidelines
+-
+-### Random vs Explicit Values
+-
+-**Random** — when value doesn't matter for assertion:
+-```swift
+-let note = Note.stub()  // Random title/content fine
+-#expect(service.upsertCallCount == 1)  // Asserting call, not content
+-```
+-
+-**Explicit** — when asserting specific values:
+-```swift
+-let note = Note.stub(title: "Expected Title")  // Explicit
+-#expect(capturedNote.title == "Expected Title")  // Asserting content
+-```
+-
+-### Deterministic IDs for Assertions
+-```swift
+-let id = UUID()
+-let note = Note.stub(id: id)
+-
+-// Later...
+-#expect(logger.findNotesAction(.deleteSuccess(noteId: id)) != nil)
+-```
+-
+----
+-
+-## Edge Cases Checklist
+-
+-Test these scenarios for each domain:
+-
+-| Case | Example |
+-|------|---------|
+-| Empty collection | `obtainNotes` returns `[]` |
+-| Single item | Delete the only note |
+-| Duplicate handling | Upsert note with existing ID |
+-| Not found | Delete non-existent note |
+-| Concurrent modifications | Two upserts for same note |
+-| Cleanup mid-operation | Logout while fetching |
+-| Pagination boundary | Fetch page 2 when only 1 page exists |
+-| Invalid input | Empty title, nil values |
+-
+----
+-
+-## Coverage Matrix
+-
+-| Layer | Input | Mock | Asserts | Catches |
+-|-------|-------|------|---------|---------|
+-| Saga/Flow | Effect | Service | Actions/effects dispatched | Orchestration bugs |
+-| Reducer | Action | None | State values | Mutation bugs |
+-| Service | Method | Fetcher | Transformations, calls | Mapping bugs |
+-| Orchestrator | Effect | None | Cross-domain effects | Coordination bugs |
+-| UIState | N/A | None | Transformation output | Aggregation bugs |
+-| Smoke | Effect | Service | End state | Wiring bugs |
+-
+----
+-
+-## Test File Organization
+-```
+-<Domain>Tests/
+-  Business/
+-    Saga/
+-      <Domain>Tests+Saga+Obtain.swift
+-      <Domain>Tests+Saga+Upsert.swift
+-      <Domain>Tests+Saga+Delete.swift
+-    State/
+-      <Domain>Tests+State+Initial.swift
+-      <Domain>Tests+State+Obtain.swift
+-      <Domain>Tests+State+Upsert.swift
+-      <Domain>Tests+State+Delete.swift
+-    Service/
+-      <Domain>Tests+Service+Obtain.swift
+-      <Domain>Tests+Service+Upsert.swift
+-  UI/
+-    State/
+-      <Domain>Tests+UIState+Transformations.swift
+-      <Domain>Tests+UIState+Pipeline.swift
+-  Smoke/
+-      <Domain>Tests+Smoke+CriticalFlows.swift
+-
+-<Concern>OrchestrationTests/
+-  <Concern>OrchestrationTests+Auth.swift
+-  <Concern>OrchestrationTests+Profile.swift
+-```
+-
+----
+-
+-## What NOT to Unit Test
+-
+-| Skip | Reason |
+-|------|--------|
+-| SwiftUI Views | Use previews + manual testing |
+-| Containers | Thin glue layer, test via UI tests if needed |
+-| IoC wiring | Caught by app launch |
+-| Navigation routing | Caught by UI tests |
+-| Fetcher (usually) | Unless complex logic — test via Service tests |
+-
+----
+-
+-## Checklist: New Feature
+-
+-1. [ ] Saga/Flow tests — all effect cases (success + failure)
+-2. [ ] Reducer tests — all action cases, exhaustive switch
+-3. [ ] Service tests — transformations, error mapping
+-4. [ ] Orchestrator tests — if cross-domain coordination involved
+-5. [ ] UIState tests — transformation logic as pure functions
+-6. [ ] Edge cases — empty, single, duplicate, concurrent
+-7. [ ] Smoke test — for critical user flows only
++A passing test proves only the path it drives. Include negative cases for validation or authorization, such as blank text or `.success(false)`. For a gate change, narrow the gate to admit one forbidden class and name the test that fails; report surviving mutations and their limits. Documentation-only changes need source/link checks and rendering, not new behavior tests that mirror prose. Keep command exit codes and raw logs in `.temp/` and attach task evidence before handoff.
+diff --git a/Docs/Patterns/TEST_INFRASTRUCTURE.md b/Docs/Patterns/TEST_INFRASTRUCTURE.md
+index ac30bae..6bd472e 100644
+--- a/Docs/Patterns/TEST_INFRASTRUCTURE.md
++++ b/Docs/Patterns/TEST_INFRASTRUCTURE.md
+@@ -1,87 +1,17 @@
+-# Test Infrastructure
++# Shared test infrastructure
+ 
+-Shared test utilities across all domain packages.
++[Packages/TestInfrastructure](../../Packages/TestInfrastructure/Package.swift) provides the TestInfrastructure library. It is a helper dependency, not a runnable root package or a substitute for domain tests.
+ 
+----
++| Existing source | Purpose |
++| --- | --- |
++| [ReluxTestingExtensions.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Helpers/ReluxTestingExtensions.swift) | Logger action/effect lookup and dispatch assertions |
++| [AsyncTestHelpers.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Helpers/AsyncTestHelpers.swift) | `withTimeout(seconds:operation:)` and TimeoutError |
++| [StubError.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Stubs/StubError.swift) | Shared test error |
++| [JSONFixtures.swift](../../Packages/TestInfrastructure/Sources/TestInfrastructure/Stubs/JSONFixtures.swift) | Bundle fixture loading |
++| [DomainMocks](../../Packages/TestInfrastructure/Sources/TestInfrastructure/DomainMocks) | RPC and WebSocket mock utilities |
+ 
+-## Purpose
++The package does not contain the formerly documented APIClientMock, NetworkSessionMock, StorageMock, `waitUntil`, or CombineTestHelpers. Notes' [CombineAsyncStream.swift](../../relux_sampleTests/Notes/Utils/CombineAsyncStream.swift) remains local to its app test target.
+ 
+-Centralized package providing domain-agnostic test utilities:
+-- Relux testing extensions
+-- Async test helpers
+-- Common mocks (API client, network, storage)
+-- Stub factories
++A timeout is cooperative: cancelling a child does not force non-cooperative work to stop. Use bounded, cancellation-aware operations and inspect actual emitted values. Logging proves dispatch observation, not successful state reduction or service persistence. Pair logger assertions with result/state checks at the relevant layer.
+ 
+----
+-
+-## Location
+-```
+-Packages/TestInfrastructure/
+-```
+-
+----
+-
+-## When to Add Here
+-
+-✅ Add to TestInfrastructure:
+-- Utilities used by 2+ domains
+-- Domain-agnostic mocks (network, storage, keychain)
+-- Generic async/Combine test helpers
+-- Relux.Testing.Logger extensions
+-
+-❌ Keep in DomainTestSupport:
+-- Domain-specific service mocks
+-- Domain model stubs
+-- Domain action/effect testable wrappers
+-
+----
+-
+-## Key Components
+-
+-| Component | Purpose |
+-|-----------|---------|
+-| `ReluxTestingExtensions` | `findAction`, `findEffect`, `assertDispatched` on Logger |
+-| `AsyncTestHelpers` | `withTimeout`, `waitUntil` |
+-| `CombineTestHelpers` | `Publisher.asyncStream` for testing pipelines |
+-| `APIClientMock` | Mock HTTP client with call tracking |
+-| `NetworkSessionMock` | Mock URLSession-like interface |
+-| `StorageMock` | Mock key-value storage |
+-| `StubError` | Generic error for testing failures |
+-| `JSONFixtures` | Load test fixtures from bundle |
+-
+----
+-
+-## Usage
+-```swift
+-import Testing
+-import TestInfrastructure
+-import NotesTestSupport
+-
+-@Test
+-func example() async throws {
+-    let logger = Relux.Testing.Logger()
+-    
+-    // ... trigger effect ...
+-    
+-    // Find action using TestInfrastructure extension
+-    let action = logger.findAction(Notes.Business.Action.self) { 
+-        if case .obtainNotesSuccess = $0 { return true }
+-        return false
+-    }
+-    #expect(action != nil)
+-    
+-    // Timeout helper
+-    try await withTimeout(seconds: 1.0) {
+-        // async work
+-    }
+-}
+-```
+-
+----
+-
+-## Adding New Utilities
+-
+-1. Confirm it's domain-agnostic
+-2. Add to appropriate folder (`Mocks/`, `Helpers/`, `Stubs/`)
+-3. Ensure thread-safety
+-4. Add brief doc comment with usage example
++Run consuming suites using [README](../../README.md#tools-and-validation). Add reusable helpers only when multiple domains need the same tested contract; keep domain-specific mocks in [domain support](DOMAIN_TEST_SUPPORT.md).
+diff --git a/PROJECT_GUIDE.md b/PROJECT_GUIDE.md
+index 6e45fdd..cd75343 100644
+--- a/PROJECT_GUIDE.md
++++ b/PROJECT_GUIDE.md
+@@ -25,7 +25,7 @@ Sample app demonstrating architecture patterns and guidelines for working in **R
+ - Async-first, concurrency-safe code (Swift 6)
+ - Unidirectional data flow via **Darwin Relux** (Swift Relux)
+ 
+-The ultimate test demonstrating separation: CLI for key user scenarios tied to the same business logic as GUI.
++A CLI reusing the business layer is an [optional exercise](Docs/LearningExercises.md), not an existing executable. See the [diagram index](diagrams/README.md) for current dependencies, UDF and orchestration. App IoC registers ErrorHandling, Navigation, SampleApp, Auth and Notes modules with a shared Store and RootSaga.
+ 
+ ---
+ 
+@@ -33,7 +33,7 @@ The ultimate test demonstrating separation: CLI for key user scenarios tied to t
+ 
+ | Component | Technology |
+ |-----------|------------|
+-| Language | Swift 6.0 |
++| Language / toolchain | Swift 6; Swift 6.2+ and Xcode 26+ required by dependencies |
+ | Platforms | iOS 17+, macOS 14+ |
+ | Architecture | Redux/Flux-like UDF (Darwin Relux) |
+ | UI | SwiftUI (business layer is UI-independent) |
+@@ -48,9 +48,9 @@ Detailed documentation in `Docs/Patterns/`:
+ 
+ | Pattern | Document | Purpose |
+ |---------|----------|---------|
+-| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition into 6 library products |
++| Modular Architecture | [RELUX_MODULAR.md](./Docs/Patterns/RELUX_MODULAR.md) | Auth’s six-product boundary example |
+ | Orchestration | [RELUX_ORCHESTRATION.md](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination without coupling |
+-| Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When operations return results vs fire-and-forget |
++| Flow vs Saga | [RELUX_FLOW_VS_SAGA.md](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | Caller outcomes versus observed actions |
+ | Testing Strategy | [TESTING_STRATEGY.md](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+ | Test Infrastructure | [TEST_INFRASTRUCTURE.md](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+ | Domain Test Support | [DOMAIN_TEST_SUPPORT.md](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+@@ -67,7 +67,6 @@ Packages/
+ relux_sample/
+   Modules/                    ← App-level modules (not yet extracted)
+     App/                      ← Root app module
+-    Auth/                     ← Auth (to be extracted)
+     Notes/                    ← Notes domain
+     Navigation/               ← Navigation state
+     Account/                  ← Account UI
+@@ -94,23 +93,23 @@ UI Layer (SwiftUI Views/Containers)
+     ▼ depends on
+ Domain Interfaces (*ReluxInt, *ServiceInt)
+     │
+-    ▼ implemented by
+-Domain Implementations (*ReluxImpl, *ServiceImpl)
+-    │
+-    ▼ depends on
++    ▼ depend on
+ Domain Models (*Models)
++
++Domain Implementations → Interfaces + Models
++App composition → Implementations (injected behind interfaces)
+ ```
+ 
+ ### State Management
+ 
+-- **BusinessState**: Actor-isolated, owns domain truth
+-- **UIState**: MainActor-isolated, aggregates for UI consumption
++- **BusinessState**: Notes uses an actor to own domain truth; the protocol itself requires Sendable reference semantics and async reduction/cleanup
++- **UIState**: MainActor-isolated, derives UI data; Combine delivery is asynchronous
+ - **HybridState**: Combined approach for simpler domains
+ 
+ ### Side Effects
+ 
+ - **Flow**: Returns `Result` — use when caller needs outcome
+-- **Saga**: Returns `Void` — fire-and-forget side effects
++- **Saga**: Returns `Void` — awaited side effects without a domain result for the caller
+ - **Orchestrator**: Cross-domain Saga — coordinates between domains
+ 
+ ### Core Rules
+@@ -130,7 +129,7 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
+ ### Container/View Separation (ReluxUI)
+ 
+ **Containers** (`Relux.UI.Container`): Bridge between Relux and UI layer
+-- Access `@EnvironmentObject` for state
++- Access environment state (`@EnvironmentObject` for Notes, observable environment for Auth)
+ - **All Relux action dispatching MUST be defined here** — never in views
+ - Extract and transform data for child views
+ - Pass actions as callbacks to views
+@@ -164,75 +163,9 @@ To minimize SwiftUI attribute graph invalidation and maintain clean separation b
+ - For editing: use local `@State` + dispatch on commit/blur
+ - Bindings couple child to parent's exact storage shape — avoid when possible
+ 
+-### Example Structure
+-```swift
+-// Container: Knows about Relux, extracts data, dispatches actions
+-extension Notes.UI.List {
+-    struct Container: Relux.UI.Container {
+-        @EnvironmentObject private var state: Notes.UI.State
+-
+-        var body: some View {
+-            Page(
+-                props: .init(notes: state.notesGroupedByDay),
+-                actions: .init(
+-                    onReload: ViewCallback(reloadNotes),
+-                    onCreate: ViewCallback(openCreate)
+-                )
+-            )
+-        }
++### Executable examples
+ 
+-        private func reloadNotes() async {
+-            await actions { Notes.Business.Effect.obtainNotes }
+-        }
+-        
+-        private func openCreate() async {
+-            await actions { AppRouter.Action.push(.app(page: .notes(.create))) }
+-        }
+-    }
+-}
+-
+-// View: Pure presentation, no Relux knowledge
+-extension Notes.UI.List.Container {
+-    struct Page: Relux.UI.View {
+-        let props: Props
+-        let actions: Actions
+-
+-        var body: some View {
+-            List {
+-                ForEach(props.notes) { note in
+-                    NoteRow(note: note)
+-                }
+-            }
+-            .refreshable(action: actions.onReload.callAsFunction)
+-        }
+-    }
+-}
+-
+-// Props and Actions
+-extension Notes.UI.List.Container.Page {
+-    struct Props: Relux.UI.ViewProps {
+-        let notes: MaybeData<[[Note]], Err>
+-    }
+-    
+-    struct Actions: Relux.UI.ViewCallbacks {
+-        let onReload: ViewCallback<Void>
+-        let onCreate: ViewCallback<Void>
+-    }
+-}
+-
+-// Child views: Atomic data only, nested in parent namespace
+-private extension Notes.UI.List.Container.Page {
+-    struct NoteRow: View {
+-        let note: Note
+-        var body: some View {
+-            VStack(alignment: .leading) {
+-                Text(note.title)
+-                Text(note.content).lineLimit(2)
+-            }
+-        }
+-    }
+-}
+-```
++Read [Notes List.Container](relux_sample/Modules/Notes/UI/List/Notes+UI+List+Container.swift) and its [Page](relux_sample/Modules/Notes/UI/List/Page/Notes+UI+%20List+Container+Page.swift) for props and callback boundaries. Local search and editor drafts are presentation state. Successful mutations flow through effects, services and reducers; the UI projection updates asynchronously. Values that affect rendering belong in props because View equality is props-based; callback equality does not compare captured values.
+ 
+ ---
+ 
+@@ -291,48 +224,29 @@ Test each layer in isolation — see [TESTING_STRATEGY.md](./Docs/Patterns/TESTI
+ | Saga/Flow | Service | Actions dispatched |
+ | Reducer | None | State values |
+ | Service | Fetcher | Transformations |
+-| Orchestrator | None | Cross-domain effects |
++| Orchestrator | Injected boundary as needed | State, service and routing outcomes |
+ 
+ ### Test Target Types
+ 
+ - **Hostless tests**: Run without app launch. Use for pure logic in packages.
+ - **Hosted tests**: Run inside app process. Use when app context needed.
+ 
+-All tests should live in dedicated Swift package test targets.
++Auth tests live in its Swift package; Notes currently retains an app-hosted target. Prefer package targets for newly extracted business code.
+ 
+ ### Naming Conventions
+ 
+ - Name suites after behavior: `NotesFlowObtainTests`
+ - Name test methods as readable sentences: `obtainNotes_success_dispatchesAction`
+ 
+-### Running Tests
+-
+-**Xcode**: Cmd+U
+-
+-**CLI**:
+-```bash
+-# Build only
+-xcodebuild build \
+-  -project relux_sample.xcodeproj \
+-  -scheme relux_sample \
+-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+-  2>&1 | xcbeautify --quiet
+-
+-# Run tests
+-xcodebuild test \
+-  -project relux_sample.xcodeproj \
+-  -scheme relux_sample \
+-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+-  2>&1 | xcbeautify
+-```
++### Running tests
+ 
+-**Note**: Use `xcbeautify --quiet` for builds (only warnings/errors). Always include `2>&1` before pipe to capture stderr.
++Use the exact build/test commands in [README: Tools and Validation](README.md#tools-and-validation). Select an installed iOS simulator with `xcrun simctl list devices available`. Run xcodebuild directly so its real exit status is preserved; keep logs under `.temp/`. A deployment target does not mean tests ran on that oldest runtime.
+ 
+ ---
+ 
+ ## Adding a New Domain
+ 
+-1. Create package following [MODULAR_ARCHITECTURE.md](Docs/Patterns/MODULAR_ARCHITECTURE.md)
++1. When extraction is justified, create a package following [RELUX_MODULAR.md](Docs/Patterns/RELUX_MODULAR.md)
+ 2. Add `<Domain>TestSupport` product
+ 3. Register module in `IoC.swift`
+ 4. Add to relevant orchestrator if cross-domain coordination needed
+diff --git a/README.md b/README.md
+index 54bcca3..ad45f04 100644
+--- a/README.md
++++ b/README.md
+@@ -15,13 +15,13 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
+ |---------|-------------|
+ | **Unidirectional data flow** | Relux: Redux/Flux-inspired, Swift Concurrency-native, no functional purism |
+ | **Strict modularization** | Models, interfaces, implementations, UI, test-support as separate products within domain boundaries |
+-| **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; optimizaed isolated recompilation (fast incremental builds) |
+-| **Domain side effects** | Sagas and Flows handle async operations within a domain (API calls, persistence, etc.) |
++| **Horizontal dependencies** | Interface/Implementation split flattens dependency graph; isolated recompilation boundaries |
++| **Domain side effects** | Sagas and Flows handle async domain operations; this demo uses LocalAuthentication and an in-memory Notes provider |
+ | **Cross-domain coordination** | Orchestrator sagas handle domain-to-domain communication |
+ | **Service-oriented architecture** | Services encapsulated within domain modules; manage API, networking, persistence behind protocols |
+ | **Layered testing** | Saga, reducer, service tested in isolation; shared test infrastructure |
+ | **Swift 6 concurrency** | Actor-isolation, strict sendability, structured async throughout |
+-| **Simpe Async-first DI** | [SwiftIoC](https://github.com/relux-works/swift-ioc) provides async module resolution, async app entry points; implementations swappable at registration |
++| **Simple Async-first DI** | [SwiftIoC](https://github.com/relux-works/swift-ioc) provides async module resolution, async app entry points; implementations swappable at registration |
+ 
+ ---
+ 
+@@ -36,7 +36,7 @@ Read this doc then **continue at:** [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md) for w
+ <Domain>UI            SwiftUI views (imports interfaces only)
+ ```
+ 
+-**IoC wiring:** SwiftIoC registers routers, services, modules. Swap implementations by changing registration only.
++**IoC wiring:** SwiftIoC registers routers and modules; the app supplies Auth’s service factory. Notes constructs its service/provider in its module. See the [focused diagrams](diagrams/README.md) and [optional learning exercises](Docs/LearningExercises.md).
+ 
+ ---
+ 
+@@ -58,6 +58,7 @@ See [ArchitectureAudit.md](Docs/ArchitectureAudit.md) for pinned revisions, veri
+ | SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
+ | xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
+ | SwiftPM | Standalone UI package compilation | `swift build --package-path Packages/AuthUI --force-resolved-versions` | `Packages/AuthUI/.build` |
++| PlantUML / Graphviz | Render focused architecture diagrams | `plantuml -failfast2 -tpng -o "$PWD/.temp/diagrams" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml` (create `.temp/diagrams` first; [setup](diagrams/README.md#render-locally)) | `.temp/diagrams`; published SVGs in `diagrams/rendered` |
+ | Git | Patch whitespace validation | `git diff --check` | Terminal; no separate lint configuration is installed |
+ | task-board | Task evidence and producer handoff | `task-board resource add TASK-ID /path/to/artifact --type outcome --name TASK-ID_results.md`; `task-board handoff TASK-ID --role developer` | Authoritative board resources |
+ 
+@@ -67,12 +68,14 @@ Use a simulator name installed on your host. Dependency updates must update exac
+ 
+ ## Documentation
+ 
++Start with the [learning exercises](Docs/LearningExercises.md) and [diagram index](diagrams/README.md). The app has no durable Notes storage, session-safe provider reset, or CLI executable; those are proposed exercises.
++
+ | Document | Purpose |
+ |----------|---------|
+ | [`PROJECT_GUIDE.md`](./PROJECT_GUIDE.md) | Entry point: layout, conventions, setup |
+ | [`RELUX_MODULAR.md`](./Docs/Patterns/RELUX_MODULAR.md) | Domain decomposition pattern |
+ | [`RELUX_ORCHESTRATION.md`](./Docs/Patterns/RELUX_ORCHESTRATION.md) | Cross-domain coordination |
+-| [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | When to return results vs fire-and-forget |
++| [`RELUX_FLOW_VS_SAGA.md`](./Docs/Patterns/RELUX_FLOW_VS_SAGA.md) | Caller outcomes versus observed actions |
+ | [`TESTING_STRATEGY.md`](./Docs/Patterns/TESTING_STRATEGY.md) | Discrete layer testing approach |
+ | [`TEST_INFRASTRUCTURE.md`](./Docs/Patterns/TEST_INFRASTRUCTURE.md) | Shared test utilities |
+ | [`DOMAIN_TEST_SUPPORT.md`](./Docs/Patterns/DOMAIN_TEST_SUPPORT.md) | Per-domain mocks and stubs |
+@@ -81,7 +84,7 @@ Use a simulator name installed on your host. Dependency updates must update exac
+ 
+ ## Testing
+ 
+-- **Shared infrastructure:** `Packages/TestInfrastructure`: Relux logger extensions, async helpers, common mocks
++- **Shared infrastructure:** `Packages/TestInfrastructure`: Relux logger extensions, timeout helper, RPC/WebSocket mocks
+ - **Domain support:** `<Domain>TestSupport`: domain-specific mocks/stubs
+ - **Strategy:** Test saga, reducer, service in isolation; optional smoke tests for wiring
+ 
+diff --git a/README.ru.md b/README.ru.md
+index ae42421..62b6496 100644
+--- a/README.ru.md
++++ b/README.ru.md
+@@ -1,169 +1,10 @@
+-relux-sample
++# Relux SwiftUI Sample
+ 
+-Пример проекта, демонстрирующий использование Relux — архитектуры в стиле Redux с поддержкой асинхронности, написанной на чистом Swift.
++Демо Relux с Auth в отдельных package products и Notes внутри приложения.
++Заметки хранятся в памяти и сбрасываются при перезапуске; поиск работает по заголовку и тексту.
+ 
+-🔧 Технологии
+-
+-Язык: Swift 6
+-
+-Архитектура: unidirectional data flow (Redux-like)
+-
+-Навигация: построена на тех же принципах через экшены
+-
+-IoC: асинхронный dependency injection (SwiftIoC)
+-
+-UI: SwiftUI с дополнительными фичами через SwiftUI-Relux
+-
+-📦 Основные идеи
+-
+-📚 Модульные неймспейсы
+-
+-Все части приложения организованы через неймспейсы на базе enum'ов — например, SampleApp.UI.Root, Auth.UI, Notes.UI, Account.UI, Navigation.UI. Это обеспечивает чистое разделение, масштабируемость и поддержку scoped-архитектуры.
+-
+-🔁 Архитектура в стиле Redux
+-
+-Проект использует движок Relux и реализует поток данных в духе Redux:
+-
+-State → источник истины
+-
+-Relux.State: базовый протокол
+-
+-HybridState: для простых случаев, где бизнес и UI логика живут вместе
+-
+-BusinessState и UIState: разделение логики для сложных кейсов
+-
+-Позволяет переиспользовать бизнес-стейт в нескольких UI
+-
+-Возможны маппинги и зависимости между состояниями
+-
+-Action → намерения от пользователя или системы
+-
+-Enum-подобные типы, реализующие Relux.Action
+-
+-Типобезопасные и расширяемые
+-
+-Reducer → асинхронное изменение состояния
+-
+-Это mutating метод внутри состояния: mutating func reduce(action: Action) async
+-
+-Может вызывать await и мутировать self
+-
+-Не является чистой функцией, работает внутри контекста текущего стора
+-
+-Saga → асинхронные побочные эффекты
+-
+-Используют async/await
+-
+-Подходят для API-запросов, таймеров, цепочек действий
+-
+-Effect → триггеры сайд-эффектов в сагах
+-
+-Реализуют Relux.Effect
+-
+-Используются как сигналы внутри саг, чтобы запускать действия вне стора
+-
+-Relux полностью построен на Swift Concurrency и поддерживает structured concurrency. Вся обработка — от эффекта до редюса данных в стейте — асинхронная и безопасна по отношению к состоянию.
+-
+-🧭 Навигация через Redux
+-
+-Навигация реализуется как экшены — состояние маршрута такое же состояние, как и всё остальное:
+-
+-Поддерживает диплинки, тестирование, инспекцию
+-
+-Работает как на iOS 16 (через бэкпорт), так и на iOS 17+
+-
+-📌 Два способа навигации:
+-
+-1. Через модификатор:
+-
+-Text("Go to Profile")
+-    .navigate(to: .profile)
+-
+-2. Через Relux.NavigationLink:
+-
+-Relux.NavigationLink(page: .profile) {
+-    Text("Profile")
+-}
+-
+-Под капотом используется AsyncButton, который защищает от повторных тапов, пока идёт анимация.
+-
+-🧵 Асинхронный Redux и IoC
+-
+-В Relux всё асинхронное — редьюсеры, сайд-эффекты, IoC. Именно поэтому используется SwiftIoC:
+-
+-resolve() и getAsync() работают через await
+-
+-Поддержка жизненных циклов .container и .transient
+-
+-Встроенные блокировки гарантируют безопасность при доступе из разных тасков
+-
+-🧼 Интеграция с SwiftUI через SwiftUI-Relux
+-
+-Relux.Resolver оборачивает splash/root view и асинхронно резолвит инстанс Relux
+-
+-UI-стейты автоматически пробрасываются в SwiftUI через .passingObservableToEnvironment()
+-
+-Есть поддержка Container-протокола и модификаторов для навигации
+-
+-Пример:
+-
+-Relux.Resolver(
+-    splash: {
+-        SplashScreenView()
+-    },
+-    content: { relux in
+-        SampleApp.UI.Root.Container()
+-            .passingObservableToEnvironment(fromStore: relux.store)
+-    },
+-    resolver: {
+-        await Relux.Registry.resolve(Relux.self)
+-    }
+-)
+-
+-☂️ Библиотека swiftui-relux
+-
+-Даёт плюшки для SwiftUI-интеграции:
+-
+-Relux.Resolver — загрузка и передача стейта в корневую вью
+-
+-.passingObservableToEnvironment() — проброс UI-объектов
+-
+-Container — протокол для корневых экранов
+-
+-📁 Структура проекта
+-
+-Modules/
+-  SampleApp/           — корневой модуль приложения (Root + Main UI)
+-  Auth/                — экран аутентификации
+-  Account/             — управление аккаунтом
+-  Notes/               — модуль заметок
+-  Navigation/          — логика навигации
+-  Logger/              — логгер для экшенов
+-Utils/                 — утилиты и экстеншены (GCD, Sequence, и т.п.)
+-
+-🧩 Зависимости
+-
+-swift-relux
+-
+-swift-ioc
+-
+-swiftui-relux
+-
+-swiftui-reluxrouter
+-
+-Дополнительные зависимости
+-
+-darwin-foundationplus
+-
+-darwin-logger
+-
+-swift-algorithms
+-
+-swift-stdlibplus
+-
+-swiftui-plus
+-
+-🪪 Лицензия
+-
+-MIT
++Актуальные команды, требования и архитектура поддерживаются в [English README](README.md) и [PROJECT_GUIDE](PROJECT_GUIDE.md).
++См. также [диаграммы](diagrams/README.md) и [учебные упражнения](Docs/LearningExercises.md).
+ 
++Требования: Xcode 26+, Swift 6.2+; deployment targets — iOS 17+ и macOS 14+.
++Постоянное хранение, усиленная очистка сессии и CLI описаны как упражнения, а не реализованные возможности.
+diff --git a/diagrams/README.md b/diagrams/README.md
+new file mode 100644
+index 0000000..4257a48
+--- /dev/null
++++ b/diagrams/README.md
+@@ -0,0 +1,30 @@
++# Architecture diagrams
++
++Each source covers one question, checked against the application composition and package manifests.
++
++| Source | Question | Implementation anchors |
++| --- | --- | --- |
++| [Auth dependencies](plantuml/component/auth-dependencies.puml) | Which production targets depend on which interfaces? | [Auth manifest](../Packages/Auth/Package.swift), [AuthUI manifest](../Packages/AuthUI/Package.swift) |
++| [Notes upsert](plantuml/sequence/notes-upsert.puml) | How does a draft become domain state? | [Flow](../relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift), [UI projection](../relux_sample/Modules/Notes/UI/Notes+UI+State.swift) |
++| [Logout orchestration](plantuml/sequence/logout-orchestration.puml) | How do independent subscribers coordinate cleanup and routing? | [App saga](../relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift), [Auth saga](../Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift) |
++
++## Render locally
++
++Install PlantUML and Graphviz if absent (`brew install plantuml graphviz`). Check `plantuml -version` and `dot -V` first. From the repository root, render all three sources to a task-local output directory:
++
++```bash
++mkdir -p .temp/diagrams
++plantuml -failfast2 -tpng -o "$PWD/.temp/diagrams" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml
++```
++
++The command exits nonzero on a source error. Open each PNG and check labels, arrows, clipping, and the stated boundary against its implementation anchors. For scalable export, replace `-tpng` with `-tsvg`. Keep editable sources and the requested small SVG documentation assets in Git. Temporary PNG previews stay under `.temp/`. Render shareable SVGs with `plantuml -failfast2 -tsvg -o "$PWD/diagrams/rendered" diagrams/plantuml/component/*.puml diagrams/plantuml/sequence/*.puml`.
++
++## View the diagrams
++
++![Auth production target dependencies](rendered/auth-dependencies.svg)
++
++![Notes save flow](rendered/notes-upsert.svg)
++
++![Logout orchestration](rendered/logout-orchestration.svg)
++
++Start the learning path at [LearningExercises.md](../Docs/LearningExercises.md). Dependency arrows and runtime messages have different meanings; read each diagram's title and legend before combining them.
+diff --git a/diagrams/plantuml/component/auth-dependencies.puml b/diagrams/plantuml/component/auth-dependencies.puml
+new file mode 100644
+index 0000000..2eb0d37
+--- /dev/null
++++ b/diagrams/plantuml/component/auth-dependencies.puml
+@@ -0,0 +1,33 @@
++@startuml
++!theme plain
++left to right direction
++title Auth production target dependencies
++component AuthUI
++component AuthUIAPI
++component AuthReluxImpl
++component AuthReluxInt
++component AuthServiceImpl
++component AuthServiceInt
++component AuthModels
++AuthUI --> AuthUIAPI
++AuthUI --> AuthReluxInt
++AuthUIAPI --> AuthReluxInt
++AuthUIAPI --> AuthModels
++AuthReluxImpl --> AuthReluxInt
++AuthReluxImpl --> AuthServiceInt
++AuthReluxImpl --> AuthModels
++AuthReluxInt --> AuthModels
++AuthServiceImpl --> AuthServiceInt
++AuthServiceImpl --> AuthModels
++AuthServiceInt --> AuthModels
++note bottom of AuthReluxImpl
++App IoC supplies the service factory and router.
++No dependency on AuthServiceImpl.
++end note
++legend bottom
++Arrow = direct local target dependency.
++External libraries and test targets omitted.
++Auth: six products in one package, including AuthTestSupport.
++AuthUI: two products in a separate package.
++endlegend
++@enduml
+diff --git a/diagrams/plantuml/sequence/logout-orchestration.puml b/diagrams/plantuml/sequence/logout-orchestration.puml
+new file mode 100644
+index 0000000..3210ab1
+--- /dev/null
++++ b/diagrams/plantuml/sequence/logout-orchestration.puml
+@@ -0,0 +1,32 @@
++@startuml
++!theme plain
++hide footbox
++title Logout: two subscribers, no ordering guarantee
++participant "Account.Container" as C
++participant "Dispatcher / RootSaga" as D
++participant "Auth Saga" as A
++participant "Auth router adapter / UI" as R
++participant "Auth Service" as S
++participant "SampleApp Saga" as App
++participant "Relux Store" as Store
++C -> D : Auth.Effect.logout
++D -> A : apply(logout)
++A -> R : dispatch setAuth(.logoutFlow)
++R -> D : LogoutFlow.Container task:\nEffect.runLogoutFlow
++par Auth subscriber
++ D -> A : apply(runLogoutFlow)
++ A -> S : recreateLAContext()
++ S --> A : returns
++ A -> R : dispatch setAuth(.localAuth)
++ A -> D : Action.logOutSucceed
++else app subscriber
++ D -> App : apply(runLogoutFlow)
++ App -> Store : cleanup(exclusions: [AppRouter.self])
++ Store --> App : returns
++end
++note over A,Store
++Neither registration order nor serial actions order subscribers.
++Store cleanup does not erase Notes Fetcher's dictionary.
++Late-result rejection / session-safe provider reset is an exercise.
++end note
++@enduml
+diff --git a/diagrams/plantuml/sequence/notes-upsert.puml b/diagrams/plantuml/sequence/notes-upsert.puml
+new file mode 100644
+index 0000000..4b5f4fc
+--- /dev/null
++++ b/diagrams/plantuml/sequence/notes-upsert.puml
+@@ -0,0 +1,46 @@
++@startuml
++!theme plain
++hide footbox
++title Save a note: UDF and operation outcome
++actor User
++participant "Page / EditForm" as Page
++participant "Create.Container" as C
++participant "Relux Dispatcher" as D
++participant "Notes Flow" as F
++participant "Notes Service / Fetcher" as S
++participant "Store / BusinessState" as B
++participant "UIState / List.Container" as U
++User -> Page : Save local draft
++Page -> C : onCreate(note) callback
++C -> D : actions { Effect.upsert(note) }
++D -> F : apply(effect) via RootSaga
++F -> S : upsert(note)
++alt accepted by service
++ S --> F : success
++ F -> D : Action.upsertNoteSuccess(note)
++ D -> B : reduce(action)
++ B --> D : reduction returns
++ par scheduled UI delivery
++  B ->> U : Combine projection on main queue
++  U -> U : list props refresh
++ else operation outcome
++  D --> F : action result
++  F --> D : success
++  D --> C : success
++  C -> Page : dismiss
++ end
++else invalid content or service failure
++ S --> F : failure(err)
++ F -> D : upsertNoteFail + track(error) concurrently
++ D -> B : failure action (keeps existing notes)
++ note over D : ErrorHandling saga tracks the error.
++ D --> F : dispatch returns
++ F --> D : failure(err)
++ D --> C : failure
++ C -> Page : error message; retain draft
++end
++note over B,U
++Reduction is awaited. Combine delivery and SwiftUI rendering
++are asynchronous; flow success is not a screen-render barrier.
++end note
++@enduml
+diff --git a/diagrams/rendered/auth-dependencies.svg b/diagrams/rendered/auth-dependencies.svg
+new file mode 100644
+index 0000000..5a013ec
+--- /dev/null
++++ b/diagrams/rendered/auth-dependencies.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="521px" preserveAspectRatio="none" style="width:895px;height:521px;background:#FFFFFF;" version="1.1" viewBox="0 0 895 521" width="895px" zoomAndPan="magnify"><?plantuml 1.2026.6?><defs/><g><g class="title" data-source-line="3"><text fill="#000000" font-family="Verdana" font-size="22" font-weight="700" lengthAdjust="spacing" textLength="459.8623" x="216.8788" y="37.1182">Auth production target dependencies</text></g><!--entity AuthUI--><g class="entity" data-qualified-name="AuthUI" data-source-line="4" id="ent0001"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="88.9453" x="12" y="98.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="80.9453" y="103.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="78.9453" y="105.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="78.9453" y="109.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="48.9453" x="27" y="132.8125">AuthUI</text></g><!--entity AuthUIAPI--><g class="entity" data-qualified-name="AuthUIAPI" data-source-line="5" id="ent0002"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="112.8506" x="271.85" y="59.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="364.7006" y="64.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="362.7006" y="66.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="362.7006" y="70.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="72.8506" x="286.85" y="93.8125">AuthUIAPI</text></g><!--entity AuthReluxImpl--><g class="entity" data-qualified-name="AuthReluxImpl" data-source-line="6" id="ent0003"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="143.9404" x="256.3" y="213.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="380.2404" y="218.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="378.2404" y="220.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="378.2404" y="224.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="103.9404" x="271.3" y="247.8125">AuthReluxImpl</text></g><!--entity AuthReluxInt--><g class="entity" data-qualified-name="AuthReluxInt" data-source-line="7" id="ent0004"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="132.1348" x="561.89" y="136.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="674.0248" y="141.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="672.0248" y="143.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="672.0248" y="147.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="92.1348" x="576.89" y="170.8125">AuthReluxInt</text></g><!--entity AuthServiceImpl--><g class="entity" data-qualified-name="AuthServiceImpl" data-source-line="8" id="ent0005"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="156.5254" x="250.01" y="371.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="386.5354" y="376.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="384.5354" y="378.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="384.5354" y="382.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="116.5254" x="265.01" y="405.8125">AuthServiceImpl</text></g><!--entity AuthServiceInt--><g class="entity" data-qualified-name="AuthServiceInt" data-source-line="9" id="ent0006"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="144.7197" x="555.6" y="290.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="680.3197" y="295.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="678.3197" y="297.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="678.3197" y="301.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="104.7197" x="570.6" y="324.8125">AuthServiceInt</text></g><!--entity AuthModels--><g class="entity" data-qualified-name="AuthModels" data-source-line="10" id="ent0007"><rect fill="#FFFFFF" height="47.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="121.2998" x="760.32" y="213.7373"/><rect fill="#FFFFFF" height="10" style="stroke:#000000;stroke-width:1;" width="15" x="861.6198" y="218.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="859.6198" y="220.7373"/><rect fill="#FFFFFF" height="2" style="stroke:#000000;stroke-width:1;" width="4" x="859.6198" y="224.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="81.2998" x="775.32" y="247.8125">AuthModels</text></g><g class="entity" data-qualified-name="GMN19" data-source-line="23" id="ent0020"><path d="M160.95,295.4373 L160.95,337.0359 A0,0 0 0 0 160.95,337.0359 L495.6004,337.0359 A0,0 0 0 0 495.6004,337.0359 L495.6004,305.4373 L485.6004,295.4373 L332.27,295.4373 L328.27,261.1373 L324.27,295.4373 L160.95,295.4373 A0,0 0 0 0 160.95,295.4373" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><path d="M485.6004,295.4373 L485.6004,305.4373 L495.6004,305.4373 L485.6004,295.4373" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="313.6504" x="166.95" y="313.5071">App IoC supplies the service factory and router.</text><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="238.8242" x="166.95" y="329.3064">No dependency on AuthServiceImpl.</text></g><!--link AuthUI to AuthUIAPI--><g class="link" data-entity-1="ent0001" data-entity-2="ent0002" data-link-type="dependency" data-source-line="11" id="lnk8"><path d="M101.42,115.8873 C147.86,109.1773 216.2614,99.2825 266.7014,91.9925" fill="none" id="AuthUI-to-AuthUIAPI" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="271.65,91.2773,262.1704,88.6058,266.7014,91.9925,263.3147,96.5235,271.65,91.2773" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthUI to AuthReluxInt--><g class="link" data-entity-1="ent0001" data-entity-2="ent0004" data-link-type="dependency" data-source-line="12" id="lnk9"><path d="M101.21,125.1573 C200.71,131.7973 439.4011,147.7244 556.7411,155.5544" fill="none" id="AuthUI-to-AuthReluxInt" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="561.73,155.8873,553.0163,151.297,556.7411,155.5544,552.4836,159.2792,561.73,155.8873" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthUIAPI to AuthReluxInt--><g class="link" data-entity-1="ent0002" data-entity-2="ent0004" data-link-type="dependency" data-source-line="13" id="lnk10"><path d="M384.91,97.6373 C434.98,110.5873 503.7393,128.3653 556.6293,142.0453" fill="none" id="AuthUIAPI-to-AuthReluxInt" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="561.47,143.2973,553.7584,137.1711,556.6293,142.0453,551.7551,144.9162,561.47,143.2973" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthUIAPI to AuthModels--><g class="link" data-entity-1="ent0002" data-entity-2="ent0007" data-link-type="dependency" data-source-line="14" id="lnk11"><path d="M385.1,77.4473 C460.45,72.0573 597.14,70.9673 700.32,119.2373 C745.24,140.2573 780.3054,181.3636 800.7854,209.3236" fill="none" id="AuthUIAPI-to-AuthModels" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="803.74,213.3573,801.6487,203.733,800.7854,209.3236,795.1948,208.4603,803.74,213.3573" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthReluxImpl to AuthReluxInt--><g class="link" data-entity-1="ent0003" data-entity-2="ent0004" data-link-type="dependency" data-source-line="15" id="lnk12"><path d="M400.57,218.7973 C449.51,206.1373 509.1194,190.7199 556.7294,178.3999" fill="none" id="AuthReluxImpl-to-AuthReluxInt" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="561.57,177.1473,551.8549,175.5295,556.7294,178.3999,553.8591,183.2744,561.57,177.1473" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthReluxImpl to AuthServiceInt--><g class="link" data-entity-1="ent0003" data-entity-2="ent0006" data-link-type="dependency" data-source-line="16" id="lnk13"><path d="M400.6,254.3973 C430.05,261.5873 464.51,270.1473 495.6,278.2373 C514.93,283.2673 530.9979,287.5856 550.2979,292.8756" fill="none" id="AuthReluxImpl-to-AuthServiceInt" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="555.12,294.1973,547.4975,287.9605,550.2979,292.8756,545.3828,295.6759,555.12,294.1973" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthReluxImpl to AuthModels--><g class="link" data-entity-1="ent0003" data-entity-2="ent0007" data-link-type="dependency" data-source-line="17" id="lnk14"><path d="M400.62,237.2373 C497.64,237.2373 664.45,237.2373 755.11,237.2373" fill="none" id="AuthReluxImpl-to-AuthModels" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="760.11,237.2373,751.11,233.2373,755.11,237.2373,751.11,241.2373,760.11,237.2373" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthReluxInt to AuthModels--><g class="link" data-entity-1="ent0004" data-entity-2="ent0007" data-link-type="dependency" data-source-line="18" id="lnk15"><path d="M688.35,184.1773 C711.34,193.4473 732.9828,202.1775 755.9728,211.4475" fill="none" id="AuthReluxInt-to-AuthModels" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="760.61,213.3173,753.7589,206.2419,755.9728,211.4475,750.7672,213.6614,760.61,213.3173" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthServiceImpl to AuthServiceInt--><g class="link" data-entity-1="ent0005" data-entity-2="ent0006" data-link-type="dependency" data-source-line="19" id="lnk16"><path d="M406.92,377.0173 C434.95,370.1973 466.78,362.1773 495.6,354.2373 C515.02,348.8973 531.1464,344.1722 550.4464,338.3022" fill="none" id="AuthServiceImpl-to-AuthServiceInt" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="555.23,336.8473,545.4555,335.6392,550.4464,338.3022,547.7834,343.2931,555.23,336.8473" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthServiceImpl to AuthModels--><g class="link" data-entity-1="ent0005" data-entity-2="ent0007" data-link-type="dependency" data-source-line="20" id="lnk17"><path d="M406.79,401.3173 C484.75,404.1973 606.51,399.7373 700.32,355.2373 C745.13,333.9873 780.2271,292.9549 800.7371,265.0749" fill="none" id="AuthServiceImpl-to-AuthModels" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="803.7,261.0473,795.1447,265.9266,800.7371,265.0749,801.5889,270.6672,803.7,261.0473" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><!--link AuthServiceInt to AuthModels--><g class="link" data-entity-1="ent0006" data-entity-2="ent0007" data-link-type="dependency" data-source-line="21" id="lnk18"><path d="M688.35,290.2973 C711.34,281.0273 732.9828,272.3071 755.9728,263.0371" fill="none" id="AuthServiceInt-to-AuthModels" style="stroke:#000000;stroke-width:1;"/><polygon fill="#000000" points="760.61,261.1673,750.7672,260.8232,755.9728,263.0371,753.7589,268.2427,760.61,261.1673" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/></g><g class="legend" data-source-line="26"><rect fill="none" height="78.0586" rx="7.5" ry="7.5" style="stroke:#000000;stroke-width:1;" width="451.9707" x="220.8246" y="431.752"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="281.1689" x="225.8246" y="450.8271">Arrow = direct local target dependency.</text><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="300.501" x="225.8246" y="467.8418">External libraries and test targets omitted.</text><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="441.9707" x="225.8246" y="484.8564">Auth: six products in one package, including AuthTestSupport.</text><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="316.5723" x="225.8246" y="501.8711">AuthUI: two products in a separate package.</text></g><?plantuml-src ZLD1JiCm4Bpx5SkTvW6LG8eGXnv05OK7kCusjN2ybhsXxU_P96q8YP6unRkpipFsv8wFs204fwrN3WyCJ11jVMIeR4J3bhnYomwXRFa88LBLzbLW7MiK60Rq5NfZCIb3JI2FddlqnsPHABVpsXkwzhnfWilMFS_AEunVrc1cuDPPZBnGXIwfGG2iLeyJBRFYk7H4_ASrMJ2woSyjsnFLUS22N5nbUfDx-Oix1yamBFazCSAUcAa1EinUhGm1DlG4gGt1IGP04WLfu8A3Dapn0jfN4AbbZ8LwfP_CN422DDDMAEb1jrC2MNVVmsfLnaWdUBW64nmPxHOfl1Jg-InxlFIStKSTEqtTViR4LtW2QYmpLaNlV0t9dc_HJc2zg99_GfjFNUEzd8rhA-lhNkcxqEp4AqKkhbbO0v_erxoM6mWwQXvfUbU3dsy0?></g></svg>
+\ No newline at end of file
+diff --git a/diagrams/rendered/logout-orchestration.svg b/diagrams/rendered/logout-orchestration.svg
+new file mode 100644
+index 0000000..1312d50
+--- /dev/null
++++ b/diagrams/rendered/logout-orchestration.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="599px" preserveAspectRatio="none" style="width:1329px;height:599px;background:#FFFFFF;" version="1.1" viewBox="0 0 1329 599" width="1329px" zoomAndPan="magnify"><?plantuml 1.2026.6?><defs/><g><g class="title" data-source-line="3"><text fill="#000000" font-family="Verdana" font-size="22" font-weight="700" lengthAdjust="spacing" textLength="591.5293" x="367.9939" y="37.1182">Logout: two subscribers, no ordering guarantee</text></g><rect fill="#FFFFFF" height="271.5625" style="stroke:#000000;stroke-width:1;" width="1144.4614" x="169.0557" y="242.7485"/><rect fill="#FFFFFF" height="104.7666" style="stroke:none;stroke-width:1;" width="1144.4614" x="169.0557" y="409.5444"/><g class="participant-lifeline" data-entity-uid="part1" data-qualified-name="C" data-source-line="4" id="part1-lifeline"><g><title>Account.Container</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="85.5278" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="89" x2="89" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part2" data-qualified-name="D" data-source-line="5" id="part2-lifeline"><g><title>Dispatcher . RootSaga</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="269.3525" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="273.0557" x2="273.0557" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part3" data-qualified-name="A" data-source-line="6" id="part3-lifeline"><g><title>Auth Saga</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="436.4604" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="440.042" x2="440.042" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part4" data-qualified-name="R" data-source-line="7" id="part4-lifeline"><g><title>Auth router adapter . UI</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="656.5015" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="660.3789" x2="660.3789" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part5" data-qualified-name="S" data-source-line="8" id="part5-lifeline"><g><title>Auth Service</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="827.3105" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="830.624" x2="830.624" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part6" data-qualified-name="App" data-source-line="9" id="part6-lifeline"><g><title>SampleApp Saga</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="971.7705" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="974.9971" x2="974.9971" y1="90.752" y2="598.709"/></g></g><g class="participant-lifeline" data-entity-uid="part7" data-qualified-name="Store" data-source-line="10" id="part7-lifeline"><g><title>Relux Store</title><rect fill="#000000" fill-opacity="0.00000" height="507.957" width="8" x="1243.5767" y="90.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="1246.6362" x2="1246.6362" y1="90.752" y2="598.709"/></g></g><g class="participant participant-head" data-entity-uid="part1" data-qualified-name="C" data-source-line="4" id="part1-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="139.0557" x="20" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="129.0557" x="25" y="76.8125">Account.Container</text></g><g class="participant participant-head" data-entity-uid="part2" data-qualified-name="D" data-source-line="5" id="part2-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="168.5938" x="189.0557" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="158.5938" x="194.0557" y="76.8125">Dispatcher / RootSaga</text></g><g class="participant participant-head" data-entity-uid="part3" data-qualified-name="A" data-source-line="6" id="part3-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="82.8369" x="399.042" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="72.8369" x="404.042" y="76.8125">Auth Saga</text></g><g class="participant participant-head" data-entity-uid="part4" data-qualified-name="R" data-source-line="7" id="part4-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="182.2451" x="569.3789" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="172.2451" x="574.3789" y="76.8125">Auth router adapter / UI</text></g><g class="participant participant-head" data-entity-uid="part5" data-qualified-name="S" data-source-line="8" id="part5-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="99.373" x="781.624" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="89.373" x="786.624" y="76.8125">Auth Service</text></g><g class="participant participant-head" data-entity-uid="part6" data-qualified-name="App" data-source-line="9" id="part6-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="129.5469" x="910.9971" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="119.5469" x="915.9971" y="76.8125">SampleApp Saga</text></g><g class="participant participant-head" data-entity-uid="part7" data-qualified-name="Store" data-source-line="10" id="part7-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="91.8809" x="1201.6362" y="57.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="81.8809" x="1206.6362" y="76.8125">Relux Store</text></g><g class="message" data-entity-1="part1" data-entity-2="part2" data-source-line="11" id="msg1"><polygon fill="#000000" points="261.3525,118.5513,271.3525,122.5513,261.3525,126.5513,265.3525,122.5513" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="89.5278" x2="267.3525" y1="122.5513" y2="122.5513"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="117.7173" x="96.5278" y="117.8218">Auth.Effect.logout</text></g><g class="message" data-entity-1="part2" data-entity-2="part3" data-source-line="12" id="msg2"><polygon fill="#000000" points="428.4604,148.3506,438.4604,152.3506,428.4604,156.3506,432.4604,152.3506" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="273.3525" x2="434.4604" y1="152.3506" y2="152.3506"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="87.8706" x="280.3525" y="147.6211">apply(logout)</text></g><g class="message" data-entity-1="part3" data-entity-2="part4" data-source-line="13" id="msg3"><polygon fill="#000000" points="648.5015,178.1499,658.5015,182.1499,648.5015,186.1499,652.5015,182.1499" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="440.4604" x2="654.5015" y1="182.1499" y2="182.1499"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="196.041" x="447.4604" y="177.4204">dispatch setAuth(.logoutFlow)</text></g><g class="message" data-entity-1="part4" data-entity-2="part2" data-source-line="14" id="msg4"><polygon fill="#000000" points="284.3525,223.7485,274.3525,227.7485,284.3525,231.7485,280.3525,227.7485" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="278.3525" x2="659.5015" y1="227.7485" y2="227.7485"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="179.8418" x="290.3525" y="207.2197">LogoutFlow.Container task:</text><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="137.7632" x="290.3525" y="223.019">Effect.runLogoutFlow</text></g><path d="M169.0557,242.7485 L238.291,242.7485 L238.291,250.5479 L228.291,260.5479 L169.0557,260.5479 L169.0557,242.7485" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><rect fill="none" height="271.5625" style="stroke:#000000;stroke-width:1;" width="1144.4614" x="169.0557" y="242.7485"/><text fill="#000000" font-family="Verdana" font-size="13" font-weight="700" lengthAdjust="spacing" textLength="24.2354" x="184.0557" y="256.8184">par</text><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="109.6831" x="253.291" y="255.8076">[Auth subscriber]</text><g class="message" data-entity-1="part2" data-entity-2="part3" data-source-line="16" id="msg5"><polygon fill="#000000" points="428.4604,278.3472,438.4604,282.3472,428.4604,286.3472,432.4604,282.3472" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="273.3525" x2="434.4604" y1="282.3472" y2="282.3472"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="143.1079" x="280.3525" y="277.6177">apply(runLogoutFlow)</text></g><g class="message" data-entity-1="part3" data-entity-2="part5" data-source-line="17" id="msg6"><polygon fill="#000000" points="819.3105,308.1465,829.3105,312.1465,819.3105,316.1465,823.3105,312.1465" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="440.4604" x2="825.3105" y1="312.1465" y2="312.1465"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="132.8374" x="447.4604" y="307.417">recreateLAContext()</text></g><g class="message" data-entity-1="part5" data-entity-2="part3" data-source-line="18" id="msg7"><polygon fill="#000000" points="451.4604,337.9458,441.4604,341.9458,451.4604,345.9458,447.4604,341.9458" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="445.4604" x2="830.3105" y1="341.9458" y2="341.9458"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="47.1885" x="457.4604" y="337.2163">returns</text></g><g class="message" data-entity-1="part3" data-entity-2="part4" data-source-line="19" id="msg8"><polygon fill="#000000" points="648.5015,367.7451,658.5015,371.7451,648.5015,375.7451,652.5015,371.7451" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="440.4604" x2="654.5015" y1="371.7451" y2="371.7451"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="185.7451" x="447.4604" y="367.0156">dispatch setAuth(.localAuth)</text></g><g class="message" data-entity-1="part3" data-entity-2="part2" data-source-line="20" id="msg9"><polygon fill="#000000" points="284.3525,397.5444,274.3525,401.5444,284.3525,405.5444,280.3525,401.5444" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="278.3525" x2="439.4604" y1="401.5444" y2="401.5444"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="142.5811" x="290.3525" y="396.8149">Action.logOutSucceed</text></g><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="169.0557" x2="1313.5171" y1="410.5444" y2="410.5444"/><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="103.1895" x="174.0557" y="421.6035">[app subscriber]</text><g class="message" data-entity-1="part2" data-entity-2="part6" data-source-line="22" id="msg10"><polygon fill="#000000" points="963.7705,442.7124,973.7705,446.7124,963.7705,450.7124,967.7705,446.7124" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="273.3525" x2="969.7705" y1="446.7124" y2="446.7124"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="143.1079" x="280.3525" y="441.9829">apply(runLogoutFlow)</text></g><g class="message" data-entity-1="part6" data-entity-2="part7" data-source-line="23" id="msg11"><polygon fill="#000000" points="1235.5767,472.5117,1245.5767,476.5117,1235.5767,480.5117,1239.5767,476.5117" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="975.7705" x2="1241.5767" y1="476.5117" y2="476.5117"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="247.8062" x="982.7705" y="471.7822">cleanup(exclusions: [AppRouter.self])</text></g><g class="message" data-entity-1="part7" data-entity-2="part6" data-source-line="24" id="msg12"><polygon fill="#000000" points="986.7705,502.311,976.7705,506.311,986.7705,510.311,982.7705,506.311" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="980.7705" x2="1246.5767" y1="506.311" y2="506.311"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="47.1885" x="992.7705" y="501.5815">returns</text></g><path d="M389,526.311 L389,583.311 L1298,583.311 L1298,536.311 L1288,526.311 L389,526.311" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><path d="M1288,526.311 L1288,536.311 L1298,536.311 L1288,526.311" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="405.8311" x="627.8828" y="544.3809">Neither registration order nor serial actions order subscribers.</text><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="370.1636" x="627.8828" y="560.1802">Store cleanup does not erase Notes Fetcher's dictionary.</text><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="422.7095" x="627.8828" y="575.9795">Late-result rejection / session-safe provider reset is an exercise.</text><?plantuml-src TLDDRnen4BtxLqnpAKXXU-TGQGMD50cbqgvwQdimtW7SEBOr7XFoxpis2u68t7RdpRoFiVs5T_Y249ssNktiWB09WTVXeDYoGrY5RSWy1tuDaF8w6R9hf7GFFa2W0SdwBMop9kqPKKLDR8sDyWTthJ4XUsuMmRFG8zs1Jh2uRbhQ53MR7H9yWqwqUxtLjN7vWItp3ivWUmCaSIeqUj2HAzslnzhRtI92sbk35U-lyLw_H8TjZ1TgCLxtTEZo0NeED5AKBxM0sNTOmXoAHFDZiq73ZQiRLCk2jOBf6DtRv5YTghQKEoaFunuW8PVnoJZuuCBhL7KdvjMv-BvMO9sUvt_yA4ZPltSLszNEnUaf-63cQcAge9hg1IOqX9fnrHOnFF14q1vcupGXP_9f7FWiXT6kV9vuwtuCs-1Bmf-P-smCug3G9Io6RZYLugTU1Ijkom58at6eVOuJF1YNauYaEVoMdgxUZIQXs_mj6MhxxCnzIe9-K3umGjZBNjlxuxa-eULoGGctDZ7fOlvu--KPa6Gbgnte6YgDmCLZQTHHRlG6Gy0aWmn8MY8_YLw21woFu6kI7LOYJM-DMidoPuGfEnRrVrWHkTa9KmatIteZZvV2tWxLdwmTR0Bj0Gz8nYPiIgQYXly1?></g></svg>
+\ No newline at end of file
+diff --git a/diagrams/rendered/notes-upsert.svg b/diagrams/rendered/notes-upsert.svg
+new file mode 100644
+index 0000000..73107ea
+--- /dev/null
++++ b/diagrams/rendered/notes-upsert.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1002px" preserveAspectRatio="none" style="width:1652px;height:1002px;background:#FFFFFF;" version="1.1" viewBox="0 0 1652 1002" width="1652px" zoomAndPan="magnify"><?plantuml 1.2026.6?><defs/><g><g class="title" data-source-line="3"><text fill="#000000" font-family="Verdana" font-size="22" font-weight="700" lengthAdjust="spacing" textLength="505.2695" x="572.4912" y="37.1182">Save a note: UDF and operation outcome</text></g><rect fill="#FFFFFF" height="635.7236" style="stroke:#000000;stroke-width:1;" width="1572.8896" x="63.3623" y="296.7485"/><rect fill="#FFFFFF" height="224.9639" style="stroke:#000000;stroke-width:1;" width="1552.8896" x="73.3623" y="440.7451"/><rect fill="#FFFFFF" height="134.5659" style="stroke:none;stroke-width:1;" width="1552.8896" x="73.3623" y="531.1431"/><rect fill="#FFFFFF" height="259.7632" style="stroke:none;stroke-width:1;" width="1572.8896" x="63.3623" y="672.709"/><g class="participant-lifeline" data-entity-uid="part1" data-qualified-name="User" data-source-line="4" id="part1-lifeline"><g><title>User</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="24.9277" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="28" x2="28" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part2" data-qualified-name="Page" data-source-line="5" id="part2-lifeline"><g><title>Page . EditForm</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="150.9536" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="154.3623" x2="154.3623" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part3" data-qualified-name="C" data-source-line="6" id="part3-lifeline"><g><title>Create.Container</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="353.5957" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="356.8359" x2="356.8359" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part4" data-qualified-name="D" data-source-line="7" id="part4-lifeline"><g><title>Relux Dispatcher</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="578.0039" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="581.4937" x2="581.4937" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part5" data-qualified-name="F" data-source-line="8" id="part5-lifeline"><g><title>Notes Flow</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="879.1299" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="882.688" x2="882.688" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part6" data-qualified-name="S" data-source-line="9" id="part6-lifeline"><g><title>Notes Service . Fetcher</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="1040.2012" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="1043.5718" x2="1043.5718" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part7" data-qualified-name="B" data-source-line="10" id="part7-lifeline"><g><title>Store . BusinessState</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="1239.2461" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="1242.8306" x2="1242.8306" y1="130.752" y2="1001.0708"/></g></g><g class="participant-lifeline" data-entity-uid="part8" data-qualified-name="U" data-source-line="11" id="part8-lifeline"><g><title>UIState . List.Container</title><rect fill="#000000" fill-opacity="0.00000" height="870.3188" width="8" x="1492.5171" y="130.752"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:5,5;" x1="1495.8657" x2="1495.8657" y1="130.752" y2="1001.0708"/></g></g><g class="participant participant-head" data-entity-uid="part1" data-qualified-name="User" data-source-line="4" id="part1-head"><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="31.8555" x="10" y="127.8125">User</text><ellipse cx="28.9277" cy="61.7373" fill="#FFFFFF" rx="8" ry="8" style="stroke:#000000;stroke-width:1;"/><path d="M28.9277,69.7373 L28.9277,96.7373 M15.9277,77.7373 L41.9277,77.7373 M28.9277,96.7373 L15.9277,111.7373 M28.9277,96.7373 L41.9277,111.7373" fill="none" style="stroke:#000000;stroke-width:1;"/></g><g class="participant participant-head" data-entity-uid="part2" data-qualified-name="Page" data-source-line="5" id="part2-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="123.1826" x="93.3623" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="113.1826" x="98.3623" y="116.8125">Page / EditForm</text></g><g class="participant participant-head" data-entity-uid="part3" data-qualified-name="C" data-source-line="6" id="part3-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="129.5195" x="292.8359" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="119.5195" x="297.8359" y="116.8125">Create.Container</text></g><g class="participant participant-head" data-entity-uid="part4" data-qualified-name="D" data-source-line="7" id="part4-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="129.0205" x="517.4937" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="119.0205" x="522.4937" y="116.8125">Relux Dispatcher</text></g><g class="participant participant-head" data-entity-uid="part5" data-qualified-name="F" data-source-line="8" id="part5-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="86.8838" x="839.688" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="76.8838" x="844.688" y="116.8125">Notes Flow</text></g><g class="participant participant-head" data-entity-uid="part6" data-qualified-name="S" data-source-line="9" id="part6-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="175.2588" x="956.5718" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="165.2588" x="961.5718" y="116.8125">Notes Service / Fetcher</text></g><g class="participant participant-head" data-entity-uid="part7" data-qualified-name="B" data-source-line="10" id="part7-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="162.8311" x="1161.8306" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="152.8311" x="1166.8306" y="116.8125">Store / BusinessState</text></g><g class="participant participant-head" data-entity-uid="part8" data-qualified-name="U" data-source-line="11" id="part8-head"><rect fill="#FFFFFF" height="27.0146" rx="2.5" ry="2.5" style="stroke:#000000;stroke-width:1;" width="177.3027" x="1407.8657" y="97.7373"/><text fill="#000000" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="167.3027" x="1412.8657" y="116.8125">UIState / List.Container</text></g><g class="message" data-entity-1="part1" data-entity-2="part2" data-source-line="12" id="msg1"><polygon fill="#000000" points="142.9536,158.5513,152.9536,162.5513,142.9536,166.5513,146.9536,162.5513" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="28.9277" x2="148.9536" y1="162.5513" y2="162.5513"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="102.0259" x="35.9277" y="157.8218">Save local draft</text></g><g class="message" data-entity-1="part2" data-entity-2="part3" data-source-line="13" id="msg2"><polygon fill="#000000" points="345.5957,188.3506,355.5957,192.3506,345.5957,196.3506,349.5957,192.3506" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="154.9536" x2="351.5957" y1="192.3506" y2="192.3506"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="156.6094" x="161.9536" y="187.6211">onCreate(note) callback</text></g><g class="message" data-entity-1="part3" data-entity-2="part4" data-source-line="14" id="msg3"><polygon fill="#000000" points="570.0039,218.1499,580.0039,222.1499,570.0039,226.1499,574.0039,222.1499" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="357.5957" x2="576.0039" y1="222.1499" y2="222.1499"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="200.4082" x="364.5957" y="217.4204">actions { Effect.upsert(note) }</text></g><g class="message" data-entity-1="part4" data-entity-2="part5" data-source-line="15" id="msg4"><polygon fill="#000000" points="871.1299,247.9492,881.1299,251.9492,871.1299,255.9492,875.1299,251.9492" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="582.0039" x2="877.1299" y1="251.9492" y2="251.9492"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="174.3511" x="589.0039" y="247.2197">apply(effect) via RootSaga</text></g><g class="message" data-entity-1="part5" data-entity-2="part6" data-source-line="16" id="msg5"><polygon fill="#000000" points="1032.2012,277.7485,1042.2012,281.7485,1032.2012,285.7485,1036.2012,281.7485" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="883.1299" x2="1038.2012" y1="281.7485" y2="281.7485"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="82.3037" x="890.1299" y="277.019">upsert(note)</text></g><path d="M63.3623,296.7485 L127.4116,296.7485 L127.4116,304.5479 L117.4116,314.5479 L63.3623,314.5479 L63.3623,296.7485" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><rect fill="none" height="635.7236" style="stroke:#000000;stroke-width:1;" width="1572.8896" x="63.3623" y="296.7485"/><text fill="#000000" font-family="Verdana" font-size="13" font-weight="700" lengthAdjust="spacing" textLength="19.0493" x="78.3623" y="310.8184">alt</text><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="133.606" x="142.4116" y="309.8076">[accepted by service]</text><g class="message" data-entity-1="part6" data-entity-2="part5" data-source-line="18" id="msg6"><polygon fill="#000000" points="894.1299,332.3472,884.1299,336.3472,894.1299,340.3472,890.1299,336.3472" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="888.1299" x2="1043.2012" y1="336.3472" y2="336.3472"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="49.8354" x="900.1299" y="331.6177">success</text></g><g class="message" data-entity-1="part5" data-entity-2="part4" data-source-line="19" id="msg7"><polygon fill="#000000" points="593.0039,362.1465,583.0039,366.1465,593.0039,370.1465,589.0039,366.1465" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="587.0039" x2="882.1299" y1="366.1465" y2="366.1465"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="209.9297" x="599.0039" y="361.417">Action.upsertNoteSuccess(note)</text></g><g class="message" data-entity-1="part4" data-entity-2="part7" data-source-line="20" id="msg8"><polygon fill="#000000" points="1231.2461,391.9458,1241.2461,395.9458,1231.2461,399.9458,1235.2461,395.9458" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="582.0039" x2="1237.2461" y1="395.9458" y2="395.9458"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="95.3291" x="589.0039" y="391.2163">reduce(action)</text></g><g class="message" data-entity-1="part7" data-entity-2="part4" data-source-line="21" id="msg9"><polygon fill="#000000" points="593.0039,421.7451,583.0039,425.7451,593.0039,429.7451,589.0039,425.7451" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="587.0039" x2="1242.2461" y1="425.7451" y2="425.7451"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="112.9565" x="599.0039" y="421.0156">reduction returns</text></g><path d="M73.3623,440.7451 L142.5977,440.7451 L142.5977,448.5444 L132.5977,458.5444 L73.3623,458.5444 L73.3623,440.7451" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><rect fill="none" height="224.9639" style="stroke:#000000;stroke-width:1;" width="1552.8896" x="73.3623" y="440.7451"/><text fill="#000000" font-family="Verdana" font-size="13" font-weight="700" lengthAdjust="spacing" textLength="24.2354" x="88.3623" y="454.8149">par</text><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="146.4321" x="157.5977" y="453.8042">[scheduled UI delivery]</text><g class="message" data-entity-1="part7" data-entity-2="part8" data-source-line="23" id="msg10"><line style="stroke:#000000;stroke-width:1;" x1="1494.5171" x2="1484.5171" y1="480.3438" y2="476.3438"/><line style="stroke:#000000;stroke-width:1;" x1="1494.5171" x2="1484.5171" y1="480.3438" y2="484.3438"/><line style="stroke:#000000;stroke-width:1;" x1="1243.2461" x2="1495.5171" y1="480.3438" y2="480.3438"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="229.271" x="1250.2461" y="475.6143">Combine projection on main queue</text></g><g class="message" data-entity-1="part8" data-entity-2="part8" data-source-line="24" id="msg11"><line style="stroke:#000000;stroke-width:1;" x1="1496.5171" x2="1538.5171" y1="510.1431" y2="510.1431"/><line style="stroke:#000000;stroke-width:1;" x1="1538.5171" x2="1538.5171" y1="510.1431" y2="523.1431"/><line style="stroke:#000000;stroke-width:1;" x1="1497.5171" x2="1538.5171" y1="523.1431" y2="523.1431"/><polygon fill="#000000" points="1507.5171,519.1431,1497.5171,523.1431,1507.5171,527.1431,1503.5171,523.1431" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="110.7349" x="1503.5171" y="505.4136">list props refresh</text></g><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="73.3623" x2="1626.252" y1="532.1431" y2="532.1431"/><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="128.6055" x="78.3623" y="543.2021">[operation outcome]</text><g class="message" data-entity-1="part4" data-entity-2="part5" data-source-line="26" id="msg12"><polygon fill="#000000" points="871.1299,564.311,881.1299,568.311,871.1299,572.311,875.1299,568.311" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="582.0039" x2="877.1299" y1="568.311" y2="568.311"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="80.939" x="589.0039" y="563.5815">action result</text></g><g class="message" data-entity-1="part5" data-entity-2="part4" data-source-line="27" id="msg13"><polygon fill="#000000" points="593.0039,594.1104,583.0039,598.1104,593.0039,602.1104,589.0039,598.1104" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="587.0039" x2="882.1299" y1="598.1104" y2="598.1104"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="49.8354" x="599.0039" y="593.3809">success</text></g><g class="message" data-entity-1="part4" data-entity-2="part3" data-source-line="28" id="msg14"><polygon fill="#000000" points="368.5957,623.9097,358.5957,627.9097,368.5957,631.9097,364.5957,627.9097" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="362.5957" x2="581.0039" y1="627.9097" y2="627.9097"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="49.8354" x="374.5957" y="623.1802">success</text></g><g class="message" data-entity-1="part3" data-entity-2="part2" data-source-line="29" id="msg15"><polygon fill="#000000" points="165.9536,653.709,155.9536,657.709,165.9536,661.709,161.9536,657.709" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="159.9536" x2="356.5957" y1="657.709" y2="657.709"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="48.1978" x="171.9536" y="652.9795">dismiss</text></g><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="63.3623" x2="1636.252" y1="673.709" y2="673.709"/><text fill="#000000" font-family="Verdana" font-size="11" font-weight="700" lengthAdjust="spacing" textLength="212.4482" x="68.3623" y="684.7681">[invalid content or service failure]</text><g class="message" data-entity-1="part6" data-entity-2="part5" data-source-line="32" id="msg16"><polygon fill="#000000" points="894.1299,705.877,884.1299,709.877,894.1299,713.877,890.1299,709.877" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="888.1299" x2="1043.2012" y1="709.877" y2="709.877"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="71.6777" x="900.1299" y="705.1475">failure(err)</text></g><g class="message" data-entity-1="part5" data-entity-2="part4" data-source-line="33" id="msg17"><polygon fill="#000000" points="593.0039,735.6763,583.0039,739.6763,593.0039,743.6763,589.0039,739.6763" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="587.0039" x2="882.1299" y1="739.6763" y2="739.6763"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="277.126" x="599.0039" y="734.9468">upsertNoteFail + track(error) concurrently</text></g><g class="message" data-entity-1="part4" data-entity-2="part7" data-source-line="34" id="msg18"><polygon fill="#000000" points="1231.2461,765.4756,1241.2461,769.4756,1231.2461,773.4756,1235.2461,769.4756" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="582.0039" x2="1237.2461" y1="769.4756" y2="769.4756"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="235.1108" x="589.0039" y="764.7461">failure action (keeps existing notes)</text></g><path d="M453,782.4756 L453,807.4756 L710,807.4756 L710,792.4756 L700,782.4756 L453,782.4756" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><path d="M700,782.4756 L700,792.4756 L710,792.4756 L700,782.4756" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="236.7041" x="459" y="800.5454">ErrorHandling saga tracks the error.</text><g class="message" data-entity-1="part4" data-entity-2="part5" data-source-line="36" id="msg19"><polygon fill="#000000" points="871.1299,831.0742,881.1299,835.0742,871.1299,839.0742,875.1299,835.0742" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="582.0039" x2="877.1299" y1="835.0742" y2="835.0742"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="106.228" x="589.0039" y="830.3447">dispatch returns</text></g><g class="message" data-entity-1="part5" data-entity-2="part4" data-source-line="37" id="msg20"><polygon fill="#000000" points="593.0039,860.8735,583.0039,864.8735,593.0039,868.8735,589.0039,864.8735" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="587.0039" x2="882.1299" y1="864.8735" y2="864.8735"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="71.6777" x="599.0039" y="860.144">failure(err)</text></g><g class="message" data-entity-1="part4" data-entity-2="part3" data-source-line="38" id="msg21"><polygon fill="#000000" points="368.5957,890.6729,358.5957,894.6729,368.5957,898.6729,364.5957,894.6729" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="362.5957" x2="581.0039" y1="894.6729" y2="894.6729"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="41.0313" x="374.5957" y="889.9434">failure</text></g><g class="message" data-entity-1="part3" data-entity-2="part2" data-source-line="39" id="msg22"><polygon fill="#000000" points="165.9536,920.4722,155.9536,924.4722,165.9536,928.4722,161.9536,924.4722" style="stroke:#000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line style="stroke:#000000;stroke-width:1;" x1="159.9536" x2="356.5957" y1="924.4722" y2="924.4722"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="178.6421" x="171.9536" y="919.7427">error message; retain draft</text></g><path d="M1150,944.4722 L1150,985.4722 L1588,985.4722 L1588,954.4722 L1578,944.4722 L1150,944.4722" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><path d="M1578,944.4722 L1578,954.4722 L1588,954.4722 L1578,944.4722" fill="#FFFFFF" style="stroke:#000000;stroke-width:1;"/><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="406.1548" x="1159.8079" y="962.542">Reduction is awaited. Combine delivery and SwiftUI rendering</text><text fill="#000000" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="409.7222" x="1159.8079" y="978.3413">are asynchronous; flow success is not a screen-render barrier.</text><?plantuml-src RPHlQzim4CRVwrFS-YfXI_Q-XSBYrAmmngZn1r3aSwDLjZpzIHl6lliUoSuVbq8WMFVezDplJleKzjmn3KRgNknrmzHQ6tRsJGGT35Cb3qoIUXlubkfjIR9lo0xiPD2s9nk3iXqBgO9rL7jsOf0kQAK7sGUw-IMVcRxIGwD3QLrtGz9JMfkh2iSoyBgmVO0DTbbMp3LFRE8RRRKVP53xIRETQtx2fQVIsDSSBJ-ALkmEMYLJ9LyILNDfXMgIP1Cz_7XV1VZBmirSM3_c4AG_j0_lAgX50aAh-rmotOumZLNIKEDa6qHUHxn0qFOZXaLYlII8p4wg5r4amHO2C0PoJt_feMrPXNKSa3vC-dzYcuHb4Ww3EIuuYvPqq9AUqDDAFajH9aq5pVLU8Kr0TiL3u8PsH_8Z8m7bQihf8-BU2ofFThvbEvE9nBOQ9LDEodOs43fkekB5Q1-1JKwwFKNo73aEqVL83xhaqPOc6dYf7wbXem_iZeBInljxgh6niDqEc6bmzZUF6V3hW9x-H8vm3jbgr1eq9Wa7ZrDQntulY8td3wQOakaJn9Cn7qr0f3oxFgEOrCLihRZgTwDzfzCgzut8P-h-88rkI65G60E4IpF1fbPg4zqC-hIqOEUML-Glo4i8w3C5Xq59AkkMARMApY6xELvrOSfrgclnmWmY_0Owkd_E5zpZaFHF5i3pIGyfvNTSUPCq7XCqdkK9pmRb0zVY2bepNSzBFo_OviLSq9thlYQNKrC7fFY-I-bIRyTBas1UR6w-rEBfF4VQatoL6dEyFW_9QOBoqrMzwZPWhC2dOOUgX4nG_B5NUsTx6_qTjNX0JXrD6N4Oda2l77E_6ZVIJZgd6TNZCqFx3m00?></g></svg>
+\ No newline at end of file

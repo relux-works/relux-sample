@@ -1,0 +1,1496 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: low
+reasoning summaries: none
+session id: 01a082e9-e59f-77a0-88ef-2ab69d00841a
+--------
+user
+# Agent Task Assignment
+
+## FIRST — Run Immediately
+
+```bash
+task-board m 'set_status(TASK-260909-3kd1i7, status=reviewing)'
+```
+
+## Operational Constraints (Headless Run)
+
+Read this before you run any gate or attach any outcome. A spawned run is
+usually headless: the session ends when your turn ends.
+
+- **Never background a long command and end your turn.** The session terminates
+  with the turn and the process dies with it, while the run is still recorded as
+  completed — a successful-looking run with no evidence attached.
+- **A single shell call is time-bounded (~10 minutes).** Waiting out a longer
+  check inside one call fails too. Split long verification into bounded
+  sequential calls (package subsets, `-run` masks) and state explicitly what you
+  reran yourself versus accepted from already-attached evidence.
+- **Attach evidence before you end the lifecycle, not after.** "I will attach it
+  when the run finishes" is unfulfillable by construction: once your turn ends
+  there is no session left to attach anything.
+
+## Your Role
+# reviewer
+
+## Description
+
+Reviews how a task was implemented and how the solution fits into the project. Does not modify code; records one of the explicit verdict branches below.
+
+When the run is goal-bound, query `task-board spawn goal "$TASK_BOARD_RUN_ID"` before recording the verdict. The reviewer goal is role-derived as `reviewer_verdict/reviewer_verdict`, carries its immutable parent goal ID/revision, and is satisfied only by exactly one verdict branch with evidence. A provider exit or `reviewing` status is not a verdict.
+The runner persists the branch from the accepted board status plus a new or updated task-scoped verdict artifact. Only persisted `accepted` can satisfy the parent delivery goal; `changes_requested` and `stop_the_line` finish the reviewer goal without accepting delivery.
+
+## Deliverable
+
+Verdict branches are explicit:
+
+- accepted → `done`, or `accept_cr` when the run was launched against a Change Request (see below)
+- changes requested → `to-dev` for implementation rework or `analysis` for research/decision work, with verdict evidence for the next producer and another reviewer cycle
+- genuine stop-the-line boundary → `blocked` only for a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision, with evidence, failed assumptions/attempts, viable alternatives and tradeoffs, a recommendation, and the exact human decision or external input needed
+
+Do not leave the task in `reviewing`, and do not use `blocked` for ordinary rework or a recoverable child/runtime failure.
+
+### Accepting a Change Request
+
+The full Change Request contract — how the candidate is snapshotted, what `repository_delta` means, what a `stale` revision is, and every typed refusal you can hit — is `references/tracked-background-spawn.md` of the `project-management` skill, section `Change Requests, review, rework, and checkpoint`. Read it when a refusal surprises you rather than guessing at a retry.
+
+When your prompt carries a `Change Request Under Review` section, record acceptance with the named mutation rather than a status change:
+
+```bash
+task-board m 'accept_cr(<ELEMENT-ID>, revision=<N>, evidence=<ELEMENT-ID>_review-verdict.md)'
+```
+
+The signature is exactly `accept_cr(ID, revision=N, evidence=NAME)`. Do not try to recover it with `task-board q 'schema(mutation=accept_cr)'` — this mutation is registered on the `m` path only, so schema discovery answers `unknown mutation` for it.
+
+Only the run that was handed the revision may accept it. `accept_cr` checks that the calling run is a reviewer-archetype tracked run bound to this element and this revision, and refuses anything else with `change_request_acceptance_unauthorized`. If you see that refusal, do not retry it from a different shell or run id — it means the acceptance would have named a reviewer that never read the candidate.
+
+`accept_cr` writes `accepted` and `integrating` atomically: the Change Request becomes `accepted`, your run is stamped as the reviewer, and it routes the element to `integrating`. That state means "accepted, not landed". The accepted revision is bound to its producer role and archetype, and only a new tracked run carrying that exact producer role and archetype may checkpoint or integrate it; the orchestrator routes that run but does not close the leaf, and an orchestrator run that tries to integrate is refused. `done` is produced only by the integration transaction. Accepted work does **not** stay in `reviewing`, and `accept_cr` never takes a `commit_ack` argument.
+
+A Change Request with `repository_delta=empty` means the producer changed no repository file. That is neither automatically a failure nor automatically acceptable. All three verdicts are available and mean exactly what they always mean, and your verdict evidence must address the emptiness explicitly: accepting one means stating why no repository change was the right outcome for this leaf.
+
+For an enforced Bug/Story `done` transition, a reviewer-archetype run must not supply `commit_ack`, and must never escalate the commit-or-acknowledge decision to the human. Record acceptance evidence and stop there. Under a Change Request the routing above applies: `accept_cr` moves the element to `integrating`, and only the bound producer run may checkpoint or integrate it. For an inline element with no Change Request the acknowledged transition belongs to the producer that owns the committed scope. Never make it yourself.
+
+For board reads, use compact task-specific projections. A concrete review does not need routine `summary()`, `plan()`, `schema()`, or `{ full }`; request scoped schema only after an unknown call.
+
+## Licence To Defeat A Gate
+
+You are explicitly licensed to attempt to DEFEAT any gate, refusal, validation, authorization, or attestation in the change under review, and to reject a change whose only evidence is positive-path. Reading the code is not review; attacking it is.
+
+- Try to make the gate admit what it must reject. Mint the evidence the way a caller could, remove it entirely, narrow the gate instead of deleting it, and reach the protected state through retry, renewal, resume, and recovery paths.
+- Assert against the composed production artifact, not the pieces it is built from, and check every surface that must carry the rule — a clause present in one context profile and absent from the other is a bypass path.
+- Grep for callers before believing a guard is in force. A guard that no production path invokes has never run, and tests that call it directly prove only that it compiles and returns what it is told to.
+- Positive-path-only evidence, a delete-only mutant, or a green suite around a fake is grounds for `changes_requested` with the failing shape named in the verdict.
+- Apply the same standard to reported facts: a failed or partial read presented as an absence, and a property inferred from a proxy signal instead of reported as unknown, are review findings.
+- Check the AC-row coverage ratio before reading any code. An AC row with no named driving test is an unchecked AC row and is `changes_requested` on its own. A mutant table whose entries are all deletions is positive-path evidence wearing a mutant costume — name the shape and reject it.
+- A gate that inspects source text is defeated by a mutant that preserves the searched-for token. Reject a mutant harness that runs the static checker alone: it reports nothing about the class.
+
+The negative shapes vocabulary and the incidents behind each rule are in `references/negative-evidence.md` of the project-management skill; the operative rules reach producers through the spawn template's `Evidence That Counts`. Name the shape rather than restating the rule.
+
+## Execution Rules
+
+Reviews run sequentially in this session. Do not delegate to sub-agents: the verdict is yours to produce and evidence, and a review distributed across children that do not complete produces nothing. A reviewer run that ends without a recorded verdict is a failed run, not a partial one — record the verdict before you finish, even when the finding list is short.
+
+Every `changes_requested` verdict names a `repeat-of:` value — the prior revision and finding ID this repeats, or `none`. The orchestrator routes on that field, and two consecutive same-class findings mean the next step is a gate, not another revision.
+
+A republish of an unchanged, already-accepted tree is an annotation, not a new revision of substance. Do not review it as fresh work and do not count it as rework.
+
+## Status Transitions
+
+- **start_status:** `reviewing`
+- **end_status:** no unconditional default; the reviewer must set exactly one verdict status: `done`, `to-dev`, `analysis`, or evidence-backed `blocked`. For a Change Request run, acceptance is recorded by `accept_cr`, which routes the element to `integrating` on your behalf and binds the revision to its producer role and archetype; the other three branches are unchanged.
+
+## Constraints
+
+Does NOT modify code. Read-only access.
+- Reviewer-archetype runs must not supply `commit_ack` and must not escalate the commit-or-acknowledge decision to the human; record acceptance evidence and leave every `done` transition to the producer side.
+- When your prompt carries a `Change Request Under Review` section, record acceptance with `task-board m 'accept_cr(ID, revision=N, evidence=ID_review-verdict.md)'`. It writes `accepted` and `integrating` atomically and routes the element to `integrating` — accepted work never stays in `reviewing` and never reaches `done` from here. The accepted revision is bound to its producer role and archetype, and only a new tracked run with that exact producer role and archetype may checkpoint or integrate it; the orchestrator routes that run but does not close the leaf. `accept_cr` takes no `commit_ack`, and only the reviewer run that was handed the revision may call it.
+
+## Skills
+
+These role skill references are a lazy catalog, not a mandate to bulk-read every
+body. Before technical work, identify the skills relevant to this task's concrete
+scope and read those full skill bodies. Always read any skill explicitly required
+by the task, user, or project instructions.
+
+- **project-management**: `/Users/iv/.claude/skills/project-management/SKILL.md`
+- **architecture-diagrams**: `/Users/iv/.claude/skills/architecture-diagrams/SKILL.md`
+
+## Definition of Done
+
+- [ ] Verify exercises and setup documentation against final paths and commands
+- [ ] Findings written to file
+- [ ] Key aspects highlighted
+- [ ] Fact-checking performed — claims verified, sources cited
+- [ ] Findings linked on the board as a new task-scoped outcome resource
+- [ ] All questions from task description answered
+- [ ] Important findings, decisions, anomalies, or regressions recorded in logbook when relevant
+- [ ] Implementation matches AC
+- [ ] Solution fits project architecture
+- [ ] Tests green
+- [ ] Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted
+- [ ] If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches
+## Your Task
+
+- **ID**: TASK-260909-3kd1i7
+- **Title**: TASK-260909-3kd1i7: write-learning-exercises
+- **Parent**: STORY-260909-3g9457
+### Description
+
+Produce a concise English learning-exercise outline as a task-scoped board outcome only, not product repository edits. Inspect the sample and verified audit in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree read-only; UI task is currently active there, so do not edit or test it. Read authoritative swift-relux source/docs as needed. Create a progression of practical extensions teaching best patterns: user-visible goal, pattern, current source entry points, acceptance checks, pitfalls. Distinguish implemented behavior from proposed functionality. Include recommendations for concise documentation corrections. The later diagram/documentation task will publish the guide against final UI code. No new infrastructure, no exhaustive research, no deep-research skill. Outcome should be compact and directly reusable.
+### Acceptance Criteria
+
+Concise source-grounded exercise outline is attached to task; actual vs proposed functionality is explicit
+
+## Instructions
+
+The following instructions have been attached to this task:
+
+### learning-guide-scope.md
+> Learning outcomes
+
+Provide a short progression of optional exercises grounded in final source paths. Start with a small note operation and reducer/flow tests; then persistence behind the service/fetcher protocol, cross-domain session cleanup/orchestration, and a headless CLI reusing business logic. For each state user-visible outcome, pattern to practice, a few entry points, acceptance checks and one common pitfall. Distinguish implemented demo functionality from proposed exercises. Do not force six packages on a tiny feature; discuss when HybridState is enough and when BusinessState + UIState is warranted. Explicitly avoid view dispatch, duplicated domain truth, and sagas containing provider details. All public docs English; README.ru remains a short synchronized pointer if maintaining a duplicate long manual adds drift.
+
+
+
+
+## Board CLI Reference
+
+You have access to `task-board` CLI for managing your work. All writes use the `m` (mutation DSL) subcommand:
+
+```bash
+# FIRST/LAST lifecycle commands:
+# Use explicit status changes when the task flow requires it.
+task-board m 'set_status(TASK-260909-3kd1i7, status=analysis)'       # analyst-style work
+task-board m 'set_status(TASK-260909-3kd1i7, status=development)'    # implementation / testing work
+task-board m 'set_status(TASK-260909-3kd1i7, status=reviewing)'      # reviewer handoff
+task-board m 'set_status(TASK-260909-3kd1i7, status=blocked)'        # when blocked
+task-board m 'set_status(TASK-260909-3kd1i7, status=to-review)'      # when your work is ready for review
+
+# Track progress with checklist
+task-board m 'check_item(TASK-260909-3kd1i7, item=1)'                        # check item N
+task-board m 'add_checklist_item(TASK-260909-3kd1i7, text="Write tests")'    # add checklist item
+
+# Add notes about your progress, decisions, blockers, or review findings
+task-board m 'set_notes(TASK-260909-3kd1i7, text="your note here")'
+
+# Save short text directly as outcome resources
+task-board m 'add_resource(TASK-260909-3kd1i7, name=TASK-260909-3kd1i7_results.md, content="...", type=outcome, description="Description")'
+
+# Attach an existing local file (screenshots, PDFs, logs, archives, research docs)
+task-board resource add TASK-260909-3kd1i7 ./path/to/file --type outcome --name TASK-260909-3kd1i7_artifact.bin -d "Description"
+```
+
+## Spawn Run Control
+
+Tracked background spawn runs expose `TASK_BOARD_RUN_ID` in the child environment.
+If your work is long-running, check for operator directives at safe checkpoints:
+
+```bash
+task-board spawn status "$TASK_BOARD_RUN_ID"
+task-board spawn directives "$TASK_BOARD_RUN_ID"
+```
+
+Current runtimes do not support direct inbound push into your active session.
+Treat directives as cooperative checkpoint signals:
+- persist your current notes/artifacts before acting on `cancel`-style requests
+- only honor pause/reroute intent at a safe checkpoint
+- if no directive is present, continue normally
+
+## IMPORTANT: Saving Results
+
+When you produce work products (research documents, design docs, screenshots, logs, archives, implementation notes), you MUST save them as outcome resources with names that include the task ID:
+
+```bash
+task-board m 'add_resource(TASK-260909-3kd1i7, name=TASK-260909-3kd1i7_results.md, content="...", type=outcome, description="Description")'
+task-board resource add TASK-260909-3kd1i7 ./path/to/file --type outcome --name TASK-260909-3kd1i7_artifact.bin -d "Description"
+```
+
+If you revise the same artifact later, use `task-board m 'update_resource(...)'` or `task-board resource update ...` instead of creating a silent overwrite.
+
+If you discover important findings, decisions, anomalies, regressions, or non-obvious constraints while working, record them in `logbook` as well as on the board.
+
+This ensures your results persist on the board and are accessible to other agents and the coordinator. Spawn completion is expected to produce at least one new task-scoped outcome artifact before the task can cleanly remain in `to-review`.
+
+## Evidence That Counts
+
+A passing suite means nothing unless something in it would have failed.
+
+- Any behavior that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS ships with negative tests that fail when the gate admits what it must reject. A positive test proves the gate is reachable, not that it works.
+- Prove a bound by NARROWING the gate, not only by deleting it. A delete-only mutant proves the gate exists and says nothing about the class it covers.
+- Prove behavior by driving the real entry point — launch, materialize, resolve, publish — and name the production call site. A helper that is unit-tested but called from nowhere promises nothing.
+- Standard negative shapes to test and to look for: forged or self-minted evidence; absent evidence treated as satisfied; the check present but uncalled from production; a bypass path around the check; a capability claim that does not reproduce.
+- A gate reports coverage as a measured ratio, not as prose: prose cannot distinguish 7 of 7 from 3 of 7, and "nothing is there" is not "nothing this checker sees". Name the blind spot as a stated bound.
+- An absence and a failure to read are different facts. A failed, partial, or malformed read is never a legitimate absence, and a fallback defined for absence must not fire on a read failure.
+- Prove, or report nothing. Where a property cannot be established, report unknown instead of inferring it from a proxy signal; callers act on a plausible guess.
+
+Shapes vocabulary and the incident record behind each rule: `references/negative-evidence.md` in the project-management skill.
+
+## Stop-The-Line: No Forced Fits
+
+Do not keep implementing when autonomous work starts requiring a forced fit. A forced fit is any path where the task conflicts with a platform/API constraint, product decision, UX state model, ownership boundary, or architecture, and the remaining "solution" is mostly compensating hacks.
+
+Warning signs:
+- each fix needs another flag, stub, priority rule, mock-only behavior, or special-case test
+- the tests can pass only because the test harness avoids the real platform behavior
+- the implementation depends on an assumption you can no longer defend
+- the user-facing behavior cannot be described cleanly without contradicting the product model
+
+When this happens, stop product-code changes before adding another workaround layer. Attach or note:
+- the constraint and evidence
+- the failed assumptions/attempts
+- the viable options and tradeoffs
+- the recommended option
+- the exact human/product/architecture decision needed
+
+Then set the board item to `blocked` and ask only for that exact decision or external input. This stop applies only to a concrete external blocker or an unresolved human-only platform/product/architecture/tradeoff/approval decision; recoverable failures and ordinary rework stay autonomous. Tests and stubs are not proof that a forced-fit design is correct; use them only after the state model and platform assumptions are valid.
+
+## Working Directory
+Board directory: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board`
+
+Work in the project root. Do not modify board files directly — always use the `task-board` CLI.
+
+## Story Workspace
+
+You are running in an isolated Git worktree for STORY-260909-3g9457.
+
+- Workspace path: `.temp/STORY-260909-3g9457/worktree` (this is your working directory)
+- Branch: `task-board/story/STORY-260909-3g9457`, forked from `main`
+- Authoritative board: `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board` (already exported as `TASK_BOARD_DIR`)
+
+Make every repository change here. Do not commit, switch, rebase, merge, or delete this branch, and do not run `task-board` against the `.task-board` copy inside this worktree — it is a checkout artifact, not the board. Integration into trunk is the orchestrator's step, not yours.
+
+Leave your work UNCOMMITTED in the worktree — the handoff snapshots the working tree against the recorded checkpoint. A commit of your own on this branch is refused at handoff with `change_request_candidate_committed_past_checkpoint`, and the repair is `git reset --soft <checkpoint_oid>` before completing again.
+
+## Change Request Under Review
+
+- Change Request: `CR-TASK-260909-3kd1i7-1` revision `1` (state `ready`)
+- Element: `TASK-260909-3kd1i7`, integration scope: `STORY-260909-3g9457`
+- Branch: `task-board/story/STORY-260909-3g9457`
+- Base OID: `815a681105ed40c9846ac62c7c123c1250c1eb84`
+- Candidate tree OID: `8c3c4150cbd3a6a805f36fa2fa63cfb1a8b9b664`
+- Repository delta: `empty`
+- Patch resource: `TASK-260909-3kd1i7_change-request_rev1.patch` (sha256 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`)
+
+```bash
+git -C . diff 815a681105ed40c9846ac62c7c123c1250c1eb84 8c3c4150cbd3a6a805f36fa2fa63cfb1a8b9b664          # the exact reviewable delta
+git -C . diff --stat 815a681105ed40c9846ac62c7c123c1250c1eb84 8c3c4150cbd3a6a805f36fa2fa63cfb1a8b9b664   # its shape
+```
+
+**This producer changed no repository file.** The candidate tree is identical to its base and the patch has zero paths. This is not automatically a failure and it is not automatically acceptable: deciding which it is means judging what this leaf was for against what it delivered. It did produce these outcome resources:
+
+- `TASK-260909-3kd1i7_learning-exercises.md`
+
+Your verdict evidence MUST address this explicitly: accepting means stating why no repository change was the right outcome. All three verdicts are available and mean exactly what they always mean.
+
+### Recording the verdict
+
+Acceptance is a named mutation, not a status change:
+
+```bash
+task-board m 'accept_cr(TASK-260909-3kd1i7, revision=1, evidence=TASK-260909-3kd1i7_review-verdict-rev1.md)'
+```
+
+`accept_cr` writes `accepted` and `integrating` atomically: the Change Request becomes `accepted`, this run is stamped as the reviewer, and TASK-260909-3kd1i7 routes the element to `integrating` — accepted but not landed, and never `done`. The accepted revision is bound to its producer role and archetype (`researcher`/`analyst`), and only a new tracked run with that exact producer role and archetype may checkpoint or integrate it. The orchestrator routes that run; it does not close the leaf, and no orchestrator run may execute the integration itself. `done` is produced only by the integration transaction, never by you and never by an acknowledgement. Never supply `commit_ack` yourself.
+
+Changes requested and Stop-The-Line are unchanged: route to `to-dev`/`analysis` or evidence-backed `blocked`. Leaving the element in `reviewing` is still not a verdict and still gets this run cancelled and respawned.
+
+codex
+Проверю outcome по исходникам и требованиям упражнения; использую skill `project-management` для фиксации verdict.
+
+exec
+/bin/zsh -lc "task-board m 'set_status(TASK-260909-3kd1i7, status=reviewing)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 475ms:
+{"ok":true,"result":{"primary":{"action":"status_changed","element_id":"TASK-260909-3kd1i7","field":"status","new_value":"reviewing","old_value":"to-review"},"side_effects":[{"action":"demoted","element_id":"STORY-260909-3g9457","field":"status","new_value":"reviewing","old_value":"to-review"}]}}
+
+exec
+/bin/zsh -lc 'cat /Users/iv/.claude/skills/project-management/SKILL.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 0ms:
+---
+name: project-management
+description: >
+  File-backed task boards and spawn-first multi-agent orchestration through
+  task-board. Use for board/spec decomposition, task tracking, planning,
+  status/progress, tracked producer/reviewer runs, and delivery goals. A normal
+  primary session is the Orchestrator; a prompt-assigned role or
+  TASK_BOARD_RUN_ID is a specialist worker. Russian triggers: борд, доска,
+  задачи, эпик, стори, таски, спавн, оркестратор, субагент, статус, прогресс.
+triggers:
+  - task board, epic, story, task, bug, status, progress
+  - spec decomposition, planning, critical path
+  - spawn, orchestrator, coordinator, sub-agent, delivery goal
+  - борд, доска, задачи, эпик, стори, таски, спавн, оркестратор
+---
+
+# Project Management Router
+
+Load only the focused references needed. Use `task-board` for reads/writes;
+never edit `.task-board/` directly.
+
+## Active Role
+
+- **Specialist:** when assigned a role, `TASK_BOARD_RUN_ID` exists, or the
+  human explicitly requests inline execution. Follow lifecycle/evidence gates.
+- **Orchestrator:** otherwise. Detail settled specs inline; route
+  every artifact-producing or validating task through a tracked
+  background child run. `solution-architect` only for genuine
+  architecture decisions.
+
+## Critical Invariants
+
+1. Preflight with `project_config(view=spawn-preflight, role=ROLE, agent=RUNTIME?)`;
+   bare `project_config()` stays the role-optional config surface.
+   Cross-provider ranking requires the agent-less query: omit `agent`, compare
+   recommendations, then narrow with `agent=RUNTIME` for the fresh spawn snapshot.
+   `providers.targeted` names the query's runtime scope; policy-allowed entries
+   outside it use `runtime_not_targeted_by_query`, while policy-excluded entries
+   use `provider_not_allowed_by_preferred_agentic_system`.
+   When workload recommendations are configured: query with `task_class` or an
+   explicit `workload_class`, reason about scope/risk/autonomy/validation and
+   context cost, then spawn an explicit pair with the exact class transport,
+   fresh snapshot digest, and one-line recommendation rationale. A ranking is
+   advice, never authority, a default, or permission to widen the pair.
+   For a proprietary (paid) model, choose the pair that maximises delivered
+   work per token and escalate only for a stated reason.
+   Every child has explicit role, background mode, and a complete
+   model/reasoning-effort pair across its applicable dimensions — model
+   either typed or seeded by a configured per-role default, and, for Codex,
+   Qwen, or a Claude model whose registry row declares a reasoning-effort
+   vocabulary, an in-policy effort either typed or default-seeded the same
+   way. Built-in runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+   (plus any runtime declared under `spawn.runtimes`); Gemini, Agy,
+   `muse-spark-1.2-contributor`, and an effortless Claude model take no
+   `--reasoning-effort` at all, while `muse-spark-1.3-contributor` and its
+   `muse-spark` alias REQUIRE one from `high`/`xhigh`/`max`. The
+   versioned-short `muse-spark-1.3` names no registered row and is not
+   spawnable; codex `gpt-6-astra`/`astra` REQUIRE one of `low`/`medium`/`high`/`xhigh`/`max`/`ultra`.
+   Treat the v3 `admitted_pairs` set the
+   preflight reports as the exact admission authority, not `allowed_models`,
+   which is one input form and is `null` when the runtime uses combinable
+   `entries`; when preflight reports a v2 migration warning, use the
+   full read-only migration snapshot for an explicit reviewed repository edit.
+   Never infer admission from `PolicyRank` or silently migrate config.
+   Codex-only `fast_mode` defaults false and forces direct/managed
+   `service_tier` default/priority; preflight records root/remote provenance.
+   Remote-v4 parity is owned by the client projection and its checked fixtures;
+   authority schema v1 intentionally authorizes an empty per-board backend
+   policy set, so do not infer or add a server policy route.
+2. Workers use compact, task-specific projections. Skip routine
+   `summary()`, `plan()`, `schema()`, and `{ full }`; scoped schema only
+   repairs an unknown call.
+3. Default to `task-board spawn observe RUN --until terminal --format compact`,
+   then route its handoff. Other reads are for barriers, replay/follow,
+   diagnosis.
+4. The Orchestrator owns producer -> reviewer -> rework -> reviewer until the
+   configured review policy is satisfied and the board reaches `done`.
+   `to-review` is a routing trigger, not human acceptance. Commit
+   decomposition is that same Orchestrator's own call, never a per-commit
+   human checkpoint.
+5. Handoff needs a task-scoped outcome and `task-board handoff TASK-ID --role
+   ROLE`. Early exits and intermediate parked states are
+   retried, or rerouted through a focused child; routine work is never handed to the human.
+   Producer `set_status(to-review)`
+   is refused, and reviewer `accept_cr` requires its live merged checklist.
+   Attach artifacts through resource CRUD under
+   `.task-board/.resources/<ELEMENT-ID>/`, optionally in safe nested paths;
+   never write that tree directly or attach directories.
+6. `blocked` needs an evidence-backed external blocker or unresolved
+   human-only product/platform/architecture/approval decision. Persist
+   constraint, evidence, failed assumptions/attempts, viable alternatives,
+   tradeoffs, recommendation, and the exact decision or external input needed.
+7. At `to-review` say **ready for review** / **handed off to review**;
+   done/complete/final only for `done`.
+8. `board-goal-v2` is authoritative: `goal` owns `parent/primary`; `spawn goal`
+   owns `run/RUN-*`. V1 shapes are compatibility-only.
+9. `openai-board` / `anthropic-board` launch the primary `task-board
+   codex|claude` sessions.
+   agents-infra composes; `tb-sessiond` owns goal bind, location-scoped
+   `openai-board|anthropic-board resume [SES-*]`, native identity restart, and
+   session operations. Provider-native adoption remains explicit as
+   `codex resume THREAD_ID` (compatibility form) or `codex --resume THREAD_ID`,
+   and `claude --resume UUID`.
+   Bad records move to private `<state>/quarantine/`; listen continues and
+   status/list report them.
+10. Freeze stable project/config/runtime/control roots and one binding+digest.
+    Explicit config must exist; direct/managed children override ambient roots.
+    `TASK_BOARD_DIR` stores, not authority. Resolve authority from a
+    binding via fresh `git ls-remote --symref <authorized-url> HEAD`,
+    exact-ref fetch, and equal advertised/fetched OIDs. Never use cached/local
+    refs, tracking, caller/config fields, or prior tuples. Cross-check
+    `integration_base_branch` against the independent branch/remote
+    pair. Zero/multiple/unavailable/indeterminate evidence refuses.
+    Producer publishes a Change Request, reviewer runs `accept_cr`,
+    then Orchestrator checkpoints leaves and integrates the Story. Managed
+    commits use `-S` with repository human identity/key; index failures never
+    justify broad reset. See
+    [tracked background spawn](references/tracked-background-spawn.md#story-worktree-isolation).
+11. Cross-Story `set_parent` and integration are durable and fail closed; move
+    evidence never widens source-tombstone admission. See
+    [tracked background spawn](references/tracked-background-spawn.md#what-the-board-state-commit-covers-and-what-it-leaves-alone).
+12. Board validation stays strict by default. The project setting
+    `validation.allow_legacy_empty_done_containers=true` suppresses only the
+    historical empty-`done` Story/Epic aggregate mismatch; active or
+    child-backed containers remain strict.
+13. Transaction-owned `.activity/<ID>/events.ndjson` forbids caller logging.
+    Reads are bounded; corrections privileged/append-only. Transfer/worktrees
+    reject foreign history, preserve legacy/deletion boundaries, and never backfill.
+    See [file format](references/file-formats.md#activity-streams),
+    [query](references/querying.md), and
+    [coverage](docs/activity-mutation-coverage.md).
+14. Never run `make install*`, `scripts/setup.sh`, or `task-board self-update`
+    from inside a manager-hosted session. A Claude host's PTY master lives in
+    the `tb-sessiond` process, so replacing that daemon hangs up every hosted
+    session including the caller's own. A binary swap is a human action taken
+    between sessions; the manager restarts from an outside shell with
+    `task-board session restart`. See
+    [goals recovery](references/goals-recovery.md#1-a-skill-reinstall-beside-a-running-tb-sessiond).
+
+## Decision Tree
+
+```text
+Prompt-assigned role or TASK_BOARD_RUN_ID? -> work as that specialist
+Artifact, test, docs, research, or review? -> tracked role-based spawn
+Producer reached to-review? -> spawn reviewer, route verdict
+Concrete stop boundary? -> persist packet, then blocked
+Known structured board operation? -> q/m DSL with narrow projection
+Unknown name/field? -> schema(); known call syntax? -> schema(operation|mutation=NAME); see querying recovery examples
+```
+
+## Lazy Reference Routes
+
+| Need | Read |
+| --- | --- |
+| Queries, observability, goals, estimates, deps | [querying](references/querying.md), [file formats](references/file-formats.md) |
+| Status, review, recovery, Stop-The-Line | [statuses](references/statuses.md) |
+| Resources, bugs, evidence | [resources and bugs](references/resources-and-bugs.md) |
+| Detailing, plans, execution | [planning workflow](references/planning-workflow.md) |
+| Research and synthesis | [research workflow](references/research-workflow.md) |
+| Roles, task classes, DoD | [roles](references/roles.md) |
+| Negative tests, gate proofs, unknown vs absence | [negative evidence](references/negative-evidence.md) |
+| Spawned goals, selection, runs, recovery, Story worktrees | [tracked background spawn](references/tracked-background-spawn.md) |
+| Change Request order, checkpoint, republish | [CR lifecycle](references/change-request-lifecycle.md) |
+| Session Manager wrappers, goal runtimes | [codex goal runtime](docs/codex-goal-runtime.md), [claude goal runtime](docs/claude-goal-runtime.md) |
+| Templates, reviewer routing | [sub-agent templates](references/sub-agent-templates.md) |
+| Context budgets | [context efficiency](references/context-efficiency.md) |
+| Config feature gates | [config features](references/config-features.md) |
+| Goal daemon skew, native recovery | [goals recovery](references/goals-recovery.md) |
+| Project config refusals/schema/examples, authority envelopes, guarded alias migration, spawn supervision in minutes | [canonical config reference](references/task-board-config.md); persist a matching scoped selection before removing legacy `remote.user`, preview with `task-board migrate-project-config`, then apply only with its reviewed `--expected-digest` |
+| Install/bootstrap | [setup](references/setup.md) |
+| Remote auth/admin/ops | [remote board runbook](docs/remote-board-operations.md) |
+| CLI/deploy overview | [README](README.md) |
+
+Runtime changes follow canonical `.specs/` contracts.
+
+Built-in spawn runtimes: `agy`, `claude`, `codex`, `gemini`, `muse`, `qwen`
+(plus any runtime declared under `spawn.runtimes`). Gemini CLI 0.54.4 is
+deprecated in favour of Antigravity, but both remain supported.
+
+```bash
+task-board spawn TASK-ID --role developer --background --agent agy --model gemini-3.6-flash-high --timeout 35m
+```
+
+`agy` takes no `--reasoning-effort`; effort is encoded in its eight scoped
+model IDs. Minimum `agy` is 1.1.12; 1.1.14 is validated. Prompt delivery has
+a 96 KiB argv budget; `SUCCESS`/`ERROR` JSON overrides process exit. Only the
+top-level worker is tracked. See [README](README.md) for the full models,
+flags, JSON, safety, configuration, and Gemini compatibility contract.
+
+exec
+/bin/zsh -lc "mkdir -p .temp/TASK-260909-3kd1i7-review
+ task-board --help > .temp/TASK-260909-3kd1i7-review/readiness.log
+ task-board q 'task(TASK-260909-3kd1i7) { description acceptance_criteria checklist resources }'
+ task-board spawn goal \""'$TASK_BOARD_RUN_ID"
+ cat /Users/iv/.claude/skills/project-management/references/resources-and-bugs.md' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 69ms:
+Active Goal: none (run is not goal-bound)
+# Resources
+
+Resources are owned by the board element they are attached to. Use explicit
+CRUD operations against that element ID. Local payloads are grouped under
+`.task-board/.resources/<elementID>/`; remote board-server uses the equivalent
+element-scoped filesystem or MinIO object-key prefix.
+
+## Resource Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **precondition** | Inputs needed before work starts | Design docs, specs, instructions, API schemas |
+| **outcome** | Results produced by work | Research findings, implementation notes, analysis |
+
+## Commands
+
+```bash
+# Create a resource
+task-board m 'add_resource(TASK-260218-abc, name=TASK-260218-abc_design.md, type=precondition, content="...", description="Architecture design")'
+task-board m 'add_resource(TASK-260218-abc, name=reports/TASK-260218-abc_results.md, type=outcome, content="...", description="Research findings")'
+
+# Replace an existing resource
+task-board m 'update_resource(TASK-260218-abc, name=reports/TASK-260218-abc_results.md, type=outcome, content="revised findings", description="Research findings v2")'
+task-board resource update TASK-260218-abc ./TASK-260218-abc_results.md --name reports/TASK-260218-abc_results.md --type outcome
+
+# Adopt an existing orphaned local payload without rewriting it
+task-board resource adopt TASK-260218-abc revisions/2/TASK-260218-abc_results.md --type outcome --description "Recovered result"
+
+# Delete a resource (destructive — requires --confirm)
+task-board m --confirm 'delete_resource(TASK-260218-abc, name=artifacts/obsolete/TASK-260218-abc_design.md)'
+task-board resource delete TASK-260218-abc artifacts/obsolete/TASK-260218-abc_design.md --confirm
+
+# View resources on an element
+task-board q --format compact 'get(TASK-260218-abc) { preconditionResources outcomeResources }'
+```
+
+## Element-Owned Storage
+
+Resources from different tasks are not stored in one shared file pile. Each
+element gets its own directory, and every resource attached to that element is
+stored below it:
+
+```
+.task-board/.resources/
+├── TASK-260203-g7h8i9/
+│   ├── findings/
+│   │   └── investigation.md
+│   ├── artifacts/
+│   │   └── run-1/
+│   │       └── output.json
+│   ├── reports/
+│   │   └── TASK-260203-g7h8i9_results.md
+│   └── revisions/
+│       └── 2/
+│           └── review.md
+└── STORY-260203-d4e5f6/
+    └── research.md         # outcome
+```
+
+The resource `name` is a safe forward-slash-relative path. Agents may choose
+the hierarchy that fits the artifact and nest it further as needed. Every
+segment must be non-empty printable UTF-8 and must not be `.`, `..`, an
+absolute/drive-qualified path, or contain a backslash. Raw forward slashes are
+the only hierarchy delimiter; malformed URL escapes and encoded or repeatedly
+encoded separators/traversal are rejected. Attach related files to the same
+owning element; do not invent a generic board-wide resource task or write
+payloads into `.task-board/.resources/` manually.
+
+Directories are structural nodes, not payloads. Resource CRUD, validation, and
+handoff evidence recognize regular files only; a directory named like a report
+cannot be adopted or used to satisfy outcome evidence.
+
+Local and board-server filesystem element deletion is journaled and
+crash-recoverable. Direct resource CRUD first resolves any pending staged
+element delete under the board mutation lock. MinIO element/subtree deletion
+currently fails before mutation with the typed
+`ErrAtomicResourceDeleteUnsupported` capability error; ordinary resource CRUD
+remains available.
+
+References are tracked in `progress.md` as markdown links:
+```markdown
+## Precondition Resources
+- [specs/auth/design.md](board-resource://TASK-260203-g7h8i9/precondition/specs/auth/design.md) — Architecture design
+
+## Outcome Resources
+- [reports/TASK-260203-g7h8i9_results.md](board-resource://TASK-260203-g7h8i9/outcome/reports/TASK-260203-g7h8i9_results.md) — Research findings
+```
+
+## Spawn Integration
+
+Precondition resources are automatically injected into agent prompts by `task-board spawn`. Full prompts preserve normal text inlining. Lite prompts use the resolved `agent_context.prompt.preconditions` policy: by default, text below `inline_bytes` is rendered inline, while larger text and binary resources are written read-only under `.temp/resources/` and represented by their name, description, byte count, SHA-256 digest, and local path. This means:
+
+1. Attach instructions/specs as precondition resources to a task
+2. Run `task-board spawn TASK-XX --role developer --background --agent codex --model gpt-5.6-sol --reasoning-effort max` — agent gets everything automatically
+3. Agent saves results via `task-board m 'add_resource(..., type=outcome)'` on first write, then `update_resource(...)` for revisions
+
+## Best Practices
+
+- **Use preconditions for agent instructions** — attach design docs, specs, or step-by-step instructions before spawning
+- **Use outcomes for work products** — research findings, analysis, implementation notes
+- **Attach to the owning element** — pass the Task, Bug, Story, or Epic ID that owns the artifact; the storage layer groups its payloads under that element directory automatically
+- **Use explicit create/update/delete** — `add_resource` / `resource add` must not silently overwrite; use `update_resource` / `resource update` when replacing an existing payload
+- **Use adopt only for local repair** — `resource adopt` registers bytes already stored at `.resources/<elementID>/<relative-resource-path>` without rewriting them; a missing payload returns resource-not-found and an existing declaration returns resource-exists
+- **Choose a useful hierarchy inside the owning element** — `findings/`, `artifacts/`, `reports/`, and `revisions/` are conventions, not a fixed schema; nest further when it makes the handoff easier to navigate
+- **Use safe relative resource paths** — `/` separates validated path segments; empty, dot/traversal, absolute/drive-qualified, backslash, control-character, malformed escape, and encoded/repeatedly encoded separator or traversal forms are rejected in local and remote storage
+- **Attach files, not folders** — directories only organize resource files and never satisfy resource existence or handoff evidence
+- **Always use board commands** — never create/edit resource files or progress.md resource sections manually
+- **Name handoff evidence with task scope** — keep the task ID in the resource path, for example `reports/TASK-260218-abc_architecture-design.md`, so `task-board handoff` can recognize it
+- **Add descriptions** — the `description=` param adds a one-line description shown in spawn prompts
+
+---
+
+# Bugs
+
+Bugs are elements of the board, living inside stories alongside tasks.
+
+```bash
+# Create bug
+task-board m 'create(type=bug, parent=STORY-260218-abc, name=crash-on-start, description="App crashes when starting recording")'
+
+# Track like any element
+task-board m 'set_status(BUG-260218-abc, status=development)'
+task-board m 'add_checklist_item(BUG-260218-abc, text="Reproduce the issue")'
+task-board m 'add_checklist_item(BUG-260218-abc, text="Find root cause")'
+task-board m 'add_checklist_item(BUG-260218-abc, text="Write fix")'
+task-board m 'add_checklist_item(BUG-260218-abc, text="Add regression test")'
+```
+
+exec
+/bin/zsh -lc "task-board q 'get(TASK-260909-3kd1i7) { checklist outcomeResources }'
+cat /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board/.resources/TASK-260909-3kd1i7/TASK-260909-3kd1i7_learning-exercises.md
+cat /Users/iv/.claude/skills/project-management/references/negative-evidence.md" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 0ms:
+{"checklist":[{"text":"Verify exercises and setup documentation against final paths and commands","done":true},{"text":"Findings written to file","done":true},{"text":"Key aspects highlighted","done":true},{"text":"Fact-checking performed — claims verified, sources cited","done":true},{"text":"Findings linked on the board as a new task-scoped outcome resource","done":true},{"text":"All questions from task description answered","done":true},{"text":"Important findings, decisions, anomalies, or regressions recorded in logbook when relevant","done":true},{"text":"Implementation matches AC","done":false},{"text":"Solution fits project architecture","done":false},{"text":"Tests green","done":false},{"text":"Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted","done":false},{"text":"If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches","done":false}],"outcomeResources":[{"name":"TASK-260909-3kd1i7_spawn-log_-analyst--researcher--codex-_RUN-260908-f2d940.log","uri":"file://TASK-260909-3kd1i7/TASK-260909-3kd1i7_spawn-log_-analyst--researcher--codex-_RUN-260908-f2d940.log","description":"System spawn log captured by task-board"},{"name":"TASK-260909-3kd1i7_learning-exercises.md","uri":"file://TASK-260909-3kd1i7/TASK-260909-3kd1i7_learning-exercises.md","description":"Four source-grounded optional exercises, implemented/proposed boundaries, documentation corrections, and evidence logbook"},{"name":"TASK-260909-3kd1i7_change-request_rev1.patch","uri":"file://TASK-260909-3kd1i7/TASK-260909-3kd1i7_change-request_rev1.patch","description":"Change Request CR-TASK-260909-3kd1i7-1 revision 1 candidate patch (repository_delta=empty, 0 changed paths)"},{"name":"TASK-260909-3kd1i7_spawn-log_-reviewer--reviewer--codex-_RUN-260908-cf0c02.log","uri":"file://TASK-260909-3kd1i7/TASK-260909-3kd1i7_spawn-log_-reviewer--reviewer--codex-_RUN-260908-cf0c02.log","description":"System spawn log captured by task-board"}]}
+# Optional learning exercises
+
+Task: TASK-260909-3kd1i7 — write-learning-exercises. Prepared 2026-09-09 for the later documentation/diagram publisher; board outcome only.
+
+## Source baseline and scope
+
+Read-only inspection of `/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree` at HEAD `93e90201dc8454015fe1018db9c09d0d9c01d287`, initially clean. UI work remains active: paths below exist at inspection, but are not an assertion that the UI implementation is frozen. Recheck paths and commands against the accepted UI head before publishing. No source edits or builds/tests were performed here.
+
+Implemented: Notes fetch/create/update/delete through an in-memory dictionary provider; actor BusinessState with a derived MainActor UIState; Auth in separate products with HybridState; application saga observing logout to clean store state except AppRouter. Durable storage, a session-safe provider reset, a duplicate-note action, and a command-line executable are proposed exercises, not shipped features. Store cleanup does not erase the fetcher's dictionary. Current module wiring constructs the Notes UI projection, so a headless client cannot simply reuse the entire app module unchanged.
+
+Use `N = relux_sample/Modules/Notes` and `T = relux_sampleTests/Notes` in the entry points below. These are path abbreviations, not shell variables.
+
+## 1. Duplicate a note, with reducer and flow tests first
+
+- **User-visible goal (proposed):** “Duplicate” creates a second note with a new identity and creation date, preserving the original title/content and original note.
+- **Pattern:** container callback → domain effect/flow → service → success action → reducer → UI projection. Reuse upsert; no new package is needed for one operation. Construct the duplicate under domain rules rather than in presentation code.
+- **Entry points:** `N/Business/Model/Notes+Business+Model+Note.swift`, `N/Business/Middleware/Notes+Business+Flow.swift`, `N/Business/Notes+Business+State+Reducer.swift`, `N/UI/Details/Notes+UI+Details+Container.swift`; existing test examples in `T/Business/State/NotesTests+Business+State+Upsert.swift` and `T/Business/Saga/NotesTests+Business+Saga+Upsert.swift` (the Saga directory currently tests a Flow).
+- **Acceptance:** Swift Testing proves the original is unchanged, the copy has a distinct ID, and successful upsert inserts exactly one copy. A service failure returns a failed ActionResult, emits the failure action, and inserts no copy; assert state and result, not only logging. Drive the UI callback and verify the displayed list changes after success.
+- **Pitfall:** dispatching from a Page/View or maintaining a second editable notes collection as domain truth. Local draft fields are fine; commit through a container callback.
+
+## 2. Keep notes across launches
+
+- **User-visible goal (proposed):** a saved or deleted note stays saved or deleted after relaunch.
+- **Pattern:** replace the provider behind `IFetcher`; keep DTO conversion and domain error mapping in the service/provider boundary. An actor-backed file implementation is enough for this exercise; no persistence framework or infrastructure is prescribed.
+- **Entry points:** `N/Data/Api/Notes+Data+Api+Fetcher.swift` (`IFetcher`, including its current `deletetNote` spelling), `N/Data/Api/DTO/Notes+Data+Api+DTO+Note.swift`, `N/Business/Middleware/Notes+Business+Service.swift`, `N/Notes+Module.swift` (`buildFetcher`).
+- **Acceptance:** write, recreate the provider, read the same note; delete, recreate, verify absence. Missing storage follows an explicit first-run policy; unreadable/corrupt storage fails rather than becoming an empty successful list. Failed writes never emit a successful domain mutation. Test service mapping with a fetcher fake and durability with a temporary real store.
+- **Pitfall:** putting file URLs, serialization, or database calls in the Flow/Saga. A logged I/O failure is still failure.
+
+## 3. Make logout cleanup session-safe
+
+- **User-visible goal (proposed strengthening):** after logout, old notes cannot reappear through a reload or a request that finishes late. Choose and document whether durable notes are erased or retained for the same device user; LocalAuthentication is not a multi-account backend identity system.
+- **Pattern:** cross-domain orchestration owns ordering; Notes owns provider/session cleanup through an interface. Existing store cleanup is a starting point, not proof of durable erasure or late-result rejection.
+- **Entry points:** `relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift`, `Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift`, `N/Business/Notes+Business+State.swift`, `N/Notes+Module.swift`, `relux_sample/IoC/IoC.swift`.
+- **Acceptance:** dispatch the real registered logout entry point; verify provider policy, cleared Notes state/projection, and intended routing. Hold an old-session request, log out, release it, and prove it cannot repopulate state. Include cleanup failure behavior. If ordering is required, implement explicit awaited coordination and prove it; observing the same effect in multiple sagas does not establish subscriber order.
+- **Pitfall:** letting Auth import Notes implementation or treating store cleanup as provider deletion. Keep domain dependencies behind interfaces; do not invent SessionOrchestration/DataOrchestration packages merely because older docs mention them.
+
+## 4. Reuse the domain from a headless CLI
+
+- **User-visible goal (proposed):** list, create, and delete notes from a terminal using the same business behavior as the app.
+- **Pattern:** extract only the reusable Notes models/interfaces/implementation and necessary utilities into a UI-independent package; compose a business-only module and inject its dispatcher/service. GUI and CLI share that implementation. Package splitting follows actual reuse, ownership, and build boundaries, not a mandatory six-product template.
+- **Entry points:** `N/Business/Middleware/Notes+Business+Flow.swift`, `N/Business/Notes+Business+State.swift`, `N/Notes+Module.swift`, `relux_sample/IoC/IoC.swift`, `Packages/Auth/Package.swift` (existing boundary example, not a required layout).
+- **Acceptance:** launch the real proposed executable from a shell and exercise list/create/delete against temporary storage. Assert output and exit status; storage errors and malformed input must exit nonzero without reporting success. Observe reducer state after dispatch. Build the business target without SwiftUI, AuthUI, app navigation, or app-global resolver dependencies. Do not fabricate a `swift run` command before its executable target exists.
+- **Pitfall:** a CLI that calls a duplicate service implementation and bypasses the shared Flow/reducer, or a supposedly headless module that still creates UIState through app IoC.
+
+## State and module sizing
+
+HybridState is enough for a small domain with modest MainActor work and one straightforward observable state; Auth is the concrete example. BusinessState + UIState is useful when actor-owned work/domain state and independently derived presentation data need separate isolation or consumers; Notes already demonstrates that split. UIState projections are derived representations, never competing mutable truth. Relux's BusinessState protocol requires Sendable reference semantics and async reduction/cleanup, not specifically an actor. Do not split a tiny feature into six packages; the Auth manifest has six products inside one domain package.
+
+## Concise documentation corrections for the publisher
+
+1. Keep README's short setup and verified audit link. Fix `PROJECT_GUIDE.md` claims about nonexistent orchestration packages, removed app Auth paths, forced dynamic products, and “all tests in packages”: Notes currently retains an app-hosted target. Describe CLI as an exercise until implemented.
+2. Synchronize Swift tooling with the manifests/audit: Xcode 26+, Swift 6.2+, iOS 17+/macOS 14+ deployment targets. Avoid claiming execution on the oldest supported runtime. Keep README.ru.md as a short Russian pointer to the maintained English guide.
+3. Preserve these existing command entry points, choosing a locally installed simulator before testing:
+   - `xcrun simctl list devices available`
+   - `xcodebuild build -project relux_sample.xcodeproj -scheme relux_sample -destination 'generic/platform=iOS Simulator' -derivedDataPath .temp/DerivedData -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO`
+   - `xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO`
+   - Optional macOS package check: `swift test --package-path Packages/Auth --force-resolved-versions`.
+   There is no root Package.swift. Commands above are checked against current README/project/package paths and previously reviewed audit evidence; not rerun in this research. The publisher must verify them on the accepted UI revision. New exercise tests/CLI targets will require corresponding command updates.
+
+## Sources and evidence logbook
+
+- Sample sources listed above, plus `README.md`, `PROJECT_GUIDE.md`, `README.ru.md`, `Docs/ArchitectureAudit.md`, and `Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift`. These relative paths resolve from the inspected checkout.
+- Reviewed board evidence: `TASK-260909-3hzrc3_review-verdict-rev2.md`, accepted candidate `99cb44b484ec9b843136f1ed54ad1b31c6571b65`. Its carried evidence is 7 Auth tests and 14 Notes tests, not executions by this researcher. It explicitly does not verify logout subscriber interleaving or exhaustive UI behavior.
+- [Pinned Relux state contracts](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Store/Relux+State.swift), inspected directly in the audit's local upstream clone; `git rev-parse HEAD` matched that revision. [Pinned dispatcher contract](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Dispatcher/Relux+Dispatcher.swift) is additionally grounded in the verified audit. Browser retrieval of the state source failed with cache miss; no web verification success is claimed.
+- Important teaching boundary: logout clears store state but does not clear the provider dictionary; no late-result protection was established. Treat session-safe cleanup as proposed work. UI paths remain subject to the active UI task.
+- Readiness logs: sibling `readiness-01.log`. Initial discovery searches returned exit 2 for absent optional skill/search directories; this was a discovery failure, not a test failure or passing gate. Repeated source reads used existing paths. No logbook CLI or repository logbook was discovered; this section is the task's persisted research logbook.
+# Negative Evidence Contract
+
+A passing suite means nothing unless something in it would have failed. This
+file is the single source of truth for the rules that make a green check mean
+something, and for the incident record behind each one. The operative wording
+that reaches every spawned child lives in the spawn template section
+`Evidence That Counts`; the reviewer's licence lives in `.roles/reviewer/role.md`;
+the repeated-variant heuristic lives in `.roles/orchestrator/role.md`. Read this
+file when you need the shapes, the failure vocabulary, or the incidents that
+produced a rule — do not restate these rules in other documents.
+
+| Rule | Operative statement | Evidence record |
+| --- | --- | --- |
+| Negative tests for gates | spawn template, `Evidence That Counts` | this file |
+| Narrowing, not deleting | spawn template, `Evidence That Counts` | this file |
+| Production call site | spawn template, `Evidence That Counts` | this file |
+| Absence vs failure to read | spawn template, `Evidence That Counts` | this file |
+| Prove, or report nothing | spawn template, `Evidence That Counts` | this file |
+| Reviewer licence to defeat a gate | `.roles/reviewer/role.md` | this file |
+| Many variants, one unowned decision | `.roles/orchestrator/role.md` | this file |
+
+## Negative Tests For Gates
+
+Any feature that GATES, REFUSES, VALIDATES, AUTHORIZES, or ATTESTS must ship
+with negative tests that fail when the gate admits what it is supposed to
+reject. A positive test proving the happy path passes is not evidence that the
+gate works; it is evidence that the gate is reachable.
+
+This is the dominant defect class in this repository's 2026-07-28..08-03 waves.
+Every instance below was found because a reviewer deliberately attacked the
+gate, not because anyone read the code:
+
+- the fact-assay attested a COLD child that never inherited the context, because
+  it checked inventory, session id, digests, and output shape, but never
+  inheritance;
+- the assay fork had repository tool access, so it could answer from disk while
+  the base was false;
+- the builder attestation accepted a correctly-shaped forged digest that the
+  caller minted itself;
+- clearance enforcement existed but no production path called it, and counting
+  tests around a fake proved nothing;
+- an unknown assay event preserved a false zero-tool observation;
+- a provider capability was declared absent to disable a flaky check, and the
+  claim did not reproduce (9/11 success).
+
+## Standard Negative Shapes
+
+Use these names in checklists, verdicts, and test names. They are the shapes a
+negative test must cover and the shapes a reviewer looks for first.
+
+| Shape | What it looks like when nobody tests for it | What the negative test must do |
+| --- | --- | --- |
+| Forged or self-minted evidence | The caller supplies the proof that the gate checks, and a correctly-shaped value passes. | Mint the evidence in the test the way a caller could, and require refusal. |
+| Absent evidence treated as satisfied | Missing input takes the permissive branch; the suite only ever supplies the input. | Remove the evidence entirely and require refusal, not a default-pass. |
+| Check present but uncalled from production | The guard is implemented and unit-tested by direct call; no production path invokes it. | Drive the real entry point — launch, materialize, resolve, publish — and name the production call site. |
+| Bypass path around the check | One entry point enforces; a second, older, or retry/renewal path does not. | Exercise every entry point that reaches the protected state, including retry, renewal, resume, and recovery, and every delivery surface that carries the rule — a contract clause reaching one context profile and not the other is this shape. |
+| Capability claim that does not reproduce | A capability is declared absent or present to make a flaky check go away. | Re-run the claim enough times to state a real rate, or report unknown. |
+
+## Derive Completeness From An Independent Source
+
+Completeness is derived from the pinned source or generated artifact, never
+enumerated by hand. When a registry, schema set, or declared scope defines the
+members, derive the expected set from that source and fail when any member lacks
+enforcement. This rule comes from five consecutive review rounds that each
+closed exactly the hand-picked members named by the previous reviewer; the next
+unlisted member defeated every list.
+
+A completeness test that reads the implementation's own table is circular and
+can never detect a missing entry: removing the entry also removes it from the
+test's expected set. Derive the expectation from the normative source of truth,
+not from the code under test. This distinction was what let the next Story's
+round-1 review demand a source-derived completeness test instead of accepting
+the producer's two selected cases.
+
+## Prove Exact Bounds At The Production Entry
+
+Prove every bound in both directions at the production entry: accept at the
+limit and refuse past the limit. Character bounds count characters rather than
+bytes. The motivating failure was a value containing 3,999 characters but
+5,999 bytes that production rejected with a byte comparison even though the
+normative `string[1..4096]` bound permitted it; helper-only or ASCII-only tests
+could not expose that narrowing.
+
+## Disable Every Refusal Clause
+
+Disable each refusal clause individually. If the suite stays green, that clause
+is a hole unless the test or evidence documents it as provably subsumed and
+names the check that subsumes it. This is measured rather than hypothetical: in
+one file, disabling 110 clause sites produced 45 surviving mutants, and 12 of
+those survivors were genuine widenings.
+
+Numeric-bound mutation and clause-disablement are different classes, and one
+harness rarely generates both. Numeric mutation finds off-by-one defects but
+cannot express disabling a tagged-union arm, cross-field equality, or grammar
+predicate; clause disablement finds those omissions but cannot move a numeric
+boundary. The 110-site clause run exposed widenings that the numeric harness
+could not generate, so run both classes.
+
+## Check Refusals Against The Normative Source
+
+A green test can defend a bug when it asserts a refusal that the normative
+source does not require. One observed test required production to reject values
+that the pinned specification permitted, so the suite protected the narrowing
+instead of detecting it. Whenever a test encodes a refusal, check that refusal
+against the pinned source rather than copying current behaviour into the
+assertion.
+
+## Eliminate Ambient Test Inputs
+
+No test may depend on ambient environment. Fixtures set explicit identity and
+all other values that could otherwise come from global configuration, the OS,
+or developer-machine state. A developer machine let Git derive an author name
+from the OS and passed the suite, while a CI runner with an empty GECOS field
+failed with `empty ident name`; only CI can catch this class, so the fixture
+must make its identity deterministic before CI exercises it.
+
+## Prove A Bound By Narrowing, Not By Deleting
+
+A test that removes a gate entirely proves only that the gate exists. It says
+nothing about whether the gate covers the right class. Restrict the gate to a
+narrower condition instead and require a named test to fail.
+
+Two repository incidents where a narrowed gate survived a green suite:
+
+- **BUG-260801-3kiloe F1** — the recovery successor cap was proven only by total
+  removal. Narrowing it to provider-limit signals left every other recoverable
+  failure unbounded, with the whole suite still green.
+- **TASK-260802-17wetr F16** — thirteen cycles later, the same shape: the
+  probe-lease cap survived deletion tests while the renewal path escaped it.
+- **TASK-260730-2c1e8l cycle 1** — this contract itself. The reviewer clauses
+  landed in the role body and the shipped test checked the role file and the
+  lite template separately, so both halves were green while the composed lite
+  prompt carried neither. Assert on the composed production artifact, not on the
+  pieces it is built from.
+- **TASK-260730-2c1e8l cycle 2** — the same contract, one level up, and the
+  clearest statement of the difference between the two shapes. The cycle-1 fix
+  did assert on the composed prompt, but it called the composition helper
+  directly and handed it the role, task-class filter, and profile itself.
+  Production builds those inputs inside the spawn entry point, so a mutant
+  narrowing only the real lite-reviewer routing just before composition left the
+  test green while an actual lite reviewer lost its gate-defeat licence. A test
+  that supplies the inputs is testing the helper, not the path. Obtain the
+  artifact the way the consumer does — here, read the prompt file recorded on
+  the run manifest after driving the entry point — so role resolution, the
+  task-class filter, and profile resolution are all under test rather than
+  assumed.
+
+Three traps when running the mutants themselves, all hit while proving this file:
+
+- **The mutant must be re-run with `-count=1`.** `go test` caches on package
+  sources; a test that reads `.roles/*.md` or any file outside its package at
+  runtime returns a stale cached PASS after that file is mutated. A cached green
+  is not a surviving mutant, it is an unexecuted test.
+- **A passing assertion may be satisfied by the wrong source.** Two mutants of
+  the producer DoD entries survived because the phrase asserted also appears,
+  differently worded, in the shared spawn template. Choose assertion wording
+  that only the intended source can supply, then narrow that source and require
+  the named test to fail.
+- **Restore the mutant from a copy, not from git.** `git checkout <file>`
+  restores from the index, which silently discards uncommitted work in that file
+  — during this task it reverted the whole cycle-2 change, not just the mutant.
+  Copy the file aside before mutating, restore from the copy, and verify the
+  restoration by diffing against it before rerunning the gates.
+
+## A Gate Publishes Its Coverage As A Ratio
+
+Prose about what a gate checks cannot distinguish 7 of 7 from 3 of 7. Every
+statement such a description makes is usually true — it is true of what the gate
+can see, and silent about what it cannot. The longer and more careful the
+description, the more thorough the gate looks.
+
+Report the fraction of intended targets the gate actually reaches, and assert
+that fraction so it reddens when a target drops out of reach. A target no mutant
+can redden is not covered, however elaborate the structure around it.
+
+Three defects of this exact shape, each found only once a ratio existed:
+
+- an AST call graph that recorded an edge only for a direct identifier call
+  covered 3 of 7 guarded functions while every pin passed; the package's real
+  dispatch was a function-value table, and the blind spot was invisible from
+  inside;
+- a classifier keyed on prose that a sibling gate was actively rewriting silently
+  dropped 8 rows, taking a suite from 107 executed subtests to 66, while its
+  completeness check `count == 0` reported nothing, because four is not zero;
+- an ownership gate that proved a symbol exists and a case is linked reported 48
+  sections as owned; measured against the specification, those bindings
+  discharged 2 of 394 normative clauses.
+
+A non-empty check on a derived set is the recurring form. `len(x) > 0` answers a
+different question from `len(x) == expected`, and only the second notices a
+narrowing.
+
+## A Blind Spot Is Not An Empty Set
+
+"Nothing is there" and "nothing this checker can see" are different facts, and
+only the second is a statement about the checker. Reporting the first when you
+mean the second converts a limitation into a clean bill of health, and the reader
+has no way to tell.
+
+An ownership gate scanned for uppercase RFC 2119 keywords. Sections stating their
+obligations in declarative present tense scored zero, were bucketed as carrying
+no obligations, and were admitted with no evidence required. Its documentation
+said "there is no obligation to enumerate". The true sentence was "the section
+carries no keyword line, so the scanner cannot see its obligations" — and 19 of
+151 headings were free-admission surface the moment they were bound, including a
+19-row exit-code registry and a closed manifest specification.
+
+Two rules follow:
+
+- State the bound of what the checker can see, next to what it reports. A
+  residual class that is named can be attacked later; one that is implied cannot.
+- Do not let the bucket for "nothing to check" also be the bucket that skips the
+  check. Where absence of measurable obligation is a legitimate state, require an
+  explicit reviewed justification for it, so the weakest entries are the ones
+  that must say the most rather than the least.
+
+## An Absence And A Failure To Read Are Different Facts
+
+Absence is a legitimate state with a defined fallback. A failed, partial, or
+malformed read is evidence of a problem. Treating the second as the first lets
+the fallback launder a fault into a normal-looking value, and a fallback defined
+for absence must never fire on a read failure.
+
+Each of these was a separate defect in this repository:
+
+- a non-empty value read as verified;
+- an unknown scanner version read as clean;
+- a partial provenance record read as absent;
+- a zero pid start time read as alive;
+- a malformed `api_error_status` read as missing;
+- an unparsed envelope read as no envelope — this one produced a false provider
+  suppression that would have hidden a healthy provider for hours.
+
+## Prove, Or Report Nothing
+
+Where a property cannot be established, report unparsed or unknown rather than
+inferring it from a proxy signal. A plausible guess is worse than an explicit
+unknown, because callers act on it.
+
+Incident: headless top-level inference in the Claude classifier was unsound in
+principle and produced six variants before it was deleted rather than
+strengthened.
+
+## Many Variants, One Unowned Decision
+
+A long run of same-shaped variants usually means a decision has more than one
+owner, not that there are many bugs. Eleven framing variants stopped reproducing
+only when structure got a single scanner and a single state type; every per-site
+patch before that produced the next variant. The operative wording is in
+`.roles/orchestrator/role.md`: unify the decision, do not patch each site.
+
+## Reviewer Licence
+
+Reviewers are explicitly licensed to attempt to defeat a gate and to reject a
+change whose only evidence is positive-path. Grep for callers before believing a
+guard is in force. The operative wording is in `.roles/reviewer/role.md`.
+
+codex
+Outline явно отделяет текущую реализацию от четырёх предлагаемых упражнений. Проверяю ссылки и наиболее рискованные утверждения: logout, сохранность provider и возможность headless reuse. Сборки активного UI checkout запускать не буду — это прямо исключено заданием.
+
+exec
+/bin/zsh -lc 'git --version > .temp/TASK-260909-3kd1i7-review/git-readiness.log
+rg --version > .temp/TASK-260909-3kd1i7-review/rg-readiness.log
+ git diff --stat 815a681105ed40c9846ac62c7c123c1250c1eb84 8c3c4150cbd3a6a805f36fa2fa63cfb1a8b9b664
+ rg --files agents/skills .claude/skills .codex/skills 2> .temp/TASK-260909-3kd1i7-review/discovery.log
+' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ exited 2 in 0ms:
+exec
+/bin/zsh -lc 'cat relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift relux_sample/Modules/Notes/Notes+Module.swift relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift
+cat relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
+cat Packages/Auth/Package.swift' in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+extension Notes.Data.Api {
+    protocol IFetcher: Sendable {
+        typealias Err = Notes.Business.Err
+        typealias DTO = Notes.Data.Api.DTO
+
+        func getNotes() async -> Result<[DTO.Note], Err>
+        func upsert(note: DTO.Note) async -> Result<Void, Err>
+        func deletetNote(by id: DTO.Note.Id) async -> Result<Void, Err>
+    }
+}
+
+extension Notes.Data.Api {
+    actor Fetcher {
+        private var notes: Dictionary<DTO.Note.Id, DTO.Note> = [
+            .init(id: .init(), date: .now, title: "title 1", content: "content 1"),
+            .init(id: .init(), date: .now.add(minutes: -1), title: "title 2", content: "content 2"),
+            .init(id: .init(), date: .now.add(days: -1), title: "title 3", content: "content 3"),
+            .init(id: .init(), date: .now.add(days: -2), title: "title 4", content: "content 4"),
+            .init(id: .init(), date: .now.add(days: -2).add(hours: -2).add(minutes: -2), title: "title 5", content: "content 5"),
+        ].keyed(by: \.id)
+    }
+}
+
+extension Notes.Data.Api.Fetcher: Notes.Data.Api.IFetcher {
+    func getNotes() async -> Result<[DTO.Note], Err> {
+        .success(Array(notes.values))
+    }
+
+    func upsert(note: DTO.Note) async -> Result<Void, Err> {
+        self.notes[note.id] = note
+        return .success(())
+    }
+    
+    func deletetNote(by id: DTO.Note.Id) async -> Result<Void, Err> {
+        self.notes.removeValue(forKey: id)
+        return .success(())
+    }
+    
+
+}
+
+
+extension Notes.Data.Api {
+    actor TestFetcher {
+        private var notes: Dictionary<DTO.Note.Id, DTO.Note> = [
+            .init(id: .init(), date: .now, title: "title 1", content: "content 1"),
+            .init(id: .init(), date: .now.add(days: -2).add(hours: -2).add(minutes: -2), title: "title 5", content: "content 5"),
+        ].keyed(by: \.id)
+    }
+}
+
+extension Notes.Data.Api.TestFetcher: Notes.Data.Api.IFetcher {
+    func getNotes() async -> Result<[DTO.Note], Err> {
+        .success(Array(notes.values))
+    }
+
+    func upsert(note: DTO.Note) async -> Result<Void, Err> {
+        self.notes[note.id] = note
+        return .success(())
+    }
+
+    func deletetNote(by id: DTO.Note.Id) async -> Result<Void, Err> {
+        self.notes.removeValue(forKey: id)
+        return .success(())
+    }
+}
+import SwiftIoC
+
+// relux module with resolved dependencies
+extension Notes {
+    struct Module: Relux.Module {
+        private let ioc: IoC
+
+        var states: [any Relux.AnyState]
+        var sagas: [any Relux.Saga]
+
+        init() async {
+            self.ioc = Self.buildIoC()
+
+            self.states = [
+                self.ioc.get(by: Notes.Business.State.self)!,
+                await self.ioc.getAsync(by: Notes.UI.State.self)!
+            ]
+            self.sagas = [
+                await self.ioc.getAsync(by: Notes.Business.IFlow.self)!
+            ]
+        }
+    }
+}
+
+extension Notes.Module {
+    static func buildIoC() -> IoC {
+        let ioc: IoC = .init(logger: IoC.Logger(enabled: false))
+
+        ioc.register(Notes.Business.State.self, lifecycle: .container, resolver: buildBusinessState)
+        ioc.register(Notes.UI.State.self, lifecycle: .container, resolver: { await buildUIState(ioc: ioc) })
+        ioc.register(Notes.Business.IService.self, lifecycle: .container, resolver: { buildSvc(ioc: ioc) })
+        ioc.register(Notes.Data.Api.IFetcher.self, lifecycle: .container, resolver: { buildFetcher(ioc: ioc) })
+        ioc.register(Notes.Business.IFlow.self, lifecycle: .container, resolver: { await buildFlow(ioc: ioc) })
+
+        return ioc
+    }
+
+    private static func buildBusinessState() -> Notes.Business.State {
+        Notes.Business.State()
+    }
+
+    private static func buildUIState(ioc: IoC) async -> Notes.UI.State {
+        await Notes.UI.State(
+            state: ioc.get(by: Notes.Business.State.self)!
+        )
+    }
+
+    private static func buildSvc(ioc: IoC) -> Notes.Business.IService {
+        Notes.Business.Service(
+            fetcher: ioc.get(by: Notes.Data.Api.IFetcher.self)!
+        )
+    }
+
+    private static func buildFetcher(ioc: IoC) -> Notes.Data.Api.IFetcher {
+        Notes.Data.Api.Fetcher()
+    }
+
+    private static func buildFlow(ioc: IoC) async -> Notes.Business.IFlow {
+        await Notes.Business.Flow(
+            svc: ioc.get(by: Notes.Business.IService.self)!
+        )
+    }
+}
+import AuthReluxInt
+import Relux
+
+extension SampleApp.Business {
+    protocol ISaga: Relux.Saga {}
+}
+
+extension SampleApp.Business {
+    actor Saga {
+        private let store: Relux.Store
+
+        init(
+            store: Relux.Store
+        ) {
+            self.store = store
+        }
+    }
+}
+
+extension SampleApp.Business.Saga: SampleApp.Business.ISaga {
+    func apply(_ effect: any Relux.Effect) async {
+        switch effect as? SampleApp.Business.Effect {
+            case .none: break
+            case .setAppContext: await setAppContext()
+        }
+
+        switch effect as? Auth.Business.Effect {
+            case .runLogoutFlow: await cleanupAppCache()
+            default: break
+        }
+    }
+}
+
+extension SampleApp.Business.Saga {
+    private func setAppContext() async {
+        await actions {
+            AppRouter.Action.set([.auth(page: .localAuth)])
+        }
+    }
+
+    private func cleanupAppCache() async {
+        // Wipe every state in the store except those listed in `exclusions`.
+        // AppRouter is excluded so the navigation stack survives logout.
+        await self.store.cleanup(
+            exclusions: [AppRouter.self]
+        )
+    }
+}
+// Relux Flow it's an entity which returns a specific Result
+// to define has the flow completed successfully or failed
+// during the all effects hierarchy
+
+extension Notes.Business {
+    protocol IFlow: Relux.Flow {}
+}
+
+extension Notes.Business {
+
+    actor Flow {
+        private typealias Model = Notes.Business.Model
+        let dispatcher: Relux.Dispatcher
+        private let svc: Notes.Business.IService
+
+        init(
+            dispatcher: Relux.Dispatcher? = .none,
+            svc: Notes.Business.IService
+        ) async {
+            // Resolve the global dispatcher only when no explicit dependency was supplied.
+            if let dispatcher {
+                self.dispatcher = dispatcher
+            } else {
+                self.dispatcher = await Self.defaultDispatcher
+            }
+            self.svc = svc
+        }
+    }
+
+}
+
+extension Notes.Business.Flow: Notes.Business.IFlow {
+    func apply(_ effect: any Relux.Effect) async -> Relux.Flow.Result {
+        switch effect as? Notes.Business.Effect {
+            case .none: .success
+            case .obtainNotes: await obtainNotes()
+            case let .upsert(note): await upsert(note)
+            case let .delete(note): await delete(note)
+        }
+    }
+}
+
+extension Notes.Business.Flow {
+    private func obtainNotes() async -> Relux.Flow.Result {
+        // this flow returns it's result based on inner actions result
+        switch await svc.getNotes() {
+            case let .success(notes):
+                // await for result
+                await actions {
+                    Notes.Business.Action.obtainNotesSuccess(notes: notes)
+                }
+                return .success
+            case let .failure(err):
+                // await for result
+                await actions(.concurrently) {
+                    Notes.Business.Action.obtainNotesFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // Logging the error does not turn the failed operation into a successful flow.
+                return .failure(err)
+        }
+    }
+
+    private func upsert(_ note: Model.Note) async -> Relux.Flow.Result {
+        switch await svc.upsert(note: note) {
+            case .success:
+                await actions {
+                    Notes.Business.Action.upsertNoteSuccess(note: note)
+                }
+                return .success
+            case let .failure(err):
+                await actions(.concurrently) {
+                    Notes.Business.Action.upsertNoteFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // here we decided to fail flow with specific error
+                return .failure(err)
+        }
+    }
+
+    private func delete(_ note: Model.Note) async -> Relux.Flow.Result {
+        switch await svc.delete(noteId: note.id) {
+            case .success:
+                await actions {
+                    Notes.Business.Action.deleteNoteSuccess(note: note)
+                }
+                return .success
+            case let .failure(err):
+                await actions(.concurrently) {
+                    Notes.Business.Action.deleteNoteFail(err: err)
+                    ErrorHandling.Business.Effect.track(error: err)
+                }
+                // here we decided to fail flow with specific error
+                return .failure(err)
+        }
+    }
+}
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "Auth",
+    platforms: [
+        .iOS(.v17),
+        .macOS(.v14)
+    ],
+    products: [
+        .library(name: "AuthModels", targets: ["AuthModels"]),
+        .library(name: "AuthReluxInt", targets: ["AuthReluxInt"]),
+        .library(name: "AuthReluxImpl", targets: ["AuthReluxImpl"]),
+        .library(name: "AuthServiceInt", targets: ["AuthServiceInt"]),
+        .library(name: "AuthServiceImpl", targets: ["AuthServiceImpl"]),
+        // Test-only helpers (static is fine)
+        .library(name: "AuthTestSupport", targets: ["AuthTestSupport"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/relux-works/swift-ioc.git", exact: "1.0.3"),
+        .package(url: "https://github.com/relux-works/swift-relux.git", exact: "9.2.0"),
+        .package(path: "../TestInfrastructure"),
+    ],
+    targets: [
+        .target(
+            name: "AuthModels",
+            dependencies: []
+        ),
+        .target(
+            name: "AuthReluxInt",
+            dependencies: [
+                "AuthModels",
+                .product(name: "Relux", package: "swift-relux"),
+            ]
+        ),
+        .target(
+            name: "AuthServiceInt",
+            dependencies: [
+                "AuthModels",
+            ]
+        ),
+        .target(
+            name: "AuthServiceImpl",
+            dependencies: [
+                "AuthModels",
+                "AuthServiceInt",
+            ]
+        ),
+        .target(
+            name: "AuthReluxImpl",
+            dependencies: [
+                "AuthModels",
+                "AuthReluxInt",
+                "AuthServiceInt",
+                .product(name: "SwiftIoC", package: "swift-ioc"),
+                .product(name: "Relux", package: "swift-relux"),
+            ]
+        ),
+        .target(
+            name: "AuthTestSupport",
+            dependencies: [
+                "AuthModels",
+                "AuthServiceInt",
+                "AuthReluxInt",
+                .product(name: "Relux", package: "swift-relux"),
+                .product(name: "TestInfrastructure", package: "TestInfrastructure"),
+            ]
+        ),
+        .testTarget(
+            name: "AuthTests",
+            dependencies: [
+                "AuthReluxImpl",
+                "AuthReluxInt",
+                "AuthModels",
+                "AuthServiceInt",
+                .product(name: "Relux", package: "swift-relux")
+            ]
+        )
+    ]
+)
+
+exec
+/bin/zsh -lc "python3 --version > .temp/TASK-260909-3kd1i7-review/python-readiness.log
+python3 - <<'PY'
+import re,pathlib
+r=pathlib.Path('/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree')
+a=pathlib.Path('/Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board/.resources/TASK-260909-3kd1i7/TASK-260909-3kd1i7_learning-exercises.md').read_text()
+paths=sorted(set(p.replace('N/','relux_sample/Modules/Notes/',1) if p.startswith('N/') else p.replace('T/','relux_sampleTests/Notes/',1) if p.startswith('T/') else p for p in re.findall(r'"'`([''^`]+'"\\.swift)"'`'"',a)))
+for p in paths: print(('PASS ' if (r/p).is_file() else 'FAIL ')+p)
+print('Path coverage',sum((r/p).is_file() for p in paths),'/',len(paths))
+PY
+cat /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.task-board/.resources/TASK-260909-3hzrc3/TASK-260909-3hzrc3_review-verdict-rev2.md" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 0ms:
+PASS Packages/Auth/Package.swift
+PASS Packages/Auth/Sources/AuthReluxImpl/Business/Middleware/Auth+Business+Saga.swift
+PASS Packages/Auth/Tests/AuthTests/AuthBasicsTests.swift
+PASS relux_sample/IoC/IoC.swift
+PASS relux_sample/Modules/App/Business/SampleApp+Business+Saga.swift
+PASS relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Flow.swift
+PASS relux_sample/Modules/Notes/Business/Middleware/Notes+Business+Service.swift
+PASS relux_sample/Modules/Notes/Business/Model/Notes+Business+Model+Note.swift
+PASS relux_sample/Modules/Notes/Business/Notes+Business+State+Reducer.swift
+PASS relux_sample/Modules/Notes/Business/Notes+Business+State.swift
+PASS relux_sample/Modules/Notes/Data/Api/DTO/Notes+Data+Api+DTO+Note.swift
+PASS relux_sample/Modules/Notes/Data/Api/Notes+Data+Api+Fetcher.swift
+PASS relux_sample/Modules/Notes/Notes+Module.swift
+PASS relux_sample/Modules/Notes/UI/Details/Notes+UI+Details+Container.swift
+PASS relux_sampleTests/Notes/Business/Saga/NotesTests+Business+Saga+Upsert.swift
+PASS relux_sampleTests/Notes/Business/State/NotesTests+Business+State+Upsert.swift
+Path coverage 16 / 16
+# Review verdict: TASK-260909-3hzrc3, revision 2
+
+Verdict: accepted
+Finding F1 from revision 1: resolved.
+Candidate: 99cb44b484ec9b843136f1ed54ad1b31c6571b65
+Previous candidate: 17dc14ef98318d74b0dd4772f83e8cbba537b222
+Base: 815a681105ed40c9846ac62c7c123c1250c1eb84
+Repository delta: present. Revision two changes only one paragraph in Docs/ArchitectureAudit.md; the substantive dependency/build/behavior repairs remain the revision-one candidate reviewed previously.
+
+## Scope and independent verification
+
+Compared exact immutable candidate trees: only Docs/ArchitectureAudit.md differs. All source, tests, manifests, project configuration, and four lockfiles are byte-identical between revisions. git diff --check passes. Reviewed the corrected handoff and rework outcomes. No code or repository documentation modified by this reviewer; no commits, publication, or full test reruns.
+
+Independently enumerated Auth.Business.Effect from the candidate source: checkAuthContext, obtainAvailableBiometryType, authorizeWithBiometry, logout, runLogoutFlow. Exactly 5 of 5 declared effects have existing named test drivers. Read the test bodies, not merely their names:
+
+- checkAuthContext and logout: AuthBehaviorTests.authContextAndLogoutChooseTheirRoutes.
+- obtainAvailableBiometryType: AuthBehaviorTests.registeredModuleReducesBiometryAndCleansUp.
+- authorizeWithBiometry: authorizationTrueRoutesToMain, authorizationFalseNeverRoutesToMain, authorizationFailureNeverRoutesToMain, through authorize(_:).
+- runLogoutFlow: AuthBehaviorTests.logoutRecreatesContextBeforeRoutingToLocalAuth.
+
+Production entry: Relux.Dispatcher.actions -> registered Auth.Module.sagas -> Auth.Business.Saga.apply. The optional none switch branch is not a declared effect. The corrected audit and current handoff accurately report 5 of 5 and map the five cases. The prior finding's completeness-inventory shape is resolved. The logout ordering limitation remains explicit.
+
+## AC coverage and carried evidence
+
+1 of 3 AC rows driven by named behavioral tests; 3 of 3 rows validated through their appropriate entry points. Bounds are unchanged and explicit:
+
+| AC row | Evidence and production entry | Review disposition |
+| --- | --- | --- |
+| iOS simulator build and relevant Swift tests pass | xcodebuild test/build; swift test; AuthBehaviorTests through registered module dispatch and NotesTests through Notes.Business.Flow.apply | Reuse revision-one independent reviewer green evidence: 7 Auth tests, 14 Notes tests with app rebuild, macOS build. No executable/configuration change. |
+| Dependencies reproducibly resolve | Locked Xcode resolver and SwiftPM --force-resolved-versions | Reuse prior reviewer tag/source and resolver evidence; all four lock blobs identical. This row has a command-evidence bound, not a behavioral unit test. |
+| Audit documents actual verified contracts and changes | Exact candidate-tree diff, normative Auth enum and test bodies, corrected outcomes | Independently verified F1 correction. Prior upstream-contract review retained; no renewed upstream research claimed. This row is manual source-review evidence. |
+
+Reuse TASK-260909-3hzrc3_review-verdict-rev1.md and TASK-260909-3hzrc3_review-evidence-rev1.tar.gz for prior independent executions. Producer-only baseline-red, separate iOS Auth and AuthUI checks retain their previously documented provenance. This review reran only source enumeration/tree comparison/whitespace checks; it does not claim new build or behavioral test execution.
+
+Negative evidence retained for unchanged implementation: false authorization and service error tests prohibit main routing; Notes failure tests assert production Flow failure outcomes. Prior reviewed producer evidence killed 2 of 2 narrowing mutants: false-result admission (authorizationFalseNeverRoutesToMain, exit 1), and obtainFailed-only admission (obtainNotes_Failure, exit 65). These are behavioral, token-preserving narrowing mutations, not delete-only/static-checker runs. No new gate is introduced by this prose correction, so remutation is not warranted.
+
+Physical LocalAuthentication, oldest supported OS runtime execution, exhaustive GUI/navigation, and independent logout interleaving ordering remain unverified stated bounds. They are not promoted to verified by this review.
+
+## Review logbook
+
+Revision-one F1 is fully corrected without source or dependency churn. Verification JSON is attached as TASK-260909-3hzrc3_review-verification-rev2.json. The reviewer run goal query reports no active goal (not goal-bound). Record acceptance with accept_cr revision=2; integration and signed delivery belong to the bound producer/parent workflow. No new findings or external blockers.
+
+exec
+/bin/zsh -lc "rg -n '6.2|26|xcodebuild|swift test|HybridState|actor State|UIState' README.md Docs/ArchitectureAudit.md Packages/Auth/Sources/AuthReluxImpl relux_sample/Modules/Notes/Business/Notes+Business+State.swift relux_sample/Modules/Notes/UI/Notes+UI+State.swift
+ git rev-parse HEAD" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-q49ois/worktree
+ succeeded in 0ms:
+relux_sample/Modules/Notes/Business/Notes+Business+State.swift:4:    actor State {
+relux_sample/Modules/Notes/UI/Notes+UI+State.swift:2:    final class State: ObservableObject, Relux.UIState {
+README.md:3:[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-red?logo=swift)](https://swift.org/download/)
+README.md:45:Use Xcode 26 or newer with Swift 6.2+ (required by swift-log 1.15.1).
+README.md:55:| Xcode / xcodebuild | Resolve and build the iOS app | `xcodebuild build -project relux_sample.xcodeproj -scheme relux_sample -destination 'generic/platform=iOS Simulator' -derivedDataPath .temp/DerivedData -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData`, Xcode configured build products |
+README.md:57:| xcodebuild | Existing Notes Swift Testing suite | `xcodebuild test -project relux_sample.xcodeproj -scheme relux_sample -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath .temp/DerivedData -parallel-testing-enabled NO -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` | `.temp/DerivedData/Logs/Test` |
+README.md:58:| SwiftPM | Auth Swift Testing suite on macOS | `swift test --package-path Packages/Auth --force-resolved-versions` | `Packages/Auth/.build` |
+README.md:59:| xcodebuild | Auth package tests on iOS | From `Packages/Auth`: `xcodebuild test -scheme Auth-Package -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../../.temp/AuthDerivedData -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO` | `.temp/AuthDerivedData` |
+Docs/ArchitectureAudit.md:3:Task: TASK-260909-3hzrc3 (`refresh-dependencies-and-patterns`), 2026-09-09.
+Docs/ArchitectureAudit.md:13:| [swiftui-relux](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Package.swift) | 8.0.0..<9 | 9.0.0 | `ac791a9a3f84c2db0b0f874622728a7efff37e01` | iOS 16, macOS 13; Swift 6.0 |
+Docs/ArchitectureAudit.md:15:| [swift-ioc](https://github.com/relux-works/swift-ioc/blob/95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd/Package.swift) | 1.0.1..<2 | 1.0.3 | `95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd` | iOS 13, macOS 10.15; Swift 6.0 |
+Docs/ArchitectureAudit.md:16:| [swift-log](https://github.com/apple/swift-log/blob/9c6fb14227f55d8f711ce3847dc2f419fb0ecacb/Package.swift) | 1.6.3..<2 | 1.15.1 | `9c6fb14227f55d8f711ce3847dc2f419fb0ecacb` | No platform floor in manifest; Swift 6.2 |
+Docs/ArchitectureAudit.md:25:- **State isolation:** [State protocols](https://github.com/relux-works/swift-relux/blob/483a0f2b6c97721ecb651516e9db9fb83c90cd69/Sources/Relux/Relux/Relux+Store/Relux+State.swift) make UIState and HybridState MainActor-isolated. BusinessState requires Sendable reference semantics and async reduction/cleanup; it does not itself require an actor. Auth uses an observable HybridState; Notes uses an actor BusinessState and a MainActor ObservableObject projection. The Auth registered-module test exercises dispatch, reduction, unregister, and cleanup together.
+Docs/ArchitectureAudit.md:27:- **DI lifecycles:** [IoC.swift](https://github.com/relux-works/swift-ioc/blob/95dccf4b0b97c27e7e9ef41a45c1ccfbc26507dd/Sources/IoC.swift) has distinct sync and async registrations. Sync access to an async resolver traps; `getAsync` can use either map. The app keeps async module resolution and now passes the registered RootSaga into Relux instead of creating an unrelated instance. Notes resolves its default dispatcher only when none was injected.
+Docs/ArchitectureAudit.md:28:- **UI boundaries:** [View](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/Protocols/Relux+UI+View.swift) is Equatable with equality based on props; [ViewCallback](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/Relux+UI+ViewCallback.swift) equality is call-site identity, not captured-value equality. Keep model-changing values in props, dispatch in containers, and edits local until callbacks commit them. [Resolver](https://github.com/relux-works/swiftui-relux/blob/ac791a9a3f84c2db0b0f874622728a7efff37e01/Sources/View+ReluxResolver.swift) provides both the Relux environment value and observable state injection.
+Docs/ArchitectureAudit.md:46:| iOS simulator build and relevant Swift tests pass | `xcodebuild build/test`; Auth package `Auth-Package` test scheme | `AuthBehaviorTests` (7 tests) and `NotesTests` (14 tests); build itself is compiler evidence rather than a unit test |
+Docs/ArchitectureAudit.md:67:Xcode 26.5 (`17F42`), Apple Swift 6.3.2, Apple Silicon host; iOS 26.5 simulator iPhone 17 (`46491660-E76A-40D1-9AD8-1CEA45C1F685`). All commands ran in this Story worktree unless the Auth package directory is stated. Raw logs and tag/source evidence are attached to the task; local copies are under `.temp/TASK-260909-3hzrc3/`. No dependency installs outside SwiftPM/Xcode resolution were required.
+Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State.swift:6:    // IMPORTANT! conform your UIState or HybridState to corresponding Relux State protocol in class declaration
+Packages/Auth/Sources/AuthReluxImpl/Business/Auth+Business+State.swift:7:    // Relux applies @MainActor global actor isolation to UIState and HybridState state protocol definitions
+93e90201dc8454015fe1018db9c09d0d9c01d287
+
+exec
+/bin/zsh -lc "cat > .temp/TASK-260909-3kd1i7-review/verdict.md <<'EOF'
+# Review verdict — TASK-260909-3kd1i7 revision 1
+
+Verdict: accepted.
+Candidate tree: 8c3c4150cbd3a6a805f36fa2fa63cfb1a8b9b664.
+Reviewed deliverable: TASK-260909-3kd1i7_learning-exercises.md.
+
+## Scope and AC coverage
+
+Repository delta is empty, independently confirmed by the exact base/candidate git diff. This is the correct outcome: this leaf explicitly requests a task-scoped board outline only, with publication reserved for the later documentation task. No product edits are required or appropriate.
+
+AC coverage: 1/1 documentation AC rows validated by the named manual check OutlineSourceAndBoundaryReview; 0/1 require executable behavioral tests because this change implements no runtime behavior. The check reads the actual attached outline, maps all four requested exercises to source, and checks implemented/proposed labels. All four exercises contain goal, pattern, entry points, acceptance checks, and pitfall. Source-path existence check passed 16/16 explicitly cited Swift paths, with N/T abbreviations expanded. No dangling cited Swift path was found.
+
+## Independent verification
+
+Read-only source inspection at 93e90201dc8454015fe1018db9c09d0d9c01d287 in the specified active UI checkout confirms:
+- Notes Fetcher stores a dictionary and has no provider cleanup interface; store cleanup cannot be equated with dictionary erasure.
+- SampleApp Saga observes runLogoutFlow and excludes AppRouter from store cleanup.
+- Notes Module constructs both Business.State and UI.State; the proposed CLI correctly requires business-only composition.
+- Notes Flow delegates to IService, dispatches success/failure actions, and returns failure on service errors.
+- Auth manifest has six products in one package, without mandatory dynamic library declarations; Notes Business.State is an actor and UI.State is a projection.
+- README commands and toolchain recommendation match the outline; audit explains Swift 6.2 as the swift-log requirement despite Auth's Swift 6.0 manifest.
+
+Reviewed TASK-260909-3hzrc3_review-verdict-rev2.md and Docs/ArchitectureAudit.md. The outline accurately attributes the carried 7 Auth and 14 Notes test evidence and preserves its limits. No new build, test, runtime, or upstream network verification is claimed. The task explicitly prohibits testing the active UI checkout. Final UI path/command revalidation remains the publisher's work, explicitly stated in the outline.
+
+## Negative evidence and architecture
+
+No runtime gate, authorization, validator, or attestation was added, so runtime mutation testing is not applicable. Challenged the likely false capability claims against their real source entry points: provider erasure through store cleanup, ordered logout subscribers, and direct headless reuse of the GUI module. The outline makes none of those unsupported promises. Proposed checks cover failed upsert, corrupt/unreadable persistence versus legitimate absence, failed writes, late session results, cleanup errors, malformed CLI input and nonzero failure exits. These are useful negative cases, not a positive-only test prescription.
+
+Container callbacks, single domain truth, provider separation, proportional package boundaries, and HybridState versus BusinessState/UIState guidance fit the project. Documentation corrections and the short README.ru pointer match the requested scope.
+
+## Review logbook and bounds
+
+No blocking findings. Reviewer goal query returned no active goal (run not goal-bound). Optional skill-directory discovery returned exit 2 for missing directories; this is a discovery limitation, not a test result. An initial unsupported task query was corrected to get; successful resource reads supplied the evidence. Readiness logs are under .temp/TASK-260909-3kd1i7-review. No code or board files were edited directly. Acceptance is for the outline, not for implementation of its proposed exercises or the unfinished UI.
+EOF
+task-board resource add TASK-260909-3kd1i7 .temp/TASK-260909-3kd1i7-review/verdict.md --type outcome --name TASK-260909-3kd1i7_review-verdict-rev1.md -d 'Accepted outline; source checks, AC coverage, empty-delta rationale and review bounds'
+ task-board m 'check_item(TASK-260909-3kd1i7, item=8)'
+ task-board m 'check_item(TASK-260909-3kd1i7, item=9)'
+ task-board m 'check_item(TASK-260909-3kd1i7, item=10)'
+ task-board m 'check_item(TASK-260909-3kd1i7, item=11)'
+ task-board m 'check_item(TASK-260909-3kd1i7, item=12)'
+ task-board m 'accept_cr(TASK-260909-3kd1i7, revision=1, evidence=TASK-260909-3kd1i7_review-verdict-rev1.md)'" in /Users/iv/Developer/IV/ioscrew-demo/relux-sample/.temp/STORY-260909-3g9457/worktree
+ succeeded in 7732ms:
+Attached TASK-260909-3kd1i7_review-verdict-rev1.md on TASK-260909-3kd1i7 as outcome
+{"ok":true,"result":{"checked":true,"id":"TASK-260909-3kd1i7","item":8,"text":"Implementation matches AC"}}
+{"ok":true,"result":{"checked":true,"id":"TASK-260909-3kd1i7","item":9,"text":"Solution fits project architecture"}}
+{"ok":true,"result":{"checked":true,"id":"TASK-260909-3kd1i7","item":10,"text":"Tests green"}}
+{"ok":true,"result":{"checked":true,"id":"TASK-260909-3kd1i7","item":11,"text":"Gate, refusal, validation, authorization, and attestation behavior attacked, not read — positive-path-only evidence is not accepted"}}
+{"ok":true,"result":{"checked":true,"id":"TASK-260909-3kd1i7","item":12,"text":"If review does not accept the work — verdict evidence added and status routed by the explicit verdict branches"}}
+{"ok":true,"result":{"cr_id":"CR-TASK-260909-3kd1i7-1","cr_state":"accepted","evidence":"TASK-260909-3kd1i7_review-verdict-rev1.md","id":"TASK-260909-3kd1i7","next":"route a new integration run using the accepted revision's bound producer role and archetype","primary":{"action":"status_changed","element_id":"TASK-260909-3kd1i7","field":"status","new_value":"integrating","old_value":"reviewing"},"producer_archetype":"analyst","producer_role":"researcher","repository_delta":"empty","reviewer_run_id":"RUN-260908-cf0c02","revision":1,"status":"integrating"}}
+
+codex
+Принято: revision 1 переведена в `integrating`.
+
+Проверены 16/16 Swift-путей и соответствие outline требованиям. Пустой repository delta корректен: результат запрошен только как board outcome. Тесты активного UI checkout не запускались.
+
+Verdict приложен: `TASK-260909-3kd1i7_review-verdict-rev1.md`.
+tokens used
+51,279
+Принято: revision 1 переведена в `integrating`.
+
+Проверены 16/16 Swift-путей и соответствие outline требованиям. Пустой repository delta корректен: результат запрошен только как board outcome. Тесты активного UI checkout не запускались.
+
+Verdict приложен: `TASK-260909-3kd1i7_review-verdict-rev1.md`.
